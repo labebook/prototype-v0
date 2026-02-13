@@ -133,7 +133,8 @@ export function ManageFolderDialog({
                       {new Date(folder.createdDate).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
-                        year: 'numeric'
+                        year: 'numeric',
+                        timeZone: 'UTC'
                       })}
                     </span>
                   </p>
