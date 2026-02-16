@@ -6,122 +6,68 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
-import { Edit, Plus, Share2, Folder, FolderOpen, Trash2, User, Settings } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { PermissionBadge } from "@/components/ui/permission-badge"
-import { CreateFolderDialog } from "@/components/create-folder-dialog"
-import { ManageFolderDialog } from "@/components/manage-folder-dialog"
+import {
+  Plus,
+  LayoutGrid,
+  Folder,
+  FolderOpen,
+  ChevronDown,
+  ChevronRight,
+  Edit,
+  Share2,
+} from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { useTeam } from "@/hooks/useTeam"
-import { getUserById } from "@/lib/mockData"
 import Link from "next/link"
 
-// Define attachment type
-interface Attachment {
-  id: string
-  filename: string
-  uploadDate: string
-  description?: string
-}
-
-interface PipelineFolder {
-  id: string
-  name: string
-  createdDate: string
-  createdBy: string
-  pipelineCount: number
-}
-
-// Update pipeline interface to include folderId
-interface Pipeline {
-  id: string
-  name: string
-  description: {
-    goal: string
-    context: string
-  }
-  isReady: boolean
-  lastModified: string
-  shared: boolean
-  shareCount?: number
-  attachments?: Attachment[]
-  link?: string
-  folderId?: string // Added folderId to associate pipelines with folders
-}
-
-export default function PipelinesPage() {
-  const {
-    currentTeam,
-    currentUser,
-    pipelineFolders,
-    pipelines: teamPipelines,
-    canEdit,
-    getMyPipelines,
-    getFavouritePipelines,
-    getSharedPipelines,
-  } = useTeam()
-
+export default function MyPipelinesPage() {
   const router = useRouter()
+  const { currentUser, pipelines } = useTeam()
 
-  // Dialog states
-  const [createFolderOpen, setCreateFolderOpen] = useState(false)
-  const [manageFolderOpen, setManageFolderOpen] = useState(false)
+  // State for folder navigation
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null)
 
-  // Filter folders and pipelines for current team
-  const folders = currentTeam
-    ? pipelineFolders.filter(f => f.teamId === currentTeam.id)
-    : []
+  // Get personal pipelines (not tied to any team)
+  // In prototype, we'll filter by ownerId = currentUser
+  // In real app, would have separate "personal" flag
+  const myPersonalPipelines = pipelines.filter(p => p.ownerId === currentUser.id)
 
-  const myPipelines = getMyPipelines()
-  const favouritePipelines = getFavouritePipelines()
-  const sharedPipelines = getSharedPipelines()
+  // Mock personal folders (in real app, would be separate from team folders)
+  const personalFolders = [
+    {
+      id: 'pf1',
+      name: 'Active Research',
+      parentId: undefined,
+    },
+    {
+      id: 'pf2',
+      name: 'Experiments',
+      parentId: 'pf1',
+    },
+    {
+      id: 'pf3',
+      name: 'Archives',
+      parentId: undefined,
+    },
+  ]
 
-  const handleFolderClick = (folderId: string) => {
-    router.push(`/pipelines/${folderId}`)
-  }
+  // Build folder tree
+  const rootFolders = personalFolders.filter(f => !f.parentId)
+  const getChildFolders = (parentId: string) =>
+    personalFolders.filter(f => f.parentId === parentId)
 
-  const handleCreateFolder = (name: string) => {
-    console.log('Creating folder:', name)
-    // In real implementation, this would create a folder via API
-    // For now, just close the dialog
-  }
-
-  const handleUpdateFolder = (folderId: string, name: string, permissions: string[]) => {
-    console.log('Updating folder:', folderId, name, permissions)
-    // In real implementation, this would update the folder via API
-  }
-
-  const handleDeleteFolder = (folderId: string) => {
-    console.log('Deleting folder:', folderId)
-    // In real implementation, this would delete the folder via API
-  }
-
-  const handleManageFolder = (folderId: string) => {
-    setSelectedFolderId(folderId)
-    setManageFolderOpen(true)
-  }
+  // Filter pipelines by selected folder (for prototype, show all)
+  const displayedPipelines = selectedFolderId
+    ? myPersonalPipelines // In real app, would filter by folderId
+    : myPersonalPipelines
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
-  }
-
-  if (!currentTeam) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <div className="flex-1 flex">
-          <Sidebar />
-          <main className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold mb-2">No Team Selected</h2>
-              <p className="text-gray-600">Please select a team to view pipelines</p>
-            </div>
-          </main>
-        </div>
-        <Footer />
-      </div>
-    )
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
   }
 
   return (
@@ -131,245 +77,212 @@ export default function PipelinesPage() {
       <div className="flex-1 flex">
         <Sidebar />
 
-        <main className="flex-1 py-8 px-4">
-          <div className="container mx-auto max-w-7xl">
-            {/* Title and Actions */}
-            <div className="flex justify-between items-center mb-8">
+        <main className="flex-1 overflow-y-auto bg-gray-50">
+          <div className="container mx-auto max-w-7xl p-8">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
               <div>
-                <h1 className="text-3xl font-semibold mb-2">Pipelines</h1>
-                <p className="text-lg text-gray-600">
-                  Team: <span className="font-medium">{currentTeam.name}</span>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">My Pipelines</h1>
+                <p className="text-gray-600">
+                  Personal workspace • {myPersonalPipelines.length} pipelines
                 </p>
               </div>
-              <div className="flex items-center space-x-3">
-                <Button
-                  variant="outline"
-                  className="h-12 bg-white border-gray-300 hover:bg-gray-50 text-gray-700 px-4"
-                  onClick={() => setCreateFolderOpen(true)}
-                >
-                  <Folder className="mr-2 h-4 w-4" /> New Folder
-                </Button>
-                <Button className="h-12 bg-black hover:bg-gray-800 text-white border-0 px-4" asChild>
-                  <Link href="/pipelines/new">
-                    <Plus className="mr-2 h-4 w-4" /> New Pipeline
-                  </Link>
-                </Button>
-              </div>
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="mr-2 h-4 w-4" />
+                New Pipeline
+              </Button>
             </div>
 
-            {/* My Pipelines */}
-            <div className="mb-10">
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <User className="h-5 w-5" />
-                My Pipelines ({myPipelines.length})
-              </h2>
-              {myPipelines.length > 0 ? (
-                <div className="space-y-1">
-                  {myPipelines.map((pipeline) => {
-                    const folder = folders.find(f => f.id === pipeline.folderId)
-                    const lastModifiedBy = pipeline.lastModifiedBy
-                      ? getUserById(pipeline.lastModifiedBy)?.name
-                      : null
+            {/* Two-column layout: Folders + Pipelines */}
+            <div className="flex gap-6">
+              {/* Left: Folder Tree */}
+              <div className="w-64 flex-shrink-0">
+                <div className="bg-white rounded-lg border border-gray-200 p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-sm">Folders</h3>
+                    <Button variant="ghost" size="sm" className="h-7 px-2">
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </div>
 
-                    return (
-                      <Link
-                        key={pipeline.id}
-                        href={`/pipelines/${folder?.id || pipeline.id}`}
-                        className="group flex items-center justify-between p-4 hover:bg-gray-50 border-b border-gray-100 transition-colors cursor-pointer"
-                      >
-                        <div className="flex items-center flex-1 min-w-0 gap-4">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-medium text-lg truncate">{pipeline.name}</span>
-                              <PermissionBadge
-                                canEdit={canEdit('pipeline', pipeline.id)}
-                                shareCount={pipeline.shareCount}
-                              />
-                            </div>
-                            <p className="text-sm text-gray-600 truncate">{pipeline.description.goal}</p>
-                            {lastModifiedBy && (
-                              <p className="text-xs text-gray-500 mt-1">
-                                Last modified by {lastModifiedBy} on {formatDate(pipeline.lastModified)}
-                              </p>
-                            )}
-                          </div>
-                          {folder && (
-                            <div className="flex items-center gap-1 text-sm text-gray-500">
-                              <Folder className="h-4 w-4" />
-                              <span>{folder.name}</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Edit className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
-                        </div>
-                      </Link>
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-12 bg-gray-50 rounded-lg">
-                  <p className="text-gray-500">No pipelines yet. Create your first pipeline!</p>
-                </div>
-              )}
-            </div>
+                  {/* All Pipelines */}
+                  <button
+                    onClick={() => setSelectedFolderId(null)}
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors ${
+                      selectedFolderId === null
+                        ? 'bg-blue-50 text-blue-700 font-medium'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                    All Pipelines
+                  </button>
 
-            {/* Favourites */}
-            {favouritePipelines.length > 0 && (
-              <div className="mb-10">
-                <h2 className="text-xl font-semibold mb-4">
-                  ⭐ Favourites ({favouritePipelines.length})
-                </h2>
-                <div className="space-y-1">
-                  {/* Same structure as My Pipelines */}
-                  <p className="text-sm text-gray-500 p-4">Favourite pipelines would appear here</p>
-                </div>
-              </div>
-            )}
-
-            {/* Shared with Me */}
-            <div className="mb-10">
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Share2 className="h-5 w-5" />
-                Shared with Me ({sharedPipelines.length})
-              </h2>
-              {sharedPipelines.length > 0 ? (
-                <div className="space-y-1">
-                  {sharedPipelines.map((pipeline) => {
-                    const folder = folders.find(f => f.id === pipeline.folderId)
-                    const owner = getUserById(pipeline.ownerId)
-                    const lastModifiedBy = pipeline.lastModifiedBy
-                      ? getUserById(pipeline.lastModifiedBy)?.name
-                      : null
-
-                    return (
-                      <Link
-                        key={pipeline.id}
-                        href={`/pipelines/${folder?.id || pipeline.id}`}
-                        className="group flex items-center justify-between p-4 hover:bg-gray-50 border-b border-gray-100 transition-colors cursor-pointer"
-                      >
-                        <div className="flex items-center flex-1 min-w-0 gap-4">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-medium text-lg truncate">{pipeline.name}</span>
-                              <PermissionBadge
-                                canEdit={canEdit('pipeline', pipeline.id)}
-                                shareCount={pipeline.shareCount}
-                              />
-                            </div>
-                            <p className="text-sm text-gray-600 truncate">{pipeline.description.goal}</p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              Owner: {owner?.name || 'Unknown'}
-                              {lastModifiedBy && ` • Last modified by ${lastModifiedBy} on ${formatDate(pipeline.lastModified)}`}
-                            </p>
-                          </div>
-                          {folder && (
-                            <div className="flex items-center gap-1 text-sm text-gray-500">
-                              <Folder className="h-4 w-4" />
-                              <span>{folder.name}</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Edit className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
-                        </div>
-                      </Link>
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-12 bg-gray-50 rounded-lg">
-                  <p className="text-gray-500">No shared pipelines</p>
-                </div>
-              )}
-            </div>
-
-            {/* Folders Section */}
-            <div>
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Folder className="h-5 w-5" />
-                Folders ({folders.length})
-              </h2>
-              {folders.length > 0 ? (
-                <div className="space-y-1">
-                  {folders.map((folder) => {
-                    const createdBy = getUserById(folder.createdBy)
-
-                    return (
-                      <div
+                  {/* Folder Tree */}
+                  <div className="mt-2 space-y-1">
+                    {rootFolders.map((folder) => (
+                      <FolderTreeItem
                         key={folder.id}
-                        className="group flex items-center justify-between p-4 hover:bg-gray-50 border-b border-gray-100 transition-colors"
+                        folder={folder}
+                        childFolders={getChildFolders(folder.id)}
+                        selectedFolderId={selectedFolderId}
+                        onSelect={setSelectedFolderId}
+                        level={0}
+                      />
+                    ))}
+                  </div>
+
+                  {rootFolders.length === 0 && (
+                    <div className="text-center py-6">
+                      <Folder className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                      <p className="text-xs text-gray-500">No folders yet</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right: Pipeline List */}
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold">
+                    {selectedFolderId
+                      ? personalFolders.find(f => f.id === selectedFolderId)?.name
+                      : 'All Pipelines'}
+                  </h2>
+                </div>
+
+                {displayedPipelines.length === 0 ? (
+                  <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+                    <LayoutGrid className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No Pipelines Yet</h3>
+                    <p className="text-gray-600 mb-4">
+                      Create your first personal pipeline to get started
+                    </p>
+                    <Button className="bg-blue-600 hover:bg-blue-700">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Create First Pipeline
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    {displayedPipelines.map((pipeline) => (
+                      <Link
+                        key={pipeline.id}
+                        href={`/pipeline/${pipeline.id}`}
+                        className="bg-white rounded-lg border border-gray-200 p-4 hover:border-blue-500 hover:shadow-sm transition-all"
                       >
-                        <button
-                          onClick={() => handleFolderClick(folder.id)}
-                          className="flex items-center flex-1 min-w-0 gap-4 text-left"
-                        >
-                          <Folder className="h-5 w-5 text-blue-500 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-medium text-lg truncate">{folder.name}</span>
-                              <PermissionBadge
-                                canEdit={canEdit('folder', folder.id)}
-                                shareCount={folder.editPermissions.length}
-                              />
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="font-semibold text-lg">{pipeline.name}</h3>
+                              {pipeline.isReady ? (
+                                <Badge className="bg-green-100 text-green-700">Ready</Badge>
+                              ) : (
+                                <Badge variant="outline">In Progress</Badge>
+                              )}
                             </div>
-                            <p className="text-xs text-gray-500">
-                              Created by {createdBy?.name || 'Unknown'} on {formatDate(folder.createdDate)}
-                              {' • '} {folder.pipelineCount} {folder.pipelineCount === 1 ? 'pipeline' : 'pipelines'}
-                            </p>
+                            <p className="text-gray-600 mb-2">{pipeline.description.goal}</p>
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <span>Modified: {formatDate(pipeline.lastModified)}</span>
+                              {pipeline.shareCount && pipeline.shareCount > 0 && (
+                                <span className="flex items-center gap-1">
+                                  <Share2 className="h-3 w-3" />
+                                  Shared with {pipeline.shareCount}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        </button>
-                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleManageFolder(folder.id)
-                            }}
-                            title="Manage folder"
-                          >
-                            <Settings className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleFolderClick(folder.id)}
-                            title="Open folder"
-                          >
-                            <FolderOpen className="h-4 w-4" />
+                          <Button variant="ghost" size="sm">
+                            <Edit className="h-4 w-4" />
                           </Button>
                         </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-12 bg-gray-50 rounded-lg">
-                  <p className="text-gray-500">No folders in this team</p>
-                </div>
-              )}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </main>
       </div>
 
       <Footer />
+    </div>
+  )
+}
 
-      {/* Folder Management Dialogs */}
-      <CreateFolderDialog
-        open={createFolderOpen}
-        onOpenChange={setCreateFolderOpen}
-        onCreateFolder={handleCreateFolder}
-      />
+// Folder Tree Item Component
+interface FolderTreeItemProps {
+  folder: {
+    id: string
+    name: string
+    parentId?: string
+  }
+  childFolders: { id: string; name: string; parentId?: string }[]
+  selectedFolderId: string | null
+  onSelect: (folderId: string) => void
+  level: number
+}
 
-      <ManageFolderDialog
-        open={manageFolderOpen}
-        onOpenChange={setManageFolderOpen}
-        folderId={selectedFolderId}
-        onUpdateFolder={handleUpdateFolder}
-        onDeleteFolder={handleDeleteFolder}
-      />
+function FolderTreeItem({
+  folder,
+  childFolders,
+  selectedFolderId,
+  onSelect,
+  level,
+}: FolderTreeItemProps) {
+  const [isExpanded, setIsExpanded] = useState(true)
+  const hasChildren = childFolders.length > 0
+  const isSelected = selectedFolderId === folder.id
+
+  return (
+    <div>
+      <button
+        onClick={() => onSelect(folder.id)}
+        className={`w-full flex items-center gap-1 px-2 py-1.5 rounded text-sm transition-colors ${
+          isSelected
+            ? 'bg-blue-50 text-blue-700 font-medium'
+            : 'text-gray-700 hover:bg-gray-50'
+        }`}
+        style={{ paddingLeft: `${level * 12 + 8}px` }}
+      >
+        {hasChildren && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsExpanded(!isExpanded)
+            }}
+            className="p-0.5 hover:bg-gray-200 rounded"
+          >
+            {isExpanded ? (
+              <ChevronDown className="h-3 w-3" />
+            ) : (
+              <ChevronRight className="h-3 w-3" />
+            )}
+          </button>
+        )}
+        {!hasChildren && <span className="w-4" />}
+        {isExpanded ? (
+          <FolderOpen className="h-4 w-4 flex-shrink-0" />
+        ) : (
+          <Folder className="h-4 w-4 flex-shrink-0" />
+        )}
+        <span className="truncate">{folder.name}</span>
+      </button>
+      {hasChildren && isExpanded && (
+        <div className="mt-0.5">
+          {childFolders.map((child) => (
+            <FolderTreeItem
+              key={child.id}
+              folder={child}
+              childFolders={[]}
+              selectedFolderId={selectedFolderId}
+              onSelect={onSelect}
+              level={level + 1}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

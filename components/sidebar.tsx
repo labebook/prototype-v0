@@ -13,10 +13,12 @@ import {
   FileText,
   Layers,
 } from "lucide-react"
+import { useTeam } from "@/hooks/useTeam"
 
 export function Sidebar() {
   const pathname = usePathname()
   const [libraryExpanded, setLibraryExpanded] = useState(false)
+  const { currentTeam } = useTeam()
 
   const isActive = (href: string) => pathname === href
 
@@ -24,40 +26,7 @@ export function Sidebar() {
     <aside className="w-64 border-r border-gray-200 h-full bg-white">
       <nav className="py-4">
         <ul className="space-y-1">
-          {/* Dashboard */}
-          <li>
-            <Link
-              href="/"
-              className={`flex items-center px-4 py-2.5 text-sm ${
-                isActive("/")
-                  ? "bg-blue-50 text-blue-700 font-medium"
-                  : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-              }`}
-            >
-              <Home className="mr-3 h-5 w-5" />
-              Dashboard
-            </Link>
-          </li>
-
-          {/* Divider */}
-          <li className="my-3 border-t border-gray-200"></li>
-
-          {/* Projects */}
-          <li>
-            <Link
-              href="/projects"
-              className={`flex items-center px-4 py-2.5 text-sm ${
-                isActive("/projects") || pathname.startsWith("/projects/")
-                  ? "bg-blue-50 text-blue-700 font-medium"
-                  : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-              }`}
-            >
-              <FolderKanban className="mr-3 h-5 w-5" />
-              Projects
-            </Link>
-          </li>
-
-          {/* My Pipelines */}
+          {/* My Pipelines - Personal workspace */}
           <li>
             <Link
               href="/pipelines"
@@ -72,10 +41,51 @@ export function Sidebar() {
             </Link>
           </li>
 
+          {/* Divider with Team Context */}
+          <li className="my-3 border-t border-gray-200"></li>
+
+          {/* Team Name Label - Always render to avoid hydration issues */}
+          <li className="px-4 py-2">
+            <div className="flex items-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <FolderKanban className="mr-2 h-4 w-4" />
+              {currentTeam?.name || 'No Team'}
+            </div>
+          </li>
+
+          {/* Dashboard - Team scoped */}
+          <li>
+            <Link
+              href="/"
+              className={`flex items-center px-4 py-2.5 text-sm ${
+                isActive("/")
+                  ? "bg-blue-50 text-blue-700 font-medium"
+                  : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+              }`}
+            >
+              <Home className="mr-3 h-5 w-5" />
+              Dashboard
+            </Link>
+          </li>
+
+          {/* Projects - Team scoped */}
+          <li>
+            <Link
+              href="/projects"
+              className={`flex items-center px-4 py-2.5 text-sm ${
+                isActive("/projects") || pathname.startsWith("/projects/")
+                  ? "bg-blue-50 text-blue-700 font-medium"
+                  : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+              }`}
+            >
+              <FolderKanban className="mr-3 h-5 w-5" />
+              Projects
+            </Link>
+          </li>
+
           {/* Divider */}
           <li className="my-3 border-t border-gray-200"></li>
 
-          {/* Library Section (Collapsible) */}
+          {/* Library Section (Collapsible) - Team scoped */}
           <li>
             <button
               onClick={() => setLibraryExpanded(!libraryExpanded)}
