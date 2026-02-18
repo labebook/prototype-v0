@@ -5,12 +5,10 @@ import Link from "next/link"
 import { Search, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { EnhancedTeamSwitcher } from "@/components/enhanced-team-switcher"
-import { TeamManagementModal } from "@/components/team-management-modal"
 import { CreateTeamDialog } from "@/components/create-team-dialog"
 import { UserDropdown } from "@/components/user-dropdown"
 
 export function Header() {
-  const [manageTeamsOpen, setManageTeamsOpen] = useState(false)
   const [createTeamOpen, setCreateTeamOpen] = useState(false)
 
   return (
@@ -46,11 +44,6 @@ export function Header() {
           <UserDropdown />
         </div>
       </div>
-
-      <TeamManagementModal
-        open={manageTeamsOpen}
-        onOpenChange={setManageTeamsOpen}
-      />
 
       <CreateTeamDialog
         open={createTeamOpen}

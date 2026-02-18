@@ -36,6 +36,10 @@ interface TeamContextValue {
   switchTeam: (teamId: string) => void
   createTeam: (name: string, description?: string) => void
 
+  // Team management
+  renameTeam: (teamId: string, name: string) => void
+  deleteTeam: (teamId: string) => void
+
   // Members
   inviteMember: (teamId: string, email: string, role: 'PI' | 'Collaborator', message?: string) => void
   removeMember: (teamId: string, userId: string) => void
@@ -93,6 +97,21 @@ export function TeamProvider({ children }: TeamProviderProps) {
 
   const switchTeam = useCallback((teamId: string) => {
     setCurrentTeamId(teamId)
+  }, [])
+
+  const renameTeam = useCallback((teamId: string, name: string) => {
+    setTeams(prev =>
+      prev.map(team => team.id === teamId ? { ...team, name } : team)
+    )
+  }, [])
+
+  const deleteTeam = useCallback((teamId: string) => {
+    setTeams(prev => prev.filter(team => team.id !== teamId))
+    setCurrentTeamId(prev => {
+      if (prev !== teamId) return prev
+      const remaining = getUserTeams(currentUserId).filter(t => t.id !== teamId)
+      return remaining.length > 0 ? remaining[0].id : ''
+    })
   }, [])
 
   const createTeam = useCallback((name: string, description?: string) => {
@@ -283,6 +302,8 @@ export function TeamProvider({ children }: TeamProviderProps) {
     currentTeam,
     switchTeam,
     createTeam,
+    renameTeam,
+    deleteTeam,
     inviteMember,
     removeMember,
     acceptInvitation,

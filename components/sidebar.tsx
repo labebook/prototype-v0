@@ -12,6 +12,7 @@ import {
     Flag as Flask,
     FileText,
     Layers, Library,
+    Settings,
 } from "lucide-react"
 import { useTeam } from "@/hooks/useTeam"
 
@@ -23,8 +24,8 @@ export function Sidebar() {
   const isActive = (href: string) => pathname === href
 
   return (
-    <aside className="w-64 border-r border-gray-200 h-full bg-white">
-      <nav className="py-4">
+    <aside className="w-64 border-r border-gray-200 h-full bg-white flex flex-col">
+      <nav className="py-4 flex-1">
         <ul className="space-y-1">
           {/* Projects - Team scoped */}
           <li>
@@ -93,6 +94,22 @@ export function Sidebar() {
             </li>
         </ul>
       </nav>
+
+      {currentTeam && (
+        <div className="border-t border-gray-200 p-3">
+          <Link
+            href="/team/settings"
+            className={`flex items-center w-full px-2 py-2 text-sm rounded-md transition-colors ${
+              pathname === "/team/settings"
+                ? "bg-blue-50 text-blue-700 font-medium"
+                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            }`}
+          >
+            <Settings className="mr-3 h-4 w-4" />
+            Team settings
+          </Link>
+        </div>
+      )}
     </aside>
   )
 }
