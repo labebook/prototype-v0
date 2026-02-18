@@ -37,18 +37,6 @@ export function Header() {
 
         {/* Right: Actions */}
         <div className="flex-shrink-0 flex items-center space-x-3">
-          {/* Quick Action: New Pipeline */}
-          <Button
-            asChild
-            size="sm"
-            className="h-9 bg-blue-600 hover:bg-blue-700 text-white font-medium"
-          >
-            <Link href="/pipelines/new">
-              <Plus className="mr-1.5 h-4 w-4" />
-              New Pipeline
-            </Link>
-          </Button>
-
           {/* Team Switcher */}
           <EnhancedTeamSwitcher
             onCreateTeam={() => setCreateTeamOpen(true)}
