@@ -12,13 +12,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { PermissionBadge } from "@/components/ui/permission-badge"
 import { useTeam } from "@/hooks/useTeam"
 import { getUserById } from "@/lib/mockData"
 
 export default function ProjectsPage() {
   const router = useRouter()
-  const { currentTeam, projects, canEdit } = useTeam()
+  const { currentTeam, projects } = useTeam()
 
   const handleOpenProject = (projectId: string) => {
     router.push(`/projects/${projectId}`)
@@ -88,9 +87,6 @@ export default function ProjectsPage() {
               <div>
                 {teamProjects.map(project => {
                   const owner = getUserById(project.ownerId)
-                  const lastModifiedBy = project.lastModifiedBy
-                    ? getUserById(project.lastModifiedBy)
-                    : null
 
                   return (
                     <div
@@ -99,10 +95,7 @@ export default function ProjectsPage() {
                       onClick={() => handleOpenProject(project.id)}
                     >
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-base font-medium text-gray-900">{project.name}</span>
-                          <PermissionBadge canEdit={canEdit("project", project.id)} showText={false} />
-                        </div>
+                        <p className="text-base font-medium text-gray-900 mb-1">{project.name}</p>
                         {project.description && (
                           <p className="text-sm text-gray-500 truncate">{project.description}</p>
                         )}
@@ -110,11 +103,7 @@ export default function ProjectsPage() {
 
                       <div className="text-right shrink-0 text-sm text-gray-500">
                         <p>{owner?.name ?? "Unknown"}</p>
-                        <p className="text-gray-400 mt-0.5">
-                          {lastModifiedBy
-                            ? `Modified by ${lastModifiedBy.name}`
-                            : `Created ${formatDate(project.createdDate)}`}
-                        </p>
+                        <p className="text-gray-400 mt-0.5">{formatDate(project.createdDate)}</p>
                       </div>
 
                       <DropdownMenu>

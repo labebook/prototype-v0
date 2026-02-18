@@ -6,44 +6,37 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
   ArrowLeft,
-  Calendar,
-  User,
+  ChevronDown,
+  ChevronRight,
   Edit,
-  Trash2,
-  Plus,
-  LayoutGrid,
-  FileText,
-  Share2,
   Folder,
   FolderOpen,
-  ChevronRight,
-  ChevronDown,
+  LayoutGrid,
+  Plus,
+  Share2,
+  Trash2,
+  User,
 } from "lucide-react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { PermissionBadge } from "@/components/ui/permission-badge"
 import { useTeam } from "@/hooks/useTeam"
 import { getUserById } from "@/lib/mockData"
 import Link from "next/link"
+
+type Tab = "pipelines" | "files" | "notes" | "activity"
 
 export default function ProjectDetailPage() {
   const params = useParams()
   const router = useRouter()
   const projectId = params.projectId as string
 
-  const {
-    currentTeam,
-    currentUser,
-    projects,
-    projectFolders,
-    pipelines,
-    canEdit,
-  } = useTeam()
+  const { currentTeam, currentUser, projects, projectFolders, pipelines, canEdit } = useTeam()
 
-  // Find the project
   const project = projects.find(p => p.id === projectId)
+
+  const [activeTab, setActiveTab] = useState<Tab>("pipelines")
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null)
 
   if (!currentTeam) {
     return (
@@ -73,7 +66,7 @@ export default function ProjectDetailPage() {
             <div className="text-center">
               <h2 className="text-2xl font-semibold mb-2">Project Not Found</h2>
               <p className="text-gray-600 mb-6">The project you're looking for doesn't exist</p>
-              <Button onClick={() => router.push('/projects')}>
+              <Button onClick={() => router.push("/projects")}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Projects
               </Button>
@@ -86,339 +79,277 @@ export default function ProjectDetailPage() {
   }
 
   const owner = getUserById(project.ownerId)
-  const lastModifiedBy = project.lastModifiedBy
-    ? getUserById(project.lastModifiedBy)
-    : null
-  const canEditProject = canEdit('project', project.id)
+  const lastModifiedBy = project.lastModifiedBy ? getUserById(project.lastModifiedBy) : null
+  const canEditProject = canEdit("project", project.id)
 
-  // State for folder navigation within project
-  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null)
-
-  // Get folders for THIS project (in real app, would filter by projectId)
-  // For prototype, we'll show team's project folders
   const projectSpecificFolders = projectFolders.filter(f => f.teamId === currentTeam.id)
-
-  // Build folder tree (root folders + their children)
   const rootFolders = projectSpecificFolders.filter(f => !f.parentId)
   const getChildFolders = (parentId: string) =>
     projectSpecificFolders.filter(f => f.parentId === parentId)
 
-  // Get pipelines for current folder (or all if no folder selected)
-  // For prototype, showing team pipelines
   const projectPipelines = pipelines.filter(p => p.teamId === currentTeam.id)
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'UTC'
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("en-US", {
+      month: "short", day: "numeric", year: "numeric", timeZone: "UTC",
     })
-  }
+
+  const tabs: { id: Tab; label: string }[] = [
+    { id: "pipelines", label: "Pipelines" },
+    { id: "files", label: "Files" },
+    { id: "notes", label: "Notes" },
+    { id: "activity", label: "Activity" },
+  ]
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-
       <div className="flex-1 flex">
         <Sidebar />
+        <main className="flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-[1200px] px-6 py-8">
 
-        <main className="flex-1 overflow-y-auto bg-gray-50">
-          <div className="container mx-auto max-w-7xl p-8">
-            {/* Back Button */}
-            <Button
-              variant="ghost"
-              onClick={() => router.push('/projects')}
-              className="mb-4"
+            {/* ── Breadcrumb ────────────────────────────────────────── */}
+            <Link
+              href="/projects"
+              className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-6 transition-colors"
             >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Projects
-            </Button>
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Projects
+            </Link>
 
-            {/* Project Header */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <FileText className="h-8 w-8 text-blue-500" />
-                    <h1 className="text-3xl font-bold">{project.name}</h1>
-                    <PermissionBadge canEdit={canEditProject} showText={false} />
-                  </div>
-                  <p className="text-gray-600 text-lg mb-4">{project.description}</p>
-
-                  {/* Metadata */}
-                  <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      <span>Owner: <span className="font-medium">{owner?.name || 'Unknown'}</span></span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      <span>Created: {formatDate(project.createdDate)}</span>
-                    </div>
-                    {lastModifiedBy && (
-                      <div className="flex items-center gap-2">
-                        <Edit className="h-4 w-4" />
-                        <span>Last modified by {lastModifiedBy.name}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Actions */}
-                {canEditProject && (
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      <Share2 className="mr-2 h-4 w-4" />
-                      Share
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+            {/* ── Page header ───────────────────────────────────────── */}
+            <div className="flex items-start justify-between pb-6 border-b border-gray-200 mb-0">
+              <div>
+                <h1 className="text-[32px] font-semibold">{project.name}</h1>
+                {project.description && (
+                  <p className="text-gray-500 mt-1">{project.description}</p>
                 )}
+                <p className="text-sm text-gray-400 mt-2">
+                  {owner?.name ?? "Unknown"}
+                  {" · "}
+                  Created {formatDate(project.createdDate)}
+                  {lastModifiedBy && ` · Modified by ${lastModifiedBy.name}`}
+                </p>
+              </div>
+              {canEditProject && (
+                <div className="flex items-center gap-2 mt-1">
+                  <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-900">
+                    <Share2 className="mr-1.5 h-4 w-4" />
+                    Share
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-900">
+                    <Edit className="mr-1.5 h-4 w-4" />
+                    Edit
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-600">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* ── Tabs ──────────────────────────────────────────────── */}
+            <div className="border-b border-gray-200 mb-8">
+              <div className="flex">
+                {tabs.map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`px-4 py-3 text-base transition-colors ${
+                      activeTab === tab.id
+                        ? "border-b-2 border-black font-bold text-gray-900"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Project Content */}
-            <Tabs defaultValue="pipelines" className="w-full">
-              <TabsList className="mb-4">
-                <TabsTrigger value="pipelines">
-                  <LayoutGrid className="mr-2 h-4 w-4" />
-                  Pipelines
-                </TabsTrigger>
-                <TabsTrigger value="files">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Files
-                </TabsTrigger>
-                <TabsTrigger value="notes">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Notes
-                </TabsTrigger>
-                <TabsTrigger value="activity">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Activity
-                </TabsTrigger>
-              </TabsList>
+            {/* ── Pipelines tab ─────────────────────────────────────── */}
+            {activeTab === "pipelines" && (
+              <div className="grid grid-cols-12 gap-6">
 
-              {/* Pipelines Tab */}
-              <TabsContent value="pipelines" className="space-y-4">
-                <div className="flex gap-6">
-                  {/* Left: Folder Tree */}
-                  <div className="w-64 flex-shrink-0">
-                    <div className="bg-white rounded-lg border border-gray-200 p-4">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-semibold text-sm">Folders</h3>
-                        <Button variant="ghost" size="sm" className="h-7 px-2">
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
-
-                      {/* All Pipelines */}
-                      <button
-                        onClick={() => setSelectedFolderId(null)}
-                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors ${
-                          selectedFolderId === null
-                            ? 'bg-blue-50 text-blue-700 font-medium'
-                            : 'text-gray-700 hover:bg-gray-50'
-                        }`}
-                      >
-                        <LayoutGrid className="h-4 w-4" />
-                        All Pipelines
-                      </button>
-
-                      {/* Folder Tree */}
-                      <div className="mt-2 space-y-1">
-                        {rootFolders.map((folder) => (
-                          <FolderTreeItem
-                            key={folder.id}
-                            folder={folder}
-                            childFolders={getChildFolders(folder.id)}
-                            selectedFolderId={selectedFolderId}
-                            onSelect={setSelectedFolderId}
-                            level={0}
-                          />
-                        ))}
-                      </div>
-
-                      {rootFolders.length === 0 && (
-                        <div className="text-center py-6">
-                          <Folder className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                          <p className="text-xs text-gray-500">No folders yet</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Right: Pipeline List */}
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-xl font-semibold">
-                        {selectedFolderId
-                          ? projectSpecificFolders.find(f => f.id === selectedFolderId)?.name
-                          : 'All Pipelines'}
-                      </h2>
-                      <Button size="sm">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Pipeline
+                {/* Folder nav */}
+                <div className="col-span-3">
+                  <nav className="sticky top-4">
+                    <div className="flex items-center justify-between mb-2 px-4">
+                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Folders</span>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-gray-700">
+                        <Plus className="h-3.5 w-3.5" />
                       </Button>
                     </div>
+                    <ul className="space-y-1">
+                      <li>
+                        <button
+                          onClick={() => setSelectedFolderId(null)}
+                          className={`flex items-center gap-2 w-full h-10 px-4 text-left transition-colors ${
+                            selectedFolderId === null
+                              ? "rounded-2xl bg-black text-white font-medium"
+                              : "text-gray-600 hover:text-gray-900"
+                          }`}
+                        >
+                          <LayoutGrid className="h-4 w-4 shrink-0" />
+                          All pipelines
+                        </button>
+                      </li>
+                      {rootFolders.map(folder => (
+                        <FolderTreeItem
+                          key={folder.id}
+                          folder={folder}
+                          childFolders={getChildFolders(folder.id)}
+                          selectedFolderId={selectedFolderId}
+                          onSelect={setSelectedFolderId}
+                          level={0}
+                        />
+                      ))}
+                    </ul>
+                  </nav>
+                </div>
 
-                    {projectPipelines.length === 0 ? (
-                      <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-                        <LayoutGrid className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <h3 className="text-lg font-medium mb-2">No Pipelines Yet</h3>
-                        <p className="text-gray-600 mb-4">
-                          Add pipelines to this project to track your experimental workflows
-                        </p>
-                        <Button>
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add Your First Pipeline
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="grid gap-4">
-                        {projectPipelines.map((pipeline) => (
-                          <Link
-                            key={pipeline.id}
-                            href={`/pipeline/${pipeline.id}`}
-                            className="bg-white rounded-lg border border-gray-200 p-4 hover:border-blue-500 hover:shadow-sm transition-all"
-                          >
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <h3 className="font-semibold text-lg">{pipeline.name}</h3>
-                                  {pipeline.isReady ? (
-                                    <Badge className="bg-green-100 text-green-700">Ready</Badge>
-                                  ) : (
-                                    <Badge variant="outline">In Progress</Badge>
-                                  )}
-                                </div>
-                                <p className="text-gray-600 mb-2">{pipeline.description.goal}</p>
-                                <div className="flex items-center gap-4 text-xs text-gray-500">
-                                  <span>Modified: {formatDate(pipeline.lastModified)}</span>
-                                  {pipeline.shareCount && pipeline.shareCount > 0 && (
-                                    <span className="flex items-center gap-1">
-                                      <Share2 className="h-3 w-3" />
-                                      Shared with {pipeline.shareCount}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                              <Button variant="ghost" size="sm">
-                                Open →
-                              </Button>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    )}
+                {/* Pipeline list */}
+                <div className="col-span-9">
+                  <div className="flex items-center justify-between pb-4 border-b border-gray-200 mb-0">
+                    <span className="text-sm text-gray-500">
+                      {selectedFolderId
+                        ? projectSpecificFolders.find(f => f.id === selectedFolderId)?.name
+                        : `${projectPipelines.length} ${projectPipelines.length === 1 ? "pipeline" : "pipelines"}`}
+                    </span>
+                    <Button size="sm">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add pipeline
+                    </Button>
                   </div>
-                </div>
-              </TabsContent>
 
-              {/* Files Tab */}
-              <TabsContent value="files">
-                <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No Files Yet</h3>
-                  <p className="text-gray-600 mb-4">
-                    Upload files, documents, and data related to this project
-                  </p>
-                  <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Upload File
-                  </Button>
-                </div>
-              </TabsContent>
-
-              {/* Notes Tab */}
-              <TabsContent value="notes">
-                <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No Notes Yet</h3>
-                  <p className="text-gray-600 mb-4">
-                    Add notes, observations, and documentation for this project
-                  </p>
-                  <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Note
-                  </Button>
-                </div>
-              </TabsContent>
-
-              {/* Activity Tab */}
-              <TabsContent value="activity">
-                <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
-                  <div className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                        <User className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm">
-                          <span className="font-medium">{owner?.name}</span> created this project
-                        </p>
-                        <p className="text-xs text-gray-500">{formatDate(project.createdDate)}</p>
-                      </div>
+                  {projectPipelines.length === 0 ? (
+                    <div className="py-24 text-center">
+                      <LayoutGrid className="h-10 w-10 text-gray-300 mx-auto mb-4" />
+                      <p className="text-lg font-medium text-gray-700 mb-1">No pipelines yet</p>
+                      <p className="text-gray-500 mb-6">Add pipelines to track your experimental workflows</p>
+                      <Button>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add pipeline
+                      </Button>
                     </div>
-                  </div>
-                  {lastModifiedBy && (
-                    <div className="p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                          <Edit className="h-4 w-4 text-green-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm">
-                            <span className="font-medium">{lastModifiedBy.name}</span> updated this project
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {formatDate(project.lastModifiedDate || project.createdDate)}
-                          </p>
-                        </div>
-                      </div>
+                  ) : (
+                    <div>
+                      {projectPipelines.map(pipeline => (
+                        <Link
+                          key={pipeline.id}
+                          href={`/pipeline/${pipeline.id}`}
+                          className="group flex items-center gap-6 py-5 border-b border-gray-200 hover:bg-gray-50 -mx-6 px-6 transition-colors"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-base font-medium text-gray-900">{pipeline.name}</span>
+                              {pipeline.isReady ? (
+                                <Badge className="bg-green-100 text-green-700 border-0 text-xs">Ready</Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-xs">In progress</Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-500 truncate">{pipeline.description.goal}</p>
+                          </div>
+                          <div className="text-right shrink-0 text-sm text-gray-400">
+                            {pipeline.shareCount && pipeline.shareCount > 0 && (
+                              <p className="flex items-center justify-end gap-1 mb-0.5">
+                                <Share2 className="h-3 w-3" />
+                                Shared with {pipeline.shareCount}
+                              </p>
+                            )}
+                            <p>{formatDate(pipeline.lastModified)}</p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-gray-700 shrink-0"
+                            onClick={e => e.preventDefault()}
+                          >
+                            Open →
+                          </Button>
+                        </Link>
+                      ))}
                     </div>
                   )}
                 </div>
-              </TabsContent>
-            </Tabs>
+              </div>
+            )}
+
+            {/* ── Files tab ─────────────────────────────────────────── */}
+            {activeTab === "files" && (
+              <div className="py-24 text-center">
+                <p className="text-lg font-medium text-gray-700 mb-1">No files yet</p>
+                <p className="text-gray-500 mb-6">Upload files, documents, and data related to this project</p>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Upload file
+                </Button>
+              </div>
+            )}
+
+            {/* ── Notes tab ─────────────────────────────────────────── */}
+            {activeTab === "notes" && (
+              <div className="py-24 text-center">
+                <p className="text-lg font-medium text-gray-700 mb-1">No notes yet</p>
+                <p className="text-gray-500 mb-6">Add notes, observations, and documentation for this project</p>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add note
+                </Button>
+              </div>
+            )}
+
+            {/* ── Activity tab ──────────────────────────────────────── */}
+            {activeTab === "activity" && (
+              <div>
+                <div className="flex items-start gap-4 py-5 border-b border-gray-200">
+                  <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+                    <User className="h-4 w-4 text-gray-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-900">
+                      <span className="font-medium">{owner?.name}</span> created this project
+                    </p>
+                    <p className="text-sm text-gray-400 mt-0.5">{formatDate(project.createdDate)}</p>
+                  </div>
+                </div>
+                {lastModifiedBy && (
+                  <div className="flex items-start gap-4 py-5 border-b border-gray-200">
+                    <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+                      <Edit className="h-4 w-4 text-gray-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-900">
+                        <span className="font-medium">{lastModifiedBy.name}</span> updated this project
+                      </p>
+                      <p className="text-sm text-gray-400 mt-0.5">
+                        {formatDate(project.lastModifiedDate || project.createdDate)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
           </div>
         </main>
       </div>
-
       <Footer />
     </div>
   )
 }
 
-// Folder Tree Item Component
 interface FolderTreeItemProps {
-  folder: {
-    id: string
-    name: string
-    parentId?: string
-  }
+  folder: { id: string; name: string; parentId?: string }
   childFolders: { id: string; name: string; parentId?: string }[]
   selectedFolderId: string | null
   onSelect: (folderId: string) => void
   level: number
 }
 
-function FolderTreeItem({
-  folder,
-  childFolders,
-  selectedFolderId,
-  onSelect,
-  level,
-}: FolderTreeItemProps) {
+function FolderTreeItem({ folder, childFolders, selectedFolderId, onSelect, level }: FolderTreeItemProps) {
   const [isExpanded, setIsExpanded] = useState(true)
   const hasChildren = childFolders.length > 0
   const isSelected = selectedFolderId === folder.id
@@ -427,39 +358,31 @@ function FolderTreeItem({
     <div>
       <button
         onClick={() => onSelect(folder.id)}
-        className={`w-full flex items-center gap-1 px-2 py-1.5 rounded text-sm transition-colors ${
+        className={`flex items-center gap-2 w-full h-10 px-4 text-left transition-colors ${
           isSelected
-            ? 'bg-blue-50 text-blue-700 font-medium'
-            : 'text-gray-700 hover:bg-gray-50'
+            ? "rounded-2xl bg-black text-white font-medium"
+            : "text-gray-600 hover:text-gray-900"
         }`}
-        style={{ paddingLeft: `${level * 12 + 8}px` }}
+        style={{ paddingLeft: `${level * 12 + 16}px` }}
       >
         {hasChildren && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setIsExpanded(!isExpanded)
-            }}
-            className="p-0.5 hover:bg-gray-200 rounded"
+          <span
+            role="button"
+            onClick={e => { e.stopPropagation(); setIsExpanded(!isExpanded) }}
+            className="shrink-0"
           >
-            {isExpanded ? (
-              <ChevronDown className="h-3 w-3" />
-            ) : (
-              <ChevronRight className="h-3 w-3" />
-            )}
-          </button>
+            {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+          </span>
         )}
-        {!hasChildren && <span className="w-4" />}
-        {isExpanded ? (
-          <FolderOpen className="h-4 w-4 flex-shrink-0" />
-        ) : (
-          <Folder className="h-4 w-4 flex-shrink-0" />
-        )}
+        {!hasChildren && <span className="w-3 shrink-0" />}
+        {isExpanded
+          ? <FolderOpen className="h-4 w-4 shrink-0" />
+          : <Folder className="h-4 w-4 shrink-0" />}
         <span className="truncate">{folder.name}</span>
       </button>
       {hasChildren && isExpanded && (
         <div className="mt-0.5">
-          {childFolders.map((child) => (
+          {childFolders.map(child => (
             <FolderTreeItem
               key={child.id}
               folder={child}

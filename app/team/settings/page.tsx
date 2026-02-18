@@ -198,7 +198,6 @@ export default function TeamSettingsPage() {
                             <p className="text-sm text-gray-500">{user.email}</p>
                           </div>
                           <RoleBadge role={member.role} />
-                          <span className="text-sm text-gray-400 w-28 text-right">{formatDate(member.joinedDate)}</span>
                           <div className="w-8 flex justify-end">
                             {userIsPI && !isCurrentUser && (
                               <Button
