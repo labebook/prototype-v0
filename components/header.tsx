@@ -51,7 +51,6 @@ export function Header() {
 
           {/* Team Switcher */}
           <EnhancedTeamSwitcher
-            onManageTeams={() => setManageTeamsOpen(true)}
             onCreateTeam={() => setCreateTeamOpen(true)}
           />
 

@@ -26,24 +26,17 @@ const meta: Meta<typeof Sidebar> = {
 export default meta
 type Story = StoryObj<typeof Sidebar>
 
+export const ActiveProjects: Story = {
+    name: 'Active: Projects',
+    parameters: {
+        nextjs: { navigation: { pathname: '/projects' } },
+    },
+}
+
 export const ActivePipelines: Story = {
-  name: 'Active: My Pipelines',
+  name: 'Active: Pipelines',
   parameters: {
     nextjs: { navigation: { pathname: '/pipelines' } },
-  },
-}
-
-export const ActiveDashboard: Story = {
-  name: 'Active: Dashboard',
-  parameters: {
-    nextjs: { navigation: { pathname: '/' } },
-  },
-}
-
-export const ActiveProjects: Story = {
-  name: 'Active: Projects',
-  parameters: {
-    nextjs: { navigation: { pathname: '/projects' } },
   },
 }
 
@@ -51,13 +44,6 @@ export const ActiveMethods: Story = {
   name: 'Active: Methods',
   parameters: {
     nextjs: { navigation: { pathname: '/methods' } },
-  },
-}
-
-export const ActiveProtocols: Story = {
-  name: 'Active: Protocols',
-  parameters: {
-    nextjs: { navigation: { pathname: '/protocols' } },
   },
 }
 

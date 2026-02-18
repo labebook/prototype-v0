@@ -1,8 +1,7 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
-import { ChevronDown, User, Settings, HelpCircle, LogOut } from "lucide-react"
+import { ChevronDown, KeyRound, LogOut } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,23 +38,9 @@ export function UserDropdown() {
         <DropdownMenuSeparator className="bg-gray-200" />
 
         <DropdownMenuItem asChild className="cursor-pointer">
-          <Link href="/profile" className="flex items-center">
-            <User className="mr-2 h-4 w-4" />
-            My Profile
-          </Link>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem asChild className="cursor-pointer">
-          <Link href="/settings" className="flex items-center">
-            <Settings className="mr-2 h-4 w-4" />
-            Settings
-          </Link>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem asChild className="cursor-pointer">
-          <Link href="/help" className="flex items-center">
-            <HelpCircle className="mr-2 h-4 w-4" />
-            Help & Docs
+          <Link href="/change-password" className="flex items-center">
+            <KeyRound className="mr-2 h-4 w-4" />
+            Change password
           </Link>
         </DropdownMenuItem>
 
