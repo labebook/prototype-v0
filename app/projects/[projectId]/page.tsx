@@ -9,34 +9,39 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
   ArrowLeft,
-  ChevronDown,
   ChevronRight,
   Edit,
+  FileText,
   Folder,
-  FolderOpen,
   LayoutGrid,
   Plus,
   Share2,
   Trash2,
-  User,
 } from "lucide-react"
 import { useTeam } from "@/hooks/useTeam"
 import { getUserById } from "@/lib/mockData"
 import Link from "next/link"
 
-type Tab = "pipelines" | "files" | "notes" | "activity"
+type FilterTab = "all" | "pipelines" | "files"
+
+const mockProjectFiles = [
+  { id: "file-1", name: "Protocol_v2.pdf",      ext: "PDF",  size: "2.4 MB", date: "2025-03-15" },
+  { id: "file-2", name: "Results_Q1.xlsx",       ext: "XLSX", size: "1.1 MB", date: "2025-03-10" },
+  { id: "file-3", name: "Reagents_list.docx",   ext: "DOCX", size: "340 KB", date: "2025-02-28" },
+]
 
 export default function ProjectDetailPage() {
   const params = useParams()
   const router = useRouter()
   const projectId = params.projectId as string
 
-  const { currentTeam, currentUser, projects, projectFolders, pipelines, canEdit } = useTeam()
+  const { currentTeam, projects, projectFolders, pipelines, canEdit } = useTeam()
 
   const project = projects.find(p => p.id === projectId)
 
-  const [activeTab, setActiveTab] = useState<Tab>("pipelines")
-  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null)
+  const [filterTab, setFilterTab] = useState<FilterTab>("all")
+  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
+  const [folderPath, setFolderPath] = useState<Array<{ id: string; name: string }>>([])
 
   if (!currentTeam) {
     return (
@@ -82,24 +87,61 @@ export default function ProjectDetailPage() {
   const lastModifiedBy = project.lastModifiedBy ? getUserById(project.lastModifiedBy) : null
   const canEditProject = canEdit("project", project.id)
 
-  const projectSpecificFolders = projectFolders.filter(f => f.teamId === currentTeam.id)
-  const rootFolders = projectSpecificFolders.filter(f => !f.parentId)
-  const getChildFolders = (parentId: string) =>
-    projectSpecificFolders.filter(f => f.parentId === parentId)
+  const allFolders = projectFolders.filter(f => f.teamId === currentTeam.id)
+  const levelFolders = currentFolderId
+    ? allFolders.filter(f => f.parentId === currentFolderId)
+    : allFolders.filter(f => !f.parentId)
 
   const projectPipelines = pipelines.filter(p => p.teamId === currentTeam.id)
+
+  const navigateIntoFolder = (folder: { id: string; name: string }) => {
+    setCurrentFolderId(folder.id)
+    setFolderPath(prev => [...prev, { id: folder.id, name: folder.name }])
+  }
+
+  const navigateToBreadcrumb = (index: number) => {
+    if (index === -1) {
+      setCurrentFolderId(null)
+      setFolderPath([])
+    } else {
+      const newPath = folderPath.slice(0, index + 1)
+      setCurrentFolderId(newPath[newPath.length - 1].id)
+      setFolderPath(newPath)
+    }
+  }
+
+  const switchTab = (tab: FilterTab) => {
+    setFilterTab(tab)
+    setCurrentFolderId(null)
+    setFolderPath([])
+  }
 
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString("en-US", {
       month: "short", day: "numeric", year: "numeric", timeZone: "UTC",
     })
 
-  const tabs: { id: Tab; label: string }[] = [
+  const filterTabs: { id: FilterTab; label: string }[] = [
+    { id: "all",       label: "All" },
     { id: "pipelines", label: "Pipelines" },
-    { id: "files", label: "Files" },
-    { id: "notes", label: "Notes" },
-    { id: "activity", label: "Activity" },
+    { id: "files",     label: "Files" },
   ]
+
+  const addButtonLabel =
+    filterTab === "files"     ? "Upload file" :
+    filterTab === "pipelines" ? "Add pipeline" :
+                                "New"
+
+  // ── Column header row ───────────────────────────────────────────────────
+  const ColumnHeaders = () => (
+    <div className="flex items-center gap-4 -mx-6 px-6 py-2 border-b border-gray-100">
+      <div className="h-5 w-5 shrink-0" />
+      <div className="flex-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Name</div>
+      <div className="w-20 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Type</div>
+      <div className="w-32 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Modified</div>
+      <div className="w-5 shrink-0" />
+    </div>
+  )
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -119,7 +161,7 @@ export default function ProjectDetailPage() {
             </Link>
 
             {/* ── Page header ───────────────────────────────────────── */}
-            <div className="flex items-start justify-between pb-6 border-b border-gray-200 mb-0">
+            <div className="flex items-start justify-between pb-6 border-b border-gray-200">
               <div>
                 <h1 className="text-[32px] font-semibold">{project.name}</h1>
                 {project.description && (
@@ -149,186 +191,220 @@ export default function ProjectDetailPage() {
               )}
             </div>
 
-            {/* ── Tabs ──────────────────────────────────────────────── */}
-            <div className="border-b border-gray-200 mb-8">
-              <div className="flex">
-                {tabs.map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`px-4 py-3 text-base transition-colors ${
-                      activeTab === tab.id
-                        ? "border-b-2 border-black font-bold text-gray-900"
-                        : "text-gray-600 hover:text-gray-900"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
+            {/* ── Filter tab bar + Add button ───────────────────────── */}
+            <div className="border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex">
+                  {filterTabs.map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => switchTab(tab.id)}
+                      className={`px-4 py-3 text-base transition-colors ${
+                        filterTab === tab.id
+                          ? "border-b-2 border-black font-bold text-gray-900"
+                          : "text-gray-600 hover:text-gray-900"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+                <Button size="sm">
+                  <Plus className="mr-2 h-4 w-4" />
+                  {addButtonLabel}
+                </Button>
               </div>
             </div>
 
-            {/* ── Pipelines tab ─────────────────────────────────────── */}
-            {activeTab === "pipelines" && (
-              <div className="grid grid-cols-12 gap-6">
+            {/* ── Folder breadcrumb (All tab only) ─────────────────── */}
+            {filterTab === "all" && folderPath.length > 0 && (
+              <div className="flex items-center gap-1.5 py-3 text-sm border-b border-gray-100">
+                <button
+                  onClick={() => navigateToBreadcrumb(-1)}
+                  className="text-gray-500 hover:text-gray-900 transition-colors"
+                >
+                  {project.name}
+                </button>
+                {folderPath.map((folder, index) => (
+                  <div key={folder.id} className="flex items-center gap-1.5">
+                    <ChevronRight className="h-3.5 w-3.5 text-gray-300" />
+                    {index === folderPath.length - 1 ? (
+                      <span className="text-gray-900 font-medium">{folder.name}</span>
+                    ) : (
+                      <button
+                        onClick={() => navigateToBreadcrumb(index)}
+                        className="text-gray-500 hover:text-gray-900 transition-colors"
+                      >
+                        {folder.name}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
 
-                {/* Folder nav */}
-                <div className="col-span-3">
-                  <nav className="sticky top-4">
-                    <div className="flex items-center justify-between mb-2 px-4">
-                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Folders</span>
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-gray-700">
-                        <Plus className="h-3.5 w-3.5" />
-                      </Button>
+            {/* ── Column headers ────────────────────────────────────── */}
+            <ColumnHeaders />
+
+            {/* ── All tab ───────────────────────────────────────────── */}
+            {filterTab === "all" && (
+              <div>
+                {levelFolders.length === 0 && projectPipelines.length === 0 && mockProjectFiles.length === 0 && (
+                  <div className="py-24 text-center">
+                    <LayoutGrid className="h-10 w-10 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500">This project is empty</p>
+                  </div>
+                )}
+
+                {/* Folders */}
+                {levelFolders.map(folder => (
+                  <button
+                    key={folder.id}
+                    onClick={() => navigateIntoFolder(folder)}
+                    className="group flex items-center gap-4 w-full py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors text-left"
+                  >
+                    <Folder className="h-5 w-5 text-gray-400 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-medium text-gray-900">{folder.name}</span>
                     </div>
-                    <ul className="space-y-1">
-                      <li>
-                        <button
-                          onClick={() => setSelectedFolderId(null)}
-                          className={`flex items-center gap-2 w-full h-10 px-4 text-left transition-colors ${
-                            selectedFolderId === null
-                              ? "rounded-2xl bg-black text-white font-medium"
-                              : "text-gray-600 hover:text-gray-900"
-                          }`}
-                        >
-                          <LayoutGrid className="h-4 w-4 shrink-0" />
-                          All pipelines
-                        </button>
-                      </li>
-                      {rootFolders.map(folder => (
-                        <FolderTreeItem
-                          key={folder.id}
-                          folder={folder}
-                          childFolders={getChildFolders(folder.id)}
-                          selectedFolderId={selectedFolderId}
-                          onSelect={setSelectedFolderId}
-                          level={0}
-                        />
-                      ))}
-                    </ul>
-                  </nav>
-                </div>
+                    <div className="w-20 text-right">
+                      <span className="text-xs text-gray-400">Folder</span>
+                    </div>
+                    <div className="w-32 text-right">
+                      <span className="text-sm text-gray-400">—</span>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                ))}
 
-                {/* Pipeline list */}
-                <div className="col-span-9">
-                  <div className="flex items-center justify-between pb-4 border-b border-gray-200 mb-0">
-                    <span className="text-sm text-gray-500">
-                      {selectedFolderId
-                        ? projectSpecificFolders.find(f => f.id === selectedFolderId)?.name
-                        : `${projectPipelines.length} ${projectPipelines.length === 1 ? "pipeline" : "pipelines"}`}
-                    </span>
-                    <Button size="sm">
+                {/* Pipelines (root level only) */}
+                {currentFolderId === null && projectPipelines.map(pipeline => (
+                  <Link
+                    key={pipeline.id}
+                    href={`/pipeline/${pipeline.id}`}
+                    className="group flex items-center gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors"
+                  >
+                    <LayoutGrid className="h-5 w-5 text-gray-400 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-900">{pipeline.name}</span>
+                        {pipeline.isReady ? (
+                          <Badge className="bg-green-100 text-green-700 border-0 text-xs">Ready</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs">In progress</Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5 truncate">{pipeline.description.goal}</p>
+                    </div>
+                    <div className="w-20 text-right">
+                      <span className="text-xs text-gray-400">Pipeline</span>
+                    </div>
+                    <div className="w-32 text-right">
+                      <span className="text-sm text-gray-400">{formatDate(pipeline.lastModified)}</span>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </Link>
+                ))}
+
+                {/* Files (root level only) */}
+                {currentFolderId === null && mockProjectFiles.map(file => (
+                  <div
+                    key={file.id}
+                    className="group flex items-center gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors cursor-default"
+                  >
+                    <FileText className="h-5 w-5 text-gray-400 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-medium text-gray-900">{file.name}</span>
+                      <p className="text-xs text-gray-400 mt-0.5">{file.size}</p>
+                    </div>
+                    <div className="w-20 text-right">
+                      <span className="text-xs text-gray-400">{file.ext}</span>
+                    </div>
+                    <div className="w-32 text-right">
+                      <span className="text-sm text-gray-400">{formatDate(file.date)}</span>
+                    </div>
+                    <div className="w-5 shrink-0" />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ── Pipelines tab ─────────────────────────────────────── */}
+            {filterTab === "pipelines" && (
+              <div>
+                {projectPipelines.length === 0 ? (
+                  <div className="py-24 text-center">
+                    <LayoutGrid className="h-10 w-10 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 mb-4">No pipelines yet</p>
+                    <Button>
                       <Plus className="mr-2 h-4 w-4" />
                       Add pipeline
                     </Button>
                   </div>
-
-                  {projectPipelines.length === 0 ? (
-                    <div className="py-24 text-center">
-                      <LayoutGrid className="h-10 w-10 text-gray-300 mx-auto mb-4" />
-                      <p className="text-lg font-medium text-gray-700 mb-1">No pipelines yet</p>
-                      <p className="text-gray-500 mb-6">Add pipelines to track your experimental workflows</p>
-                      <Button>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add pipeline
-                      </Button>
-                    </div>
-                  ) : (
-                    <div>
-                      {projectPipelines.map(pipeline => (
-                        <Link
-                          key={pipeline.id}
-                          href={`/pipeline/${pipeline.id}`}
-                          className="group flex items-center gap-6 py-5 border-b border-gray-200 hover:bg-gray-50 -mx-6 px-6 transition-colors"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-base font-medium text-gray-900">{pipeline.name}</span>
-                              {pipeline.isReady ? (
-                                <Badge className="bg-green-100 text-green-700 border-0 text-xs">Ready</Badge>
-                              ) : (
-                                <Badge variant="outline" className="text-xs">In progress</Badge>
-                              )}
-                            </div>
-                            <p className="text-sm text-gray-500 truncate">{pipeline.description.goal}</p>
-                          </div>
-                          <div className="text-right shrink-0 text-sm text-gray-400">
-                            {pipeline.shareCount && pipeline.shareCount > 0 && (
-                              <p className="flex items-center justify-end gap-1 mb-0.5">
-                                <Share2 className="h-3 w-3" />
-                                Shared with {pipeline.shareCount}
-                              </p>
-                            )}
-                            <p>{formatDate(pipeline.lastModified)}</p>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-gray-700 shrink-0"
-                            onClick={e => e.preventDefault()}
-                          >
-                            Open →
-                          </Button>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                ) : (
+                  projectPipelines.map(pipeline => (
+                    <Link
+                      key={pipeline.id}
+                      href={`/pipeline/${pipeline.id}`}
+                      className="group flex items-center gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors"
+                    >
+                      <LayoutGrid className="h-5 w-5 text-gray-400 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-gray-900">{pipeline.name}</span>
+                          {pipeline.isReady ? (
+                            <Badge className="bg-green-100 text-green-700 border-0 text-xs">Ready</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-xs">In progress</Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-400 mt-0.5 truncate">{pipeline.description.goal}</p>
+                      </div>
+                      <div className="w-20 text-right">
+                        <span className="text-xs text-gray-400">Pipeline</span>
+                      </div>
+                      <div className="w-32 text-right">
+                        <span className="text-sm text-gray-400">{formatDate(pipeline.lastModified)}</span>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </Link>
+                  ))
+                )}
               </div>
             )}
 
             {/* ── Files tab ─────────────────────────────────────────── */}
-            {activeTab === "files" && (
-              <div className="py-24 text-center">
-                <p className="text-lg font-medium text-gray-700 mb-1">No files yet</p>
-                <p className="text-gray-500 mb-6">Upload files, documents, and data related to this project</p>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Upload file
-                </Button>
-              </div>
-            )}
-
-            {/* ── Notes tab ─────────────────────────────────────────── */}
-            {activeTab === "notes" && (
-              <div className="py-24 text-center">
-                <p className="text-lg font-medium text-gray-700 mb-1">No notes yet</p>
-                <p className="text-gray-500 mb-6">Add notes, observations, and documentation for this project</p>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add note
-                </Button>
-              </div>
-            )}
-
-            {/* ── Activity tab ──────────────────────────────────────── */}
-            {activeTab === "activity" && (
+            {filterTab === "files" && (
               <div>
-                <div className="flex items-start gap-4 py-5 border-b border-gray-200">
-                  <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                    <User className="h-4 w-4 text-gray-500" />
+                {mockProjectFiles.length === 0 ? (
+                  <div className="py-24 text-center">
+                    <FileText className="h-10 w-10 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 mb-4">No files yet</p>
+                    <Button>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Upload file
+                    </Button>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-900">
-                      <span className="font-medium">{owner?.name}</span> created this project
-                    </p>
-                    <p className="text-sm text-gray-400 mt-0.5">{formatDate(project.createdDate)}</p>
-                  </div>
-                </div>
-                {lastModifiedBy && (
-                  <div className="flex items-start gap-4 py-5 border-b border-gray-200">
-                    <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                      <Edit className="h-4 w-4 text-gray-500" />
+                ) : (
+                  mockProjectFiles.map(file => (
+                    <div
+                      key={file.id}
+                      className="group flex items-center gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors cursor-default"
+                    >
+                      <FileText className="h-5 w-5 text-gray-400 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-sm font-medium text-gray-900">{file.name}</span>
+                        <p className="text-xs text-gray-400 mt-0.5">{file.size}</p>
+                      </div>
+                      <div className="w-20 text-right">
+                        <span className="text-xs text-gray-400">{file.ext}</span>
+                      </div>
+                      <div className="w-32 text-right">
+                        <span className="text-sm text-gray-400">{formatDate(file.date)}</span>
+                      </div>
+                      <div className="w-5 shrink-0" />
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-900">
-                        <span className="font-medium">{lastModifiedBy.name}</span> updated this project
-                      </p>
-                      <p className="text-sm text-gray-400 mt-0.5">
-                        {formatDate(project.lastModifiedDate || project.createdDate)}
-                      </p>
-                    </div>
-                  </div>
+                  ))
                 )}
               </div>
             )}
@@ -337,63 +413,6 @@ export default function ProjectDetailPage() {
         </main>
       </div>
       <Footer />
-    </div>
-  )
-}
-
-interface FolderTreeItemProps {
-  folder: { id: string; name: string; parentId?: string }
-  childFolders: { id: string; name: string; parentId?: string }[]
-  selectedFolderId: string | null
-  onSelect: (folderId: string) => void
-  level: number
-}
-
-function FolderTreeItem({ folder, childFolders, selectedFolderId, onSelect, level }: FolderTreeItemProps) {
-  const [isExpanded, setIsExpanded] = useState(true)
-  const hasChildren = childFolders.length > 0
-  const isSelected = selectedFolderId === folder.id
-
-  return (
-    <div>
-      <button
-        onClick={() => onSelect(folder.id)}
-        className={`flex items-center gap-2 w-full h-10 px-4 text-left transition-colors ${
-          isSelected
-            ? "rounded-2xl bg-black text-white font-medium"
-            : "text-gray-600 hover:text-gray-900"
-        }`}
-        style={{ paddingLeft: `${level * 12 + 16}px` }}
-      >
-        {hasChildren && (
-          <span
-            role="button"
-            onClick={e => { e.stopPropagation(); setIsExpanded(!isExpanded) }}
-            className="shrink-0"
-          >
-            {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-          </span>
-        )}
-        {!hasChildren && <span className="w-3 shrink-0" />}
-        {isExpanded
-          ? <FolderOpen className="h-4 w-4 shrink-0" />
-          : <Folder className="h-4 w-4 shrink-0" />}
-        <span className="truncate">{folder.name}</span>
-      </button>
-      {hasChildren && isExpanded && (
-        <div className="mt-0.5">
-          {childFolders.map(child => (
-            <FolderTreeItem
-              key={child.id}
-              folder={child}
-              childFolders={[]}
-              selectedFolderId={selectedFolderId}
-              onSelect={onSelect}
-              level={level + 1}
-            />
-          ))}
-        </div>
-      )}
     </div>
   )
 }
