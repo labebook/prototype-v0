@@ -2,14 +2,20 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Search, Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { usePathname } from "next/navigation"
 import { EnhancedTeamSwitcher } from "@/components/enhanced-team-switcher"
 import { CreateTeamDialog } from "@/components/create-team-dialog"
 import { UserDropdown } from "@/components/user-dropdown"
 
+const navItems = [
+  { label: "Browse Methods", href: "/methods" },
+  { label: "Team Workspace", href: "/projects" },
+  { label: "Discussions", href: "/discussions" },
+]
+
 export function Header() {
   const [createTeamOpen, setCreateTeamOpen] = useState(false)
+  const pathname = usePathname()
 
   return (
     <header className="w-full bg-white border-b border-gray-200">
@@ -21,17 +27,26 @@ export function Header() {
           </Link>
         </div>
 
-        {/* Center: Search Bar */}
-        <div className="flex-1 flex justify-center px-4 max-w-lg">
-          <div className="w-full relative">
-            <input
-              type="text"
-              placeholder="Browse Methods..."
-              className="w-full h-10 pl-10 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 hover:bg-white transition-colors"
-            />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          </div>
-        </div>
+        {/* Center: Navigation Menu */}
+        <nav className="flex items-center gap-1">
+          {navItems.map((item) => {
+            const isActive =
+              pathname === item.href || pathname.startsWith(item.href + "/")
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                  isActive
+                    ? "bg-gray-100 text-gray-900"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                }`}
+              >
+                {item.label}
+              </Link>
+            )
+          })}
+        </nav>
 
         {/* Right: Actions */}
         <div className="flex-shrink-0 flex items-center space-x-3">
