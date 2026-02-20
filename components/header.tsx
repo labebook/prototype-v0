@@ -26,6 +26,14 @@ export function Header() {
 
         {/* Center: Navigation Menu */}
         <nav className="flex items-center gap-1">
+          <div className="relative mr-1">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search methods..."
+              className="h-9 w-52 rounded-md border border-gray-300 bg-gray-50 pl-8 pr-3 text-sm text-gray-900 placeholder:text-gray-400 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            />
+          </div>
           {navItems.map((item) => {
             const isActive =
               item.href === "/"
@@ -45,14 +53,6 @@ export function Header() {
               </Link>
             )
           })}
-          <div className="relative ml-2">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="h-9 w-48 rounded-md border border-gray-300 bg-gray-50 pl-8 pr-3 text-sm text-gray-900 placeholder:text-gray-400 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            />
-          </div>
         </nav>
 
         {/* Right: User Avatar */}
