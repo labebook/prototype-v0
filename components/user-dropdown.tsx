@@ -21,12 +21,10 @@ export function UserDropdown() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center space-x-2 hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors focus:outline-none">
-        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium">
+      <DropdownMenuTrigger className="flex items-center hover:bg-gray-50 p-1.5 rounded-lg transition-colors focus:outline-none">
+        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium text-sm">
           {currentUser.name.charAt(0)}
         </div>
-        <span className="text-sm font-medium">{currentUser.name}</span>
-        <ChevronDown className="h-4 w-4 text-gray-500" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56 bg-white border-gray-200">

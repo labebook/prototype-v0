@@ -15,17 +15,25 @@ import {
     Settings,
 } from "lucide-react"
 import { useTeam } from "@/hooks/useTeam"
+import { EnhancedTeamSwitcher } from "@/components/enhanced-team-switcher"
+import { CreateTeamDialog } from "@/components/create-team-dialog"
 
 export function Sidebar() {
   const pathname = usePathname()
   const [libraryExpanded, setLibraryExpanded] = useState(false)
+  const [createTeamOpen, setCreateTeamOpen] = useState(false)
   const { currentTeam } = useTeam()
 
   const isActive = (href: string) => pathname === href
 
   return (
     <aside className="w-64 border-r border-gray-200 h-full bg-white flex flex-col">
-      <nav className="py-4 flex-1">
+      {/* Team Switcher */}
+      <div className="px-3 pt-4 pb-2">
+        <EnhancedTeamSwitcher onCreateTeam={() => setCreateTeamOpen(true)} />
+      </div>
+
+      <nav className="py-2 flex-1">
         <ul className="space-y-1">
           {/* Projects - Team scoped */}
           <li>
@@ -110,6 +118,11 @@ export function Sidebar() {
           </Link>
         </div>
       )}
+
+      <CreateTeamDialog
+        open={createTeamOpen}
+        onOpenChange={setCreateTeamOpen}
+      />
     </aside>
   )
 }

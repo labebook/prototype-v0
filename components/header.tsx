@@ -1,21 +1,17 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Search } from "lucide-react"
-import { EnhancedTeamSwitcher } from "@/components/enhanced-team-switcher"
-import { CreateTeamDialog } from "@/components/create-team-dialog"
 import { UserDropdown } from "@/components/user-dropdown"
 
 const navItems = [
-  { label: "Browse Methods", href: "/methods" },
+  { label: "Browse Methods", href: "/" },
   { label: "Team Workspace", href: "/projects" },
   { label: "Discussions", href: "/discussions" },
 ]
 
 export function Header() {
-  const [createTeamOpen, setCreateTeamOpen] = useState(false)
   const pathname = usePathname()
 
   return (
@@ -32,7 +28,9 @@ export function Header() {
         <nav className="flex items-center gap-1">
           {navItems.map((item) => {
             const isActive =
-              pathname === item.href || pathname.startsWith(item.href + "/")
+              item.href === "/"
+                ? pathname === "/"
+                : pathname === item.href || pathname.startsWith(item.href + "/")
             return (
               <Link
                 key={item.href}
@@ -57,22 +55,11 @@ export function Header() {
           </div>
         </nav>
 
-        {/* Right: Actions */}
-        <div className="flex-shrink-0 flex items-center space-x-3">
-          {/* Team Switcher */}
-          <EnhancedTeamSwitcher
-            onCreateTeam={() => setCreateTeamOpen(true)}
-          />
-
-          {/* User Dropdown */}
+        {/* Right: User Avatar */}
+        <div className="flex-shrink-0">
           <UserDropdown />
         </div>
       </div>
-
-      <CreateTeamDialog
-        open={createTeamOpen}
-        onOpenChange={setCreateTeamOpen}
-      />
     </header>
   )
 }
