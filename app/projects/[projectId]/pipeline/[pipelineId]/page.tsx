@@ -112,9 +112,12 @@ export default function ProjectPipelineDetailPage() {
       month: "short", day: "numeric", year: "numeric", timeZone: "UTC",
     })
 
+  const isFirstStep = (stepId: string) => pipelineSteps[0]?.id === stepId
+
   const handleRunStep = (stepId: string) => {
     setCurrentExecutingModule(stepId)
-    setWorkflowStep("input")
+    // First step shows input; subsequent steps skip straight to output
+    setWorkflowStep(isFirstStep(stepId) ? "input" : "output")
   }
 
   const handleInputContinue = (data: { text: string; files: File[] }) => {
@@ -128,7 +131,8 @@ export default function ProjectPipelineDetailPage() {
           checkedSteps: [],
         },
       }))
-      setWorkflowStep("execution")
+      // First step skips execution and goes straight to output
+      setWorkflowStep("output")
     }
   }
 
@@ -161,7 +165,8 @@ export default function ProjectPipelineDetailPage() {
             ...prev,
             [nextStepId]: { inputData: data, outputData: { text: "", files: [] }, checkedSteps: [] },
           }))
-          setWorkflowStep("input")
+          // Subsequent steps skip input and execution, go straight to output
+          setWorkflowStep("output")
           return
         }
       }
