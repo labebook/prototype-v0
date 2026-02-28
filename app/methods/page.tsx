@@ -5,49 +5,79 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
-import { Plus, Share2 } from "lucide-react"
-import Link from "next/link"
+import { Plus } from "lucide-react"
+import { PipelineListView } from "@/components/pipeline-list-view"
 
 const sampleMethods = [
   {
     id: "M001",
+    step: 1,
     name: "SDS-PAGE",
-    description: "Sodium dodecyl sulfate–polyacrylamide gel electrophoresis",
-    status: "favorite",
-    lastModified: "2025-03-22",
-    link: "/methods/sds-page/theory",
+    category: "method",
+    objective: "Separate proteins by molecular weight using polyacrylamide gel electrophoresis",
+    method: "Sodium dodecyl sulfate–polyacrylamide gel electrophoresis",
+    ready: true,
+    protocolId: "#101",
+    parametersState: "configured" as const,
+    dateSelected: "2025-03-22",
+    author: "Dr. Smith",
+    executionStatus: "idle" as const,
   },
   {
     id: "M002",
+    step: 2,
     name: "Western Blot",
-    description: "Protein detection technique using antibodies",
-    status: "saved",
-    lastModified: "2025-03-18",
-    link: "#",
+    category: "method",
+    objective: "Detect specific proteins in a sample using antibody-based detection",
+    method: "Protein detection technique using antibodies",
+    ready: true,
+    protocolId: "#202",
+    parametersState: "selected" as const,
+    dateSelected: "2025-03-18",
+    author: "Dr. Johnson",
+    executionStatus: "idle" as const,
   },
   {
     id: "M003",
+    step: 3,
     name: "PCR",
-    description: "Polymerase chain reaction for DNA amplification",
-    status: "working",
-    lastModified: "2025-03-15",
-    link: "#",
+    category: "method",
+    objective: "Amplify specific DNA sequences for analysis",
+    method: "Polymerase chain reaction for DNA amplification",
+    ready: true,
+    protocolId: undefined,
+    parametersState: "none" as const,
+    dateSelected: undefined,
+    author: undefined,
+    executionStatus: "idle" as const,
   },
   {
     id: "M004",
+    step: 4,
     name: "ELISA",
-    description: "Enzyme-linked immunosorbent assay",
-    status: "saved",
-    lastModified: "2025-03-10",
-    link: "#",
+    category: "method",
+    objective: "Quantify proteins or antibodies using enzyme-linked detection",
+    method: "Enzyme-linked immunosorbent assay",
+    ready: true,
+    protocolId: "#404",
+    parametersState: "configured" as const,
+    dateSelected: "2025-03-10",
+    author: "Dr. Lee",
+    executionStatus: "idle" as const,
   },
   {
     id: "M005",
+    step: 5,
     name: "Mass Spectrometry",
-    description: "Analytical technique to measure mass-to-charge ratio of ions",
-    status: null,
-    lastModified: "2025-02-28",
-    link: "#",
+    category: "method",
+    objective: "Identify and quantify molecules by mass-to-charge ratio",
+    method: "Analytical technique to measure mass-to-charge ratio of ions",
+    ready: false,
+    protocolId: undefined,
+    parametersState: "none" as const,
+    dateSelected: undefined,
+    author: undefined,
+    executionStatus: "idle" as const,
   },
 ]
 
@@ -87,34 +117,15 @@ export default function MethodsPage() {
                 </Button>
               </div>
             ) : (
-              <div>
-                {methods.map(method => (
-                  <div
-                    key={method.id}
-                    className="group flex items-center gap-6 py-5 border-b border-gray-200 hover:bg-gray-50 -mx-6 px-6 transition-colors"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <Link
-                        href={method.link}
-                        className="text-base font-medium text-gray-900 hover:underline"
-                        onClick={e => e.stopPropagation()}
-                      >
-                        {method.name}
-                      </Link>
-                      <p className="text-sm text-gray-500 mt-0.5">{method.description}</p>
-                    </div>
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-gray-700 shrink-0"
-                    >
-                      <Share2 className="mr-1.5 h-4 w-4" />
-                      Share
-                    </Button>
-                  </div>
-                ))}
-              </div>
+              <PipelineListView
+                steps={methods}
+                onParametersClick={step => console.log("Parameters:", step)}
+                onProtocolClick={step => console.log("Protocol:", step)}
+                onBuffersClick={step => console.log("Buffers:", step)}
+                onCalculationsClick={step => console.log("Calculations:", step)}
+                onMaterialsClick={step => console.log("Materials:", step)}
+                onPlanClick={step => console.log("Plan:", step)}
+              />
             )}
 
           </div>
