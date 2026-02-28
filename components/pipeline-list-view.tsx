@@ -33,6 +33,9 @@ interface PipelineListViewProps {
   updatedStepId?: string | null
   hideColumns?: ('status' | 'action')[]
   onReorder?: (newSteps: PipelineStep[]) => void
+  onStepClick?: (step: PipelineStep) => void
+  selectedStepId?: string | null
+  moduleDataMap?: Record<string, { inputData: { text: string; files: File[] }; outputData: { text: string; files: File[] } }>
 }
 
 export function PipelineListView({
@@ -48,6 +51,9 @@ export function PipelineListView({
   updatedStepId,
   hideColumns = [],
   onReorder,
+  onStepClick,
+  selectedStepId,
+  moduleDataMap,
 }: PipelineListViewProps) {
   const showStatus = !hideColumns.includes('status')
   const showAction = !hideColumns.includes('action')
@@ -227,6 +233,8 @@ export function PipelineListView({
           {steps.map((originalStep, index) => {
             const step = getStepWithMockData(originalStep, index)
             const isCompleted = completedModules?.has(step.id) || step.executionStatus === 'completed'
+            const stepIoData = moduleDataMap?.[step.id]
+            const fileCount = (stepIoData?.inputData.files.length ?? 0) + (stepIoData?.outputData.files.length ?? 0)
             return (
               <tr
                 key={step.id}
@@ -235,12 +243,15 @@ export function PipelineListView({
                 onDragOver={onReorder ? (e) => handleDragOver(e, step.id) : undefined}
                 onDrop={onReorder ? () => handleDrop(step.id) : undefined}
                 onDragEnd={onReorder ? handleDragEnd : undefined}
+                onClick={onStepClick ? () => onStepClick(step) : undefined}
                 className={cn(
                   "border-b border-gray-200 transition-colors",
                   isCompleted ? "bg-gray-100 opacity-60" : "hover:bg-gray-50",
                   updatedStepId === step.id ? "bg-green-50 hover:bg-green-50" : "",
                   dragOverId === step.id ? "border-t-2 border-t-black" : "",
                   onReorder ? "cursor-default" : "",
+                  onStepClick ? "cursor-pointer" : "",
+                  selectedStepId === step.id ? "bg-blue-50 hover:bg-blue-50" : "",
                 )}
               >
                 {onReorder && (
@@ -249,7 +260,14 @@ export function PipelineListView({
                   </td>
                 )}
                 <td className="py-4 px-4">
-                  <div className="text-sm font-medium text-gray-900">{step.name}</div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm font-medium text-gray-900">{step.name}</div>
+                    {fileCount > 0 && (
+                      <span className="inline-flex items-center gap-0.5 text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">
+                        📎 {fileCount}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="py-4 px-4 text-center">
                   <div className="flex items-center justify-center">

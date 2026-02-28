@@ -20,6 +20,7 @@ import {
   User,
 } from "lucide-react"
 import { PipelineListView } from "@/components/pipeline-list-view"
+import { StepIoPanel } from "@/components/step-io-panel"
 import { ParametersModal, BufferRecipesModal, MaterialsModal } from "@/components/pipeline-modals"
 import { WesternBlotPlanOverlay } from "@/components/western-blot-plan-overlay"
 import { CustomModulePlanOverlay } from "@/components/custom-module-plan-overlay"
@@ -51,6 +52,7 @@ export default function ProjectPipelineDetailPage() {
   const [workflowStep, setWorkflowStep] = useState<"input" | "execution" | "output" | null>(null)
   const [moduleDataMap, setModuleDataMap] = useState<Record<string, ModuleData>>({})
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set())
+  const [selectedStepId, setSelectedStepId] = useState<string | null>(null)
   const [isMounted, setIsMounted] = useState(false)
   const [stepModal, setStepModal] = useState<{ type: "parameters" | "buffers" | "materials" | "plan-western-blot" | "plan-custom-module" | null; stepName?: string }>({ type: null })
   const closeStepModal = () => setStepModal({ type: null })
@@ -280,6 +282,12 @@ export default function ProjectPipelineDetailPage() {
     if (firstStep && !completedModules.has(firstStep.id)) handleRunStep(firstStep.id)
   }
 
+  const handleEditOutput = () => {
+    if (!selectedStepId) return
+    setCurrentExecutingModule(selectedStepId)
+    setWorkflowStep("output")
+  }
+
   const tabs: { id: Tab; label: string }[] = [
     { id: "steps", label: `Steps (${pipelineSteps.length})` },
     { id: "attachments", label: `Attachments (${pipeline.attachments || 0})` },
@@ -399,16 +407,32 @@ export default function ProjectPipelineDetailPage() {
                     {completedModules.size} of {pipelineSteps.length} completed
                   </span>
                 </div>
-                <PipelineListView
-                  steps={pipelineSteps}
-                  hideColumns={['status']}
-                  onParametersClick={step => openModalForStep("parameters", step.name)}
-                  onBuffersClick={step => openModalForStep("buffers", step.name)}
-                  onMaterialsClick={step => openModalForStep("materials", step.name)}
-                  onPlanClick={step => openPlanForStep(step.name)}
-                  onRunStep={handleRunStep}
-                  completedModules={completedModules}
-                />
+                <div className="flex gap-4 items-start">
+                  <div className="flex-1 min-w-0">
+                    <PipelineListView
+                      steps={pipelineSteps}
+                      hideColumns={['status']}
+                      onParametersClick={step => openModalForStep("parameters", step.name)}
+                      onBuffersClick={step => openModalForStep("buffers", step.name)}
+                      onMaterialsClick={step => openModalForStep("materials", step.name)}
+                      onPlanClick={step => openPlanForStep(step.name)}
+                      onRunStep={handleRunStep}
+                      completedModules={completedModules}
+                      onStepClick={step => setSelectedStepId(step.id === selectedStepId ? null : step.id)}
+                      selectedStepId={selectedStepId}
+                      moduleDataMap={moduleDataMap}
+                    />
+                  </div>
+                  {selectedStepId && (
+                    <StepIoPanel
+                      step={pipelineSteps.find(s => s.id === selectedStepId) ?? null}
+                      inputData={moduleDataMap[selectedStepId]?.inputData}
+                      outputData={moduleDataMap[selectedStepId]?.outputData}
+                      onClose={() => setSelectedStepId(null)}
+                      onEditOutput={handleEditOutput}
+                    />
+                  )}
+                </div>
               </div>
             )}
 
