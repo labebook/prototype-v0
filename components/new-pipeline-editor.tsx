@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Pencil, Save, Share2, Play, LayoutGrid, List, X, Search, Plus } from "lucide-react"
+import { Pencil, Save, Share2, Play, LayoutGrid, List, X, Search, Plus, Filter, Grid3X3, Package, FlaskConical, CalendarDays, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
@@ -214,6 +214,13 @@ export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onVi
     setBlocks(newBlocks)
   }
 
+  const handleStepsReorder = (newSteps: Array<{ id: string }>) => {
+    const reordered = newSteps
+      .map(step => blocks.find(b => b.id === step.id))
+      .filter((b): b is BlockData => !!b)
+    setBlocks(reordered)
+  }
+
   // Get the selected block
   const selectedBlock = blocks.find((block) => block.id === selectedBlockId) || null
 
@@ -286,7 +293,7 @@ export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onVi
 
       {/* Main Content */}
       <div className="flex-1 flex">
-        {/* Left Sidebar */}
+        {/* Left Sidebar — methods & modules picker */}
         <div className="w-64 border-r border-gray-200 flex flex-col">
           {/* Sidebar header: search + tabs */}
           <div className="px-3 pt-4 pb-3 border-b border-gray-100">
@@ -380,50 +387,103 @@ export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onVi
               <PipelineListView
                 steps={transformedSteps}
                 hideColumns={['status', 'action']}
-                onRemoveBlock={handleRemoveBlock}
-                onReorderBlocks={handleReorderBlocks}
-                onSelectBlock={handleSelectBlock}
-                selectedBlockId={selectedBlockId}
+                onReorder={handleStepsReorder}
               />
             )}
           </div>
 
           {/* Properties Panel */}
           {showPropertiesPanel && selectedBlock && (
-            <div className="w-80 border-l border-gray-200 bg-white p-4 flex flex-col">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-medium">Properties</h3>
+            <div className="w-72 border-l border-gray-200 bg-white flex flex-col overflow-y-auto">
+              {/* Panel header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                <div>
+                  <p className="text-xs text-gray-400 uppercase tracking-wide">
+                    {selectedBlock.type === "method" ? "Method" : "Module"}
+                    {selectedBlock.stepNumber ? ` · Step ${selectedBlock.stepNumber}` : ""}
+                  </p>
+                  <h3 className="text-sm font-semibold text-gray-900 mt-0.5">{selectedBlock.name}</h3>
+                </div>
                 <button
-                  onClick={() => {
-                    setShowPropertiesPanel(false)
-                    setSelectedBlockId(null)
-                  }}
-                  className="p-1 rounded-sm hover:bg-gray-100 text-gray-500"
+                  onClick={() => { setShowPropertiesPanel(false); setSelectedBlockId(null) }}
+                  className="p-1 rounded hover:bg-gray-100 text-gray-400"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
-              <div className="space-y-4 flex-1 overflow-auto">
+              <div className="flex-1 px-4 py-4 space-y-5">
+                {/* Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Name</label>
                   <Input
                     value={selectedBlock.name}
                     onChange={(e) => handleUpdateBlock(selectedBlock.id, { name: e.target.value })}
-                    className="w-full"
+                    className="w-full h-8 text-sm"
                   />
                 </div>
 
+                {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Description</label>
                   <textarea
                     value={selectedBlock.description}
                     onChange={(e) => handleUpdateBlock(selectedBlock.id, { description: e.target.value })}
-                    className="w-full min-h-[100px] rounded-md border border-gray-200 p-2"
+                    rows={3}
+                    className="w-full text-sm rounded-md border border-gray-200 px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-black"
                   />
                 </div>
 
-                <div className="flex items-center space-x-2 pt-2">
+                {/* Divider */}
+                <div className="border-t border-gray-100" />
+
+                {/* Action buttons — same as list view columns */}
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-2">Actions</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors">
+                      <Filter className="h-3.5 w-3.5 shrink-0" />
+                      Plan
+                    </button>
+                    <button className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors">
+                      <Grid3X3 className="h-3.5 w-3.5 shrink-0" />
+                      Parameters
+                    </button>
+                    <button className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors">
+                      <Package className="h-3.5 w-3.5 shrink-0" />
+                      Materials
+                    </button>
+                    <button className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors">
+                      <FlaskConical className="h-3.5 w-3.5 shrink-0" />
+                      Buffers
+                    </button>
+                  </div>
+                </div>
+
+                {/* Metadata fields */}
+                <div className="border-t border-gray-100 pt-4 space-y-3">
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1.5 flex items-center gap-1.5">
+                      Protocol ID
+                    </label>
+                    <Input placeholder="e.g. #101" className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1.5 flex items-center gap-1.5">
+                      <CalendarDays className="h-3 w-3" /> Date Selected
+                    </label>
+                    <Input type="date" className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1.5 flex items-center gap-1.5">
+                      <User className="h-3 w-3" /> Author
+                    </label>
+                    <Input placeholder="e.g. Dr. Smith" className="h-8 text-sm" />
+                  </div>
+                </div>
+
+                {/* Ready toggle */}
+                <div className="border-t border-gray-100 pt-4 flex items-center gap-2">
                   <input
                     type="checkbox"
                     id="ready-status"
@@ -431,40 +491,9 @@ export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onVi
                     onChange={(e) => handleUpdateBlock(selectedBlock.id, { ready: e.target.checked })}
                     className="h-4 w-4 rounded border-gray-300 text-black focus:ring-black"
                   />
-                  <label htmlFor="ready-status" className="font-medium">
+                  <label htmlFor="ready-status" className="text-sm font-medium text-gray-700">
                     Mark as Ready
                   </label>
-                </div>
-
-                <div className="pt-2">
-                  <p className="text-xs text-gray-500 mb-1">Block Type</p>
-                  <p className="text-sm font-medium">{selectedBlock.type === "method" ? "Method" : "Module"}</p>
-                </div>
-
-                {selectedBlock.stepNumber && (
-                  <div className="pt-2">
-                    <p className="text-xs text-gray-500 mb-1">Step Number</p>
-                    <p className="text-sm font-medium">{selectedBlock.stepNumber}</p>
-                  </div>
-                )}
-
-                <div className="pt-2">
-                  <p className="text-xs text-gray-500 mb-1">ID</p>
-                  <p className="text-sm">{selectedBlock.id.split("-")[1]?.substring(0, 3) || "0"}</p>
-                </div>
-
-                <div className="pt-2">
-                  <p className="text-xs text-gray-500 mb-1">Position</p>
-                  <div className="flex space-x-2">
-                    <div>
-                      <p className="text-xs text-gray-500">X</p>
-                      <p className="text-sm">{Math.round(selectedBlock.position.x)}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Y</p>
-                      <p className="text-sm">{Math.round(selectedBlock.position.y)}</p>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>

@@ -1,5 +1,6 @@
 "use client"
-import { Grid3X3, FlaskConical, Package, Filter, Play, CheckCircle, XCircle, Circle, Loader2 } from "lucide-react"
+import { useState, useRef } from "react"
+import { Grid3X3, FlaskConical, Package, Filter, Play, CheckCircle, XCircle, Circle, Loader2, GripVertical } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -31,6 +32,7 @@ interface PipelineListViewProps {
   completedModules?: Set<string>
   updatedStepId?: string | null
   hideColumns?: ('status' | 'action')[]
+  onReorder?: (newSteps: PipelineStep[]) => void
 }
 
 export function PipelineListView({
@@ -45,9 +47,13 @@ export function PipelineListView({
   completedModules,
   updatedStepId,
   hideColumns = [],
+  onReorder,
 }: PipelineListViewProps) {
   const showStatus = !hideColumns.includes('status')
   const showAction = !hideColumns.includes('action')
+
+  const draggedIdRef = useRef<string | null>(null)
+  const [dragOverId, setDragOverId] = useState<string | null>(null)
   // Add null/undefined check
   if (!steps || !Array.isArray(steps)) {
     return (
@@ -171,11 +177,40 @@ export function PipelineListView({
     )
   }
 
+  const handleDragStart = (id: string) => {
+    draggedIdRef.current = id
+  }
+
+  const handleDragOver = (e: React.DragEvent, id: string) => {
+    e.preventDefault()
+    if (draggedIdRef.current !== id) setDragOverId(id)
+  }
+
+  const handleDrop = (targetId: string) => {
+    const sourceId = draggedIdRef.current
+    if (!sourceId || sourceId === targetId || !onReorder) return
+    const from = steps.findIndex(s => s.id === sourceId)
+    const to = steps.findIndex(s => s.id === targetId)
+    if (from === -1 || to === -1) return
+    const reordered = [...steps]
+    const [moved] = reordered.splice(from, 1)
+    reordered.splice(to, 0, moved)
+    onReorder(reordered)
+    draggedIdRef.current = null
+    setDragOverId(null)
+  }
+
+  const handleDragEnd = () => {
+    draggedIdRef.current = null
+    setDragOverId(null)
+  }
+
   return (
     <div className="w-full h-full overflow-auto">
       <table className="w-full border-collapse" role="table">
         <thead>
           <tr className="border-b border-gray-200">
+            {onReorder && <th className="w-8 py-3 px-2" />}
             <th className="w-[250px] py-3 px-4 text-left text-sm font-medium text-gray-500">Method Name</th>
             <th className="w-[80px] py-3 px-4 text-center text-sm font-medium text-gray-500">Plan</th>
             <th className="w-[80px] py-3 px-4 text-center text-sm font-medium text-gray-500">Parameters</th>
@@ -195,12 +230,24 @@ export function PipelineListView({
             return (
               <tr
                 key={step.id}
+                draggable={!!onReorder}
+                onDragStart={onReorder ? () => handleDragStart(step.id) : undefined}
+                onDragOver={onReorder ? (e) => handleDragOver(e, step.id) : undefined}
+                onDrop={onReorder ? () => handleDrop(step.id) : undefined}
+                onDragEnd={onReorder ? handleDragEnd : undefined}
                 className={cn(
                   "border-b border-gray-200 transition-colors",
                   isCompleted ? "bg-gray-100 opacity-60" : "hover:bg-gray-50",
                   updatedStepId === step.id ? "bg-green-50 hover:bg-green-50" : "",
+                  dragOverId === step.id ? "border-t-2 border-t-black" : "",
+                  onReorder ? "cursor-default" : "",
                 )}
               >
+                {onReorder && (
+                  <td className="py-4 px-2">
+                    <GripVertical className="h-4 w-4 text-gray-300 cursor-grab" />
+                  </td>
+                )}
                 <td className="py-4 px-4">
                   <div className="text-sm font-medium text-gray-900">{step.name}</div>
                 </td>

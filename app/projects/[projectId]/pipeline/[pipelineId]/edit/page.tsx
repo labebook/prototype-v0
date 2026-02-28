@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { LayoutGrid, List, Pencil, Save, X } from "lucide-react"
@@ -99,9 +98,8 @@ export default function PipelineEditPage() {
           </div>
         </div>
 
-        {/* Editor (no sidebar/footer — full-height workspace) */}
+        {/* Editor — full-height workspace, app sidebar hidden */}
         <div className="flex-1 flex overflow-hidden">
-          <Sidebar />
           <div className="flex-1 overflow-hidden">
             <NewPipelineEditor
               hideHeader
