@@ -36,56 +36,48 @@ export function PipelineBlock({
   onConnectionDragStart,
 }: BlockProps) {
   const [isDragging, setIsDragging] = useState(false)
+  const isDraggingRef = useRef(false)
   const blockRef = useRef<HTMLDivElement>(null)
   const dragStartPos = useRef({ x: 0, y: 0 })
   const blockStartPos = useRef({ x: 0, y: 0 })
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    // Only start dragging if clicking on the card, not on buttons or handles
-    if ((e.target as HTMLElement).closest("button") || (e.target as HTMLElement).closest(".connection-handle")) return
-
-    setIsDragging(true)
-    dragStartPos.current = { x: e.clientX, y: e.clientY }
-    blockStartPos.current = { ...position }
-
-    // Prevent text selection during drag
-    e.preventDefault()
-
-    // Add visual feedback
-    document.body.style.cursor = "grabbing"
-    document.body.style.userSelect = "none"
-
-    // Capture mouse events on the entire document
-    document.addEventListener("mousemove", handleMouseMove)
-    document.addEventListener("mouseup", handleMouseUp)
-
-    // Select this block
-    onSelect(id)
-  }
-
   const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging) return
+    if (!isDraggingRef.current) return
 
     const dx = e.clientX - dragStartPos.current.x
     const dy = e.clientY - dragStartPos.current.y
 
-    const newPosition = {
+    onPositionChange(id, {
       x: blockStartPos.current.x + dx,
       y: blockStartPos.current.y + dy,
-    }
-
-    onPositionChange(id, newPosition)
+    })
   }
 
   const handleMouseUp = () => {
+    isDraggingRef.current = false
     setIsDragging(false)
-
-    // Reset cursor and selection
     document.body.style.cursor = ""
     document.body.style.userSelect = ""
-
     document.removeEventListener("mousemove", handleMouseMove)
     document.removeEventListener("mouseup", handleMouseUp)
+  }
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest("button") || (e.target as HTMLElement).closest(".connection-handle")) return
+
+    isDraggingRef.current = true
+    setIsDragging(true)
+    dragStartPos.current = { x: e.clientX, y: e.clientY }
+    blockStartPos.current = { ...position }
+
+    e.preventDefault()
+    document.body.style.cursor = "grabbing"
+    document.body.style.userSelect = "none"
+
+    document.addEventListener("mousemove", handleMouseMove)
+    document.addEventListener("mouseup", handleMouseUp)
+
+    onSelect(id)
   }
 
   const handleDelete = (e: React.MouseEvent) => {

@@ -10,11 +10,22 @@ import { cn } from "@/lib/utils"
 import { PipelineCanvas, type BlockData, type ConnectionData } from "./pipeline-canvas"
 import { PipelineListView } from "./pipeline-list-view"
 
-export function NewPipelineEditor() {
+interface NewPipelineEditorProps {
+  hideHeader?: boolean
+  viewMode?: "visual" | "list"
+  onViewModeChange?: (mode: "visual" | "list") => void
+}
+
+export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onViewModeChange }: NewPipelineEditorProps = {}) {
   const [pipelineName, setPipelineName] = useState("New Pipeline")
   const [isEditingName, setIsEditingName] = useState(false)
   const [showPropertiesPanel, setShowPropertiesPanel] = useState(false)
-  const [viewMode, setViewMode] = useState<"visual" | "list">("visual")
+  const [internalViewMode, setInternalViewMode] = useState<"visual" | "list">("visual")
+  const viewMode = externalViewMode ?? internalViewMode
+  const setViewMode = (mode: "visual" | "list") => {
+    setInternalViewMode(mode)
+    onViewModeChange?.(mode)
+  }
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null)
   const [sidebarTab, setSidebarTab] = useState<"methods" | "custom-modules">("methods")
   const [searchQuery, setSearchQuery] = useState("")
@@ -209,7 +220,7 @@ export function NewPipelineEditor() {
   return (
     <div className="flex-1 flex flex-col">
       {/* Header */}
-      <div className="border-b border-gray-200">
+      {!hideHeader && <div className="border-b border-gray-200">
         <div className="w-full flex justify-between items-center px-6 h-16">
           <div className="flex items-center">
             {isEditingName ? (
@@ -271,7 +282,7 @@ export function NewPipelineEditor() {
             </Button>
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* Main Content */}
       <div className="flex-1 flex">
@@ -368,6 +379,7 @@ export function NewPipelineEditor() {
             ) : (
               <PipelineListView
                 steps={transformedSteps}
+                hideColumns={['status', 'action']}
                 onRemoveBlock={handleRemoveBlock}
                 onReorderBlocks={handleReorderBlocks}
                 onSelectBlock={handleSelectBlock}

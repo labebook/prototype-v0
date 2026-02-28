@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "mcp__serena__find_file",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(ls:*)"
     ]
-  }
+  },
+  "outputStyle": "default"
 }

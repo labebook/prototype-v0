@@ -16,12 +16,9 @@ import {
   Folder,
   Paperclip,
   Play,
-  Save,
   Share2,
   User,
-  X,
 } from "lucide-react"
-import { NewPipelineEditor } from "@/components/new-pipeline-editor"
 import { PipelineListView } from "@/components/pipeline-list-view"
 import { ModuleInputDialog } from "@/components/module-input-dialog"
 import { ModuleExecutionDialog } from "@/components/module-execution-dialog"
@@ -44,9 +41,7 @@ export default function ProjectPipelineDetailPage() {
   const projectId = params.projectId as string
   const pipelineId = params.pipelineId as string
 
-  const [isEditMode, setIsEditMode] = useState(false)
   const [activeTab, setActiveTab] = useState<Tab>("steps")
-
   const { currentTeam, pipelines, pipelineFolders, projects, canEdit } = useTeam()
 
   const [currentExecutingModule, setCurrentExecutingModule] = useState<string | null>(null)
@@ -284,38 +279,6 @@ export default function ProjectPipelineDetailPage() {
     { id: "activity", label: "Activity" },
   ]
 
-  // ── Edit mode ─────────────────────────────────────────────────────────────
-  if (isEditMode) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <div className="flex-1 flex flex-col">
-          <div className="border-b border-gray-200 px-6 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h2 className="text-lg font-semibold">Editing: {pipeline.name}</h2>
-              <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-                Edit Mode
-              </Badge>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={() => setIsEditMode(false)}>
-                <X className="mr-2 h-4 w-4" />
-                Cancel
-              </Button>
-              <Button onClick={() => setIsEditMode(false)} className="bg-green-600 hover:bg-green-700">
-                <Save className="mr-2 h-4 w-4" />
-                Save Changes
-              </Button>
-            </div>
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <NewPipelineEditor />
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   // ── View mode ─────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col">
@@ -380,7 +343,7 @@ export default function ProjectPipelineDetailPage() {
                       <Share2 className="mr-1.5 h-4 w-4" />
                       Share
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-900" onClick={() => setIsEditMode(true)}>
+                    <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-900" onClick={() => router.push(`/projects/${projectId}/pipeline/${pipelineId}/edit`)}>
                       <Edit className="mr-1.5 h-4 w-4" />
                       Edit
                     </Button>
