@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Pencil, Save, Share2, Play, Layers, FlaskRound, LayoutGrid, List, X } from "lucide-react"
+import { Pencil, Save, Share2, Play, LayoutGrid, List, X, Search, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
@@ -13,87 +13,40 @@ import { PipelineListView } from "./pipeline-list-view"
 export function NewPipelineEditor() {
   const [pipelineName, setPipelineName] = useState("New Pipeline")
   const [isEditingName, setIsEditingName] = useState(false)
-  const [isModulesExpanded, setIsModulesExpanded] = useState(true)
   const [showPropertiesPanel, setShowPropertiesPanel] = useState(false)
-  const [isMethodsDropdownOpen, setIsMethodsDropdownOpen] = useState(false)
-  const [isModulesDropdownOpen, setIsModulesDropdownOpen] = useState(false)
   const [viewMode, setViewMode] = useState<"visual" | "list">("visual")
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null)
+  const [sidebarTab, setSidebarTab] = useState<"methods" | "custom-modules">("methods")
+  const [searchQuery, setSearchQuery] = useState("")
 
   // Pipeline state
   const [blocks, setBlocks] = useState<BlockData[]>([])
   const [connections, setConnections] = useState<ConnectionData[]>([])
 
-  // Methods data
-  const [availableMethods, setAvailableMethods] = useState([
-    {
-      id: "rna-isolation",
-      name: "RNA Isolation",
-      description: "Extraction of total RNA from biological samples",
-    },
-    {
-      id: "reverse-transcription",
-      name: "Reverse Transcription (RT)",
-      description: "cDNA synthesis from RNA templates",
-    },
-    {
-      id: "qpcr",
-      name: "qPCR (Quantitative PCR)",
-      description: "Real-time PCR for quantifying nucleic acids",
-    },
-    {
-      id: "endpoint-pcr",
-      name: "End-point PCR",
-      description: "Standard PCR for DNA amplification and downstream analysis",
-    },
-    {
-      id: "agarose-gel",
-      name: "Agarose Gel Electrophoresis",
-      description: "Separation of DNA or RNA fragments using agarose gel",
-    },
-    {
-      id: "sds-page",
-      name: "SDS-PAGE",
-      description: "Sodium Dodecyl Sulfate Polyacrylamide Gel Electrophoresis for protein separation",
-    },
-  ])
+  // Static library data (items stay visible after being added to the pipeline)
+  const allMethods = [
+    { id: "rna-isolation", name: "RNA Isolation", description: "Extraction of total RNA from biological samples" },
+    { id: "reverse-transcription", name: "Reverse Transcription (RT)", description: "cDNA synthesis from RNA templates" },
+    { id: "qpcr", name: "qPCR (Quantitative PCR)", description: "Real-time PCR for quantifying nucleic acids" },
+    { id: "endpoint-pcr", name: "End-point PCR", description: "Standard PCR for DNA amplification" },
+    { id: "agarose-gel", name: "Agarose Gel Electrophoresis", description: "Separation of DNA or RNA fragments by size" },
+    { id: "sds-page", name: "SDS-PAGE", description: "Polyacrylamide gel electrophoresis for protein separation" },
+  ]
 
-  // Selected methods (added to pipeline)
-  const [selectedMethods, setSelectedMethods] = useState<
-    Array<{
-      id: string
-      name: string
-      description: string
-    }>
-  >([])
+  const allCustomModules = [
+    { id: "CM-001", name: "Whole-Cell Protein Lysate Preparation", description: "Lysate preparation from suspension cells prior to Western blot" },
+    { id: "data-analysis", name: "Data Analysis", description: "Statistical analysis of experimental data" },
+    { id: "visualization", name: "Visualization", description: "Data visualization tools" },
+    { id: "reporting", name: "Reporting", description: "Generate automated reports" },
+  ]
 
-  // Custom modules data
-  const [availableModules, setAvailableModules] = useState([
-    {
-      id: "data-analysis",
-      name: "Data Analysis",
-      description: "Statistical analysis of experimental data",
-    },
-    {
-      id: "visualization",
-      name: "Visualization",
-      description: "Data visualization tools",
-    },
-    {
-      id: "reporting",
-      name: "Reporting",
-      description: "Generate automated reports",
-    },
-  ])
-
-  // Selected modules (added to pipeline)
-  const [selectedModules, setSelectedModules] = useState<
-    Array<{
-      id: string
-      name: string
-      description: string
-    }>
-  >([])
+  const sidebarItems = sidebarTab === "methods" ? allMethods : allCustomModules
+  const filteredItems = searchQuery.trim()
+    ? sidebarItems.filter(item =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : sidebarItems
 
   // Helper functions for data transformation
   const getCategoryFromType = (type: string) => {
@@ -182,32 +135,19 @@ export function NewPipelineEditor() {
     }
   }
 
-  // Handle method selection from dropdown
-  const handleMethodSelect = (methodId: string) => {
-    // Find the selected method
-    const selectedMethod = availableMethods.find((method) => method.id === methodId)
-    if (selectedMethod) {
-      // Add to selected methods
-      setSelectedMethods([...selectedMethods, selectedMethod])
-      // Remove from available methods
-      setAvailableMethods(availableMethods.filter((method) => method.id !== methodId))
-      // Close the dropdown and reset to placeholder
-      setIsMethodsDropdownOpen(false)
+  // Add an item directly to the canvas (click + button)
+  const handleAddItem = (item: { id: string; name: string; description: string }, type: "method" | "module") => {
+    const col = blocks.length % 3
+    const row = Math.floor(blocks.length / 3)
+    const block: BlockData = {
+      id: `${item.id}-${Date.now()}`,
+      type,
+      name: item.name,
+      description: item.description,
+      position: { x: 80 + col * 220, y: 80 + row * 140 },
+      ready: false,
     }
-  }
-
-  // Handle module selection from dropdown
-  const handleModuleSelect = (moduleId: string) => {
-    // Find the selected module
-    const selectedModule = availableModules.find((module) => module.id === moduleId)
-    if (selectedModule) {
-      // Add to selected modules
-      setSelectedModules([...selectedModules, selectedModule])
-      // Remove from available modules
-      setAvailableModules(availableModules.filter((module) => module.id !== moduleId))
-      // Close the dropdown and reset to placeholder
-      setIsModulesDropdownOpen(false)
-    }
+    handleAddBlock(block)
   }
 
   // Make items draggable from the sidebar
@@ -231,48 +171,11 @@ export function NewPipelineEditor() {
   }
 
   const handleRemoveBlock = (id: string) => {
-    // Remove the block
     setBlocks(blocks.filter((block) => block.id !== id))
-
-    // Remove any connections involving this block
     setConnections(connections.filter((conn) => conn.sourceId !== id && conn.targetId !== id))
-
-    // If this was the selected block, deselect it
     if (selectedBlockId === id) {
       setSelectedBlockId(null)
       setShowPropertiesPanel(false)
-    }
-
-    // Return the method or module to the available list
-    const removedBlock = blocks.find((block) => block.id === id)
-    if (removedBlock) {
-      if (removedBlock.type === "method") {
-        // Extract the original method ID from the block ID (e.g., "pcr-12345" -> "pcr")
-        const originalId = removedBlock.id.split("-")[0]
-
-        // Add back to available methods
-        setAvailableMethods([
-          ...availableMethods,
-          {
-            id: originalId,
-            name: removedBlock.name,
-            description: removedBlock.description,
-          },
-        ])
-      } else {
-        // Extract the original module ID from the block ID
-        const originalId = removedBlock.id.split("-")[0]
-
-        // Add back to available modules
-        setAvailableModules([
-          ...availableModules,
-          {
-            id: originalId,
-            name: removedBlock.name,
-            description: removedBlock.description,
-          },
-        ])
-      }
     }
   }
 
@@ -374,188 +277,74 @@ export function NewPipelineEditor() {
       <div className="flex-1 flex">
         {/* Left Sidebar */}
         <div className="w-64 border-r border-gray-200 flex flex-col">
-          {/* Methods Dropdown */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center mb-2">
-              <FlaskRound className="h-4 w-4 mr-2" />
-              <span className="font-medium">Methods</span>
+          {/* Sidebar header: search + tabs */}
+          <div className="px-3 pt-4 pb-3 border-b border-gray-100">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 px-1">Add Steps</p>
+
+            {/* Search */}
+            <div className="relative mb-2">
+              <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white"
+              />
             </div>
 
-            {/* Custom Select implementation to always show placeholder */}
-            <div className="relative">
+            {/* Tabs */}
+            <div className="flex bg-gray-100 rounded-md p-0.5">
               <button
-                type="button"
-                onClick={() => setIsMethodsDropdownOpen(!isMethodsDropdownOpen)}
-                className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
-                aria-haspopup="listbox"
-                aria-expanded={isMethodsDropdownOpen}
-                data-method-select
+                className={cn(
+                  "flex-1 text-xs py-1.5 rounded font-medium transition-colors",
+                  sidebarTab === "methods"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                )}
+                onClick={() => { setSidebarTab("methods"); setSearchQuery("") }}
               >
-                <span className="text-gray-500">Select a method...</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4 opacity-50"
-                >
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
+                Methods
               </button>
-
-              {isMethodsDropdownOpen && (
-                <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white p-1 text-gray-950 shadow-md">
-                  <ul className="py-1" role="listbox">
-                    {availableMethods.length > 0 ? (
-                      availableMethods.map((method) => (
-                        <li
-                          key={method.id}
-                          role="option"
-                          className="relative flex w-full cursor-default select-none items-center rounded-sm py-2 pl-8 pr-2 text-sm outline-none hover:bg-gray-100 focus:bg-gray-100"
-                          onClick={() => handleMethodSelect(method.id)}
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, { ...method, type: "method" })}
-                        >
-                          <div>
-                            <div className="font-medium">{method.name}</div>
-                            <div className="text-xs text-gray-500">{method.description}</div>
-                          </div>
-                        </li>
-                      ))
-                    ) : (
-                      <li className="relative flex w-full cursor-default select-none items-center rounded-sm py-2 pl-8 pr-2 text-sm outline-none text-gray-500">
-                        No methods available
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              )}
+              <button
+                className={cn(
+                  "flex-1 text-xs py-1.5 rounded font-medium transition-colors",
+                  sidebarTab === "custom-modules"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                )}
+                onClick={() => { setSidebarTab("custom-modules"); setSearchQuery("") }}
+              >
+                Custom
+              </button>
             </div>
-
-            {/* Display selected methods */}
-            {selectedMethods.length > 0 && (
-              <div className="mt-3 space-y-2">
-                {selectedMethods.map((method) => (
-                  <div
-                    key={method.id}
-                    className="p-2 bg-gray-50 rounded-md cursor-grab"
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, { ...method, type: "method" })}
-                  >
-                    <div className="font-medium text-sm">{method.name}</div>
-                    <div className="text-xs text-gray-500">{method.description}</div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
-          {/* Custom Modules Section */}
-          <div className="border-b border-gray-200">
-            <button
-              className="w-full px-4 py-3 flex items-center justify-between text-left"
-              onClick={() => setIsModulesExpanded(!isModulesExpanded)}
-            >
-              <div className="flex items-center">
-                <Layers className="h-4 w-4 mr-2" />
-                <span className="font-medium">Custom Modules</span>
-              </div>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className={cn("transition-transform", isModulesExpanded ? "rotate-180" : "")}
-              >
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
-
-            {isModulesExpanded && (
-              <div className="px-4 pb-4">
-                {/* Custom Select implementation to always show placeholder */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setIsModulesDropdownOpen(!isModulesDropdownOpen)}
-                    className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
-                    aria-haspopup="listbox"
-                    aria-expanded={isModulesDropdownOpen}
-                    data-module-select
-                  >
-                    <span className="text-gray-500">Select a module...</span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-4 w-4 opacity-50"
-                    >
-                      <path d="m6 9 6 6 6-6" />
-                    </svg>
-                  </button>
-
-                  {isModulesDropdownOpen && (
-                    <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white p-1 text-gray-950 shadow-md">
-                      <ul className="py-1" role="listbox">
-                        {availableModules.length > 0 ? (
-                          availableModules.map((module) => (
-                            <li
-                              key={module.id}
-                              role="option"
-                              className="relative flex w-full cursor-default select-none items-center rounded-sm py-2 pl-8 pr-2 text-sm outline-none hover:bg-gray-100 focus:bg-gray-100"
-                              onClick={() => handleModuleSelect(module.id)}
-                              draggable
-                              onDragStart={(e) => handleDragStart(e, { ...module, type: "module" })}
-                            >
-                              <div>
-                                <div className="font-medium">{module.name}</div>
-                                <div className="text-xs text-gray-500">{module.description}</div>
-                              </div>
-                            </li>
-                          ))
-                        ) : (
-                          <li className="relative flex w-full cursor-default select-none items-center rounded-sm py-2 pl-8 pr-2 text-sm outline-none text-gray-500">
-                            No modules available
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-
-                {/* Display selected modules */}
-                {selectedModules.length > 0 && (
-                  <div className="mt-3 space-y-2">
-                    {selectedModules.map((module) => (
-                      <div
-                        key={module.id}
-                        className="p-2 bg-gray-50 rounded-md cursor-grab"
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, { ...module, type: "module" })}
-                      >
-                        <div className="font-medium text-sm">{module.name}</div>
-                        <div className="text-xs text-gray-500">{module.description}</div>
-                      </div>
-                    ))}
+          {/* Item list */}
+          <div className="flex-1 overflow-y-auto py-2">
+            {filteredItems.length > 0 ? (
+              filteredItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="group mx-2 mb-0.5 px-3 py-2.5 rounded-lg hover:bg-gray-50 cursor-grab flex items-start justify-between gap-2 transition-colors"
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, { ...item, type: sidebarTab === "methods" ? "method" : "module" })}
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 leading-snug">{item.name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5 leading-snug">{item.description}</p>
                   </div>
-                )}
-              </div>
+                  <button
+                    className="opacity-0 group-hover:opacity-100 shrink-0 mt-0.5 w-5 h-5 rounded flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-all"
+                    onClick={() => handleAddItem(item, sidebarTab === "methods" ? "method" : "module")}
+                    title="Add to pipeline"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-gray-400 text-center py-10">No results</p>
             )}
           </div>
         </div>
