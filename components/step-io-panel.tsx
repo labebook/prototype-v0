@@ -83,7 +83,7 @@ export function StepIoPanel({ step, inputData, outputData, onClose, onEditOutput
   const statusLabel = status.charAt(0).toUpperCase() + status.slice(1)
 
   return (
-    <div className="w-[320px] shrink-0 border border-gray-200 rounded-lg bg-white flex flex-col h-fit sticky top-0">
+    <div className="w-[320px] border border-gray-200 rounded-lg bg-white flex flex-col h-fit shadow-lg">
       {/* Header */}
       <div className="flex items-start justify-between p-4 border-b border-gray-100">
         <div className="flex-1 min-w-0 pr-2">

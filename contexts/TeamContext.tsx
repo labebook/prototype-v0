@@ -11,6 +11,9 @@ import {
   ProjectFolder,
   Project,
   ResourceType,
+  ActivityEntry,
+  ActivityAction,
+  TeamDiscussion,
 } from '@/types/team'
 import {
   mockUsers,
@@ -19,6 +22,8 @@ import {
   mockPipelineFolders,
   mockProjectFolders,
   mockProjects,
+  mockActivities,
+  mockTeamDiscussions,
   currentUserId,
   getUserById,
   getTeamById,
@@ -68,6 +73,22 @@ interface TeamContextValue {
   getMyPipelines: () => TeamPipeline[]
   getFavouritePipelines: () => TeamPipeline[]
   getSharedPipelines: () => TeamPipeline[]
+
+  // Project participants
+  addProjectParticipant: (projectId: string, userId: string) => void
+  removeProjectParticipant: (projectId: string, userId: string) => void
+  getProjectParticipants: (projectId: string) => User[]
+
+  // Activity feed
+  activities: ActivityEntry[]
+  addActivity: (entry: Omit<ActivityEntry, 'id' | 'date'>) => void
+  getProjectActivities: (projectId: string) => ActivityEntry[]
+
+  // Team discussions
+  discussions: TeamDiscussion[]
+  getTeamDiscussions: () => TeamDiscussion[]
+  createDiscussion: (discussion: Pick<TeamDiscussion, 'title' | 'body' | 'category'>) => void
+  toggleDiscussionUpvote: (discussionId: string) => void
 }
 
 export const TeamContext = createContext<TeamContextValue | undefined>(undefined)
@@ -88,7 +109,9 @@ export function TeamProvider({ children }: TeamProviderProps) {
   const [pipelines, setPipelines] = useState<TeamPipeline[]>(mockPipelines)
   const [pipelineFolders] = useState<TeamPipelineFolder[]>(mockPipelineFolders)
   const [projectFolders] = useState<ProjectFolder[]>(mockProjectFolders)
-  const [projects] = useState<Project[]>(mockProjects)
+  const [projects, setProjects] = useState<Project[]>(mockProjects)
+  const [activities, setActivities] = useState<ActivityEntry[]>(mockActivities)
+  const [discussions, setDiscussions] = useState<TeamDiscussion[]>(mockTeamDiscussions)
 
   const currentTeam = useMemo(
     () => teams.find(t => t.id === currentTeamId) || null,
@@ -260,13 +283,101 @@ export function TeamProvider({ children }: TeamProviderProps) {
 
       if (resourceType === 'project') {
         const project = projects.find(p => p.id === resourceId)
-        return (project?.ownerId === currentUserId ?? false)
+        return project?.ownerId === currentUserId ||
+               (project?.participants?.includes(currentUserId) ?? false)
       }
 
       return false
     },
     [currentTeam, isPI, pipelineFolders, projectFolders, pipelines, projects]
   )
+
+  // ── Activity feed ────────────────────────────────────────────────────────
+  const addActivity = useCallback((entry: Omit<ActivityEntry, 'id' | 'date'>) => {
+    const newEntry: ActivityEntry = {
+      ...entry,
+      id: `act${Date.now()}`,
+      date: new Date().toISOString().split('T')[0],
+    }
+    setActivities(prev => [newEntry, ...prev])
+  }, [])
+
+  const getProjectActivities = useCallback((projectId: string): ActivityEntry[] => {
+    return activities.filter(a => a.projectId === projectId)
+  }, [activities])
+
+  // ── Project participants ─────────────────────────────────────────────────
+  const addProjectParticipant = useCallback((projectId: string, userId: string) => {
+    setProjects(prev =>
+      prev.map(p =>
+        p.id === projectId && !p.participants.includes(userId)
+          ? { ...p, participants: [...p.participants, userId], lastModifiedBy: currentUserId, lastModifiedDate: new Date().toISOString().split('T')[0] }
+          : p
+      )
+    )
+    const user = getUserById(userId)
+    if (user) {
+      addActivity({ projectId, userId: currentUserId, action: 'added_participant', detail: user.name })
+    }
+  }, [addActivity])
+
+  const removeProjectParticipant = useCallback((projectId: string, userId: string) => {
+    setProjects(prev =>
+      prev.map(p =>
+        p.id === projectId
+          ? { ...p, participants: p.participants.filter(id => id !== userId) }
+          : p
+      )
+    )
+    const user = getUserById(userId)
+    if (user) {
+      addActivity({ projectId, userId: currentUserId, action: 'removed_participant', detail: user.name })
+    }
+  }, [addActivity])
+
+  const getProjectParticipants = useCallback((projectId: string): User[] => {
+    const project = projects.find(p => p.id === projectId)
+    if (!project) return []
+    const allIds = [project.ownerId, ...project.participants]
+    return allIds.map(id => getUserById(id)).filter(Boolean) as User[]
+  }, [projects])
+
+  // ── Team discussions ─────────────────────────────────────────────────────
+  const getTeamDiscussions = useCallback((): TeamDiscussion[] => {
+    if (!currentTeam) return []
+    return discussions.filter(d => d.teamId === currentTeam.id)
+  }, [discussions, currentTeam])
+
+  const createDiscussion = useCallback((discussion: Pick<TeamDiscussion, 'title' | 'body' | 'category'>) => {
+    if (!currentTeam) return
+    const newDiscussion: TeamDiscussion = {
+      ...discussion,
+      id: `td${Date.now()}`,
+      teamId: currentTeam.id,
+      authorId: currentUserId,
+      replies: 0,
+      upvotes: 0,
+      upvotedBy: [],
+      createdAt: new Date().toISOString().split('T')[0],
+    }
+    setDiscussions(prev => [newDiscussion, ...prev])
+  }, [currentTeam])
+
+  const toggleDiscussionUpvote = useCallback((discussionId: string) => {
+    setDiscussions(prev =>
+      prev.map(d => {
+        if (d.id !== discussionId) return d
+        const hasUpvoted = d.upvotedBy.includes(currentUserId)
+        return {
+          ...d,
+          upvotes: hasUpvoted ? d.upvotes - 1 : d.upvotes + 1,
+          upvotedBy: hasUpvoted
+            ? d.upvotedBy.filter(id => id !== currentUserId)
+            : [...d.upvotedBy, currentUserId],
+        }
+      })
+    )
+  }, [])
 
   const pendingInvitations = useMemo(
     () => getUserPendingInvitations(currentUser.email),
@@ -321,6 +432,16 @@ export function TeamProvider({ children }: TeamProviderProps) {
     getMyPipelines,
     getFavouritePipelines,
     getSharedPipelines,
+    addProjectParticipant,
+    removeProjectParticipant,
+    getProjectParticipants,
+    activities,
+    addActivity,
+    getProjectActivities,
+    discussions,
+    getTeamDiscussions,
+    createDiscussion,
+    toggleDiscussionUpvote,
   }
 
   return <TeamContext.Provider value={value}>{children}</TeamContext.Provider>

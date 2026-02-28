@@ -89,8 +89,42 @@ export interface Project {
   teamId: string
   ownerId: string
   createdDate: string
+  participants: string[]   // user IDs with edit access (beyond owner)
   lastModifiedBy?: string
   lastModifiedDate?: string
+}
+
+export type ActivityAction =
+  | 'created_project'
+  | 'created_pipeline'
+  | 'edited_pipeline'
+  | 'ran_pipeline'
+  | 'completed_pipeline'
+  | 'added_participant'
+  | 'removed_participant'
+  | 'uploaded_file'
+
+export interface ActivityEntry {
+  id: string
+  projectId?: string
+  pipelineId?: string
+  userId: string
+  action: ActivityAction
+  detail?: string
+  date: string
+}
+
+export interface TeamDiscussion {
+  id: string
+  teamId: string
+  title: string
+  body: string
+  authorId: string
+  category: string
+  replies: number
+  upvotes: number
+  upvotedBy: string[]
+  createdAt: string
 }
 
 export type ResourceType = 'pipeline' | 'folder' | 'project' | 'projectFolder'

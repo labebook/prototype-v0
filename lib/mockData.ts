@@ -1,6 +1,6 @@
 // Mock data for team collaboration prototype
 
-import { User, Team, TeamInvitation, TeamPipeline, TeamPipelineFolder, ProjectFolder, Project } from '@/types/team'
+import { User, Team, TeamInvitation, TeamPipeline, TeamPipelineFolder, ProjectFolder, Project, ActivityEntry, TeamDiscussion } from '@/types/team'
 
 export const mockUsers: User[] = [
   { id: 'u1', name: 'Jane Doe', email: 'jane@example.com' },
@@ -216,7 +216,8 @@ export const mockProjects: Project[] = [
     teamId: 't1',
     ownerId: 'u1',
     createdDate: '2025-01-20',
-    lastModifiedBy: 'u1',
+    participants: ['u2', 'u3'],
+    lastModifiedBy: 'u2',
     lastModifiedDate: '2025-02-01',
   },
   {
@@ -227,8 +228,160 @@ export const mockProjects: Project[] = [
     teamId: 't1',
     ownerId: 'u2',
     createdDate: '2025-01-25',
+    participants: ['u1'],
     lastModifiedBy: 'u2',
     lastModifiedDate: '2025-01-30',
+  },
+]
+
+export const mockActivities: ActivityEntry[] = [
+  {
+    id: 'act1',
+    projectId: 'pr1',
+    userId: 'u1',
+    action: 'created_project',
+    detail: 'EGFR Signaling Study',
+    date: '2025-01-20',
+  },
+  {
+    id: 'act2',
+    projectId: 'pr1',
+    pipelineId: 'p1',
+    userId: 'u1',
+    action: 'created_pipeline',
+    detail: 'Western Blot Analysis',
+    date: '2025-01-22',
+  },
+  {
+    id: 'act3',
+    projectId: 'pr1',
+    userId: 'u1',
+    action: 'added_participant',
+    detail: 'John Smith',
+    date: '2025-01-23',
+  },
+  {
+    id: 'act4',
+    projectId: 'pr1',
+    userId: 'u1',
+    action: 'added_participant',
+    detail: 'Dr. Williams',
+    date: '2025-01-23',
+  },
+  {
+    id: 'act5',
+    projectId: 'pr1',
+    pipelineId: 'p1',
+    userId: 'u2',
+    action: 'edited_pipeline',
+    detail: 'Western Blot Analysis',
+    date: '2025-02-01',
+  },
+  {
+    id: 'act6',
+    projectId: 'pr1',
+    pipelineId: 'p1',
+    userId: 'u3',
+    action: 'ran_pipeline',
+    detail: 'Western Blot Analysis',
+    date: '2025-02-03',
+  },
+  {
+    id: 'act7',
+    projectId: 'pr2',
+    userId: 'u2',
+    action: 'created_project',
+    detail: 'Antibody Validation',
+    date: '2025-01-25',
+  },
+  {
+    id: 'act8',
+    projectId: 'pr2',
+    pipelineId: 'p2',
+    userId: 'u2',
+    action: 'created_pipeline',
+    detail: 'Antibody Purification',
+    date: '2025-01-26',
+  },
+  {
+    id: 'act9',
+    projectId: 'pr2',
+    userId: 'u2',
+    action: 'added_participant',
+    detail: 'Jane Doe',
+    date: '2025-01-27',
+  },
+  {
+    id: 'act10',
+    projectId: 'pr2',
+    pipelineId: 'p2',
+    userId: 'u1',
+    action: 'edited_pipeline',
+    detail: 'Antibody Purification',
+    date: '2025-01-30',
+  },
+]
+
+export const mockTeamDiscussions: TeamDiscussion[] = [
+  {
+    id: 'td1',
+    teamId: 't1',
+    title: 'Best approach for western blot normalization?',
+    body: 'We\'ve been running the EGFR pipeline and getting inconsistent band intensities between runs. Has anyone found a reliable loading control for these conditions?',
+    authorId: 'u2',
+    category: 'Methods',
+    replies: 3,
+    upvotes: 4,
+    upvotedBy: ['u1', 'u3'],
+    createdAt: '2025-02-01',
+  },
+  {
+    id: 'td2',
+    teamId: 't1',
+    title: 'New antibody validation protocol ready for review',
+    body: 'I\'ve finished drafting the validation pipeline for our custom antibodies. Please review the steps and let me know if anything needs adjustment before we run it.',
+    authorId: 'u1',
+    category: 'Announcements',
+    replies: 2,
+    upvotes: 3,
+    upvotedBy: ['u2', 'u3'],
+    createdAt: '2025-02-03',
+  },
+  {
+    id: 'td3',
+    teamId: 't1',
+    title: 'Storage conditions for antibody samples',
+    body: 'Quick question — should we store the purified antibodies at -20°C or -80°C for long-term stability? Current protocol says -20°C but I\'ve seen conflicting literature.',
+    authorId: 'u3',
+    category: 'Help',
+    replies: 5,
+    upvotes: 2,
+    upvotedBy: ['u1'],
+    createdAt: '2025-02-05',
+  },
+  {
+    id: 'td4',
+    teamId: 't2',
+    title: 'Cell culture contamination issue',
+    body: 'We\'ve had two contamination events in the last month. Can we discuss our decontamination protocol and see if there are any gaps?',
+    authorId: 'u3',
+    category: 'Help',
+    replies: 7,
+    upvotes: 5,
+    upvotedBy: ['u1', 'u4', 'u5'],
+    createdAt: '2025-02-02',
+  },
+  {
+    id: 'td5',
+    teamId: 't2',
+    title: 'New MTT assay reagents arrived',
+    body: 'The new batch of MTT reagent is in the freezer. Please update the Cell Viability Assay pipeline to reflect the new lot numbers.',
+    authorId: 'u4',
+    category: 'Announcements',
+    replies: 1,
+    upvotes: 2,
+    upvotedBy: ['u3'],
+    createdAt: '2025-02-06',
   },
 ]
 
@@ -247,6 +400,16 @@ export function getUserTeams(userId: string): Team[] {
   return mockTeams.filter(team =>
     team.members.some(member => member.userId === userId)
   )
+}
+
+// Helper function to get activities for a project
+export function getProjectActivities(projectId: string): ActivityEntry[] {
+  return mockActivities.filter(a => a.projectId === projectId)
+}
+
+// Helper function to get discussions for a team
+export function getTeamDiscussions(teamId: string): TeamDiscussion[] {
+  return mockTeamDiscussions.filter(d => d.teamId === teamId)
 }
 
 // Helper function to get user's pending invitations

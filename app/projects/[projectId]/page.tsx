@@ -7,6 +7,8 @@ import { Footer } from "@/components/footer"
 import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { ShareProjectDialog } from "@/components/share-project-dialog"
 import {
   ArrowLeft,
   ChevronRight,
@@ -17,6 +19,7 @@ import {
   Plus,
   Share2,
   Trash2,
+  Users,
 } from "lucide-react"
 import { useTeam } from "@/hooks/useTeam"
 import { getUserById } from "@/lib/mockData"
@@ -35,13 +38,14 @@ export default function ProjectDetailPage() {
   const router = useRouter()
   const projectId = params.projectId as string
 
-  const { currentTeam, projects, projectFolders, pipelines, canEdit } = useTeam()
+  const { currentTeam, projects, projectFolders, pipelines, canEdit, getProjectParticipants } = useTeam()
 
   const project = projects.find(p => p.id === projectId)
 
   const [filterTab, setFilterTab] = useState<FilterTab>("all")
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
   const [folderPath, setFolderPath] = useState<Array<{ id: string; name: string }>>([])
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
 
   if (!currentTeam) {
     return (
@@ -86,6 +90,10 @@ export default function ProjectDetailPage() {
   const owner = getUserById(project.ownerId)
   const lastModifiedBy = project.lastModifiedBy ? getUserById(project.lastModifiedBy) : null
   const canEditProject = canEdit("project", project.id)
+  const participants = getProjectParticipants(project.id)
+
+  const getInitials = (name: string) =>
+    name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)
 
   const allFolders = projectFolders.filter(f => f.teamId === currentTeam.id)
   const levelFolders = currentFolderId
@@ -173,22 +181,53 @@ export default function ProjectDetailPage() {
                   Created {formatDate(project.createdDate)}
                   {lastModifiedBy && ` · Modified by ${lastModifiedBy.name}`}
                 </p>
+
+                {/* Participants avatars */}
+                {participants.length > 0 && (
+                  <div className="flex items-center gap-2 mt-3">
+                    <div className="flex -space-x-2">
+                      {participants.slice(0, 5).map(user => (
+                        <Avatar key={user.id} className="h-6 w-6 ring-2 ring-white">
+                          <AvatarFallback className="text-[9px] bg-gray-200 text-gray-700">
+                            {getInitials(user.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                      ))}
+                      {participants.length > 5 && (
+                        <div className="h-6 w-6 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center">
+                          <span className="text-[9px] text-gray-500 font-medium">+{participants.length - 5}</span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-xs text-gray-400">
+                      {participants.length} {participants.length === 1 ? "participant" : "participants"}
+                    </span>
+                  </div>
+                )}
               </div>
-              {canEditProject && (
-                <div className="flex items-center gap-2 mt-1">
-                  <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-900">
-                    <Share2 className="mr-1.5 h-4 w-4" />
-                    Share
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-900">
-                    <Edit className="mr-1.5 h-4 w-4" />
-                    Edit
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-600">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
+
+              <div className="flex items-center gap-2 mt-1">
+                {canEditProject && (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-gray-500 hover:text-gray-900"
+                      onClick={() => setShareDialogOpen(true)}
+                    >
+                      <Users className="mr-1.5 h-4 w-4" />
+                      Share
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-900">
+                      <Edit className="mr-1.5 h-4 w-4" />
+                      Edit
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-600">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* ── Filter tab bar + Add button ───────────────────────── */}
@@ -413,6 +452,12 @@ export default function ProjectDetailPage() {
         </main>
       </div>
       <Footer />
+
+      <ShareProjectDialog
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        projectId={project.id}
+      />
     </div>
   )
 }

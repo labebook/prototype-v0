@@ -18,6 +18,8 @@ import {
   Play,
   Share2,
   User,
+  UserMinus,
+  UserPlus,
 } from "lucide-react"
 import { PipelineListView } from "@/components/pipeline-list-view"
 import { StepIoPanel } from "@/components/step-io-panel"
@@ -46,7 +48,7 @@ export default function ProjectPipelineDetailPage() {
   const pipelineId = params.pipelineId as string
 
   const [activeTab, setActiveTab] = useState<Tab>("steps")
-  const { currentTeam, pipelines, pipelineFolders, projects, canEdit } = useTeam()
+  const { currentTeam, pipelines, pipelineFolders, projects, canEdit, getProjectActivities } = useTeam()
 
   const [currentExecutingModule, setCurrentExecutingModule] = useState<string | null>(null)
   const [workflowStep, setWorkflowStep] = useState<"input" | "execution" | "output" | null>(null)
@@ -407,30 +409,30 @@ export default function ProjectPipelineDetailPage() {
                     {completedModules.size} of {pipelineSteps.length} completed
                   </span>
                 </div>
-                <div className="flex gap-4 items-start">
-                  <div className="flex-1 min-w-0">
-                    <PipelineListView
-                      steps={pipelineSteps}
-                      hideColumns={['status']}
-                      onParametersClick={step => openModalForStep("parameters", step.name)}
-                      onBuffersClick={step => openModalForStep("buffers", step.name)}
-                      onMaterialsClick={step => openModalForStep("materials", step.name)}
-                      onPlanClick={step => openPlanForStep(step.name)}
-                      onRunStep={handleRunStep}
-                      completedModules={completedModules}
-                      onStepClick={step => setSelectedStepId(step.id === selectedStepId ? null : step.id)}
-                      selectedStepId={selectedStepId}
-                      moduleDataMap={moduleDataMap}
-                    />
-                  </div>
+                <div className="relative">
+                  <PipelineListView
+                    steps={pipelineSteps}
+                    hideColumns={['status']}
+                    onParametersClick={step => openModalForStep("parameters", step.name)}
+                    onBuffersClick={step => openModalForStep("buffers", step.name)}
+                    onMaterialsClick={step => openModalForStep("materials", step.name)}
+                    onPlanClick={step => openPlanForStep(step.name)}
+                    onRunStep={handleRunStep}
+                    completedModules={completedModules}
+                    onStepClick={step => setSelectedStepId(step.id === selectedStepId ? null : step.id)}
+                    selectedStepId={selectedStepId}
+                    moduleDataMap={moduleDataMap}
+                  />
                   {selectedStepId && (
-                    <StepIoPanel
-                      step={pipelineSteps.find(s => s.id === selectedStepId) ?? null}
-                      inputData={moduleDataMap[selectedStepId]?.inputData}
-                      outputData={moduleDataMap[selectedStepId]?.outputData}
-                      onClose={() => setSelectedStepId(null)}
-                      onEditOutput={handleEditOutput}
-                    />
+                    <div className="absolute top-0 right-0 z-10">
+                      <StepIoPanel
+                        step={pipelineSteps.find(s => s.id === selectedStepId) ?? null}
+                        inputData={moduleDataMap[selectedStepId]?.inputData}
+                        outputData={moduleDataMap[selectedStepId]?.outputData}
+                        onClose={() => setSelectedStepId(null)}
+                        onEditOutput={handleEditOutput}
+                      />
+                    </div>
                   )}
                 </div>
               </div>
@@ -456,30 +458,63 @@ export default function ProjectPipelineDetailPage() {
             {/* ── Activity tab ─────────────────────────────────────────── */}
             {activeTab === "activity" && (
               <div>
-                <div className="flex items-start gap-4 py-5 border-b border-gray-200">
-                  <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                    <User className="h-4 w-4 text-gray-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">
-                      <span className="font-medium">{owner?.name}</span> created this pipeline
-                    </p>
-                    <p className="text-sm text-gray-400 mt-0.5">{formatDate(pipeline.lastModified)}</p>
-                  </div>
-                </div>
-                {lastModifiedBy && (
-                  <div className="flex items-start gap-4 py-5 border-b border-gray-200">
-                    <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                      <Edit className="h-4 w-4 text-gray-500" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-900">
-                        <span className="font-medium">{lastModifiedBy.name}</span> updated this pipeline
-                      </p>
-                      <p className="text-sm text-gray-400 mt-0.5">{formatDate(pipeline.lastModified)}</p>
-                    </div>
-                  </div>
-                )}
+                {(() => {
+                  const projectActivities = getProjectActivities(projectId).filter(
+                    a => !a.pipelineId || a.pipelineId === pipelineId
+                  )
+
+                  const actionLabel = (action: string, detail?: string): { icon: React.ReactNode; text: string } => {
+                    switch (action) {
+                      case 'created_project':
+                        return { icon: <User className="h-4 w-4 text-gray-500" />, text: `created the project "${detail}"` }
+                      case 'created_pipeline':
+                        return { icon: <User className="h-4 w-4 text-blue-500" />, text: `created the pipeline "${detail}"` }
+                      case 'edited_pipeline':
+                        return { icon: <Edit className="h-4 w-4 text-gray-500" />, text: `edited the pipeline "${detail}"` }
+                      case 'ran_pipeline':
+                        return { icon: <Play className="h-4 w-4 text-green-500" />, text: `ran the pipeline "${detail}"` }
+                      case 'completed_pipeline':
+                        return { icon: <Play className="h-4 w-4 text-green-600" />, text: `completed the pipeline "${detail}"` }
+                      case 'added_participant':
+                        return { icon: <UserPlus className="h-4 w-4 text-blue-500" />, text: `added ${detail} to the project` }
+                      case 'removed_participant':
+                        return { icon: <UserMinus className="h-4 w-4 text-gray-400" />, text: `removed ${detail} from the project` }
+                      case 'uploaded_file':
+                        return { icon: <FileText className="h-4 w-4 text-purple-500" />, text: `uploaded "${detail}"` }
+                      default:
+                        return { icon: <User className="h-4 w-4 text-gray-500" />, text: detail ?? action }
+                    }
+                  }
+
+                  if (projectActivities.length === 0) {
+                    return (
+                      <div className="py-24 text-center">
+                        <User className="h-10 w-10 text-gray-300 mx-auto mb-4" />
+                        <p className="text-gray-500">No activity yet</p>
+                      </div>
+                    )
+                  }
+
+                  return projectActivities.map(entry => {
+                    const actorUser = getUserById(entry.userId)
+                    const { icon, text } = actionLabel(entry.action, entry.detail)
+                    return (
+                      <div key={entry.id} className="flex items-start gap-4 py-4 border-b border-gray-100">
+                        <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+                          {icon}
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-900">
+                            <span className="font-medium">{actorUser?.name ?? "Unknown"}</span>
+                            {" "}
+                            {text}
+                          </p>
+                          <p className="text-sm text-gray-400 mt-0.5">{formatDate(entry.date)}</p>
+                        </div>
+                      </div>
+                    )
+                  })
+                })()}
               </div>
             )}
 
