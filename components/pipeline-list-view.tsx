@@ -30,6 +30,7 @@ interface PipelineListViewProps {
   onRunStep?: (stepId: string) => void
   completedModules?: Set<string>
   updatedStepId?: string | null
+  hideColumns?: ('status' | 'action')[]
 }
 
 export function PipelineListView({
@@ -43,7 +44,10 @@ export function PipelineListView({
   onRunStep,
   completedModules,
   updatedStepId,
+  hideColumns = [],
 }: PipelineListViewProps) {
+  const showStatus = !hideColumns.includes('status')
+  const showAction = !hideColumns.includes('action')
   // Add null/undefined check
   if (!steps || !Array.isArray(steps)) {
     return (
@@ -180,8 +184,8 @@ export function PipelineListView({
             <th className="w-[80px] py-3 px-4 text-center text-sm font-medium text-gray-500">Buffer Recipes</th>
             <th className="w-[120px] py-3 px-4 text-left text-sm font-medium text-gray-500">Date Selected</th>
             <th className="w-[120px] py-3 px-4 text-left text-sm font-medium text-gray-500">Author</th>
-            <th className="w-[130px] py-3 px-4 text-left text-sm font-medium text-gray-500">Status</th>
-            <th className="w-[100px] py-3 px-4 text-center text-sm font-medium text-gray-500">Action</th>
+            {showStatus && <th className="w-[130px] py-3 px-4 text-left text-sm font-medium text-gray-500">Status</th>}
+            {showAction && <th className="w-[100px] py-3 px-4 text-center text-sm font-medium text-gray-500">Action</th>}
           </tr>
         </thead>
         <tbody>
@@ -279,10 +283,12 @@ export function PipelineListView({
                 <td className="py-4 px-4">
                   <div className="text-sm text-gray-600">{step.author || "—"}</div>
                 </td>
-                <td className="py-4 px-4">
-                  {getExecutionStatusBadge(step.executionStatus)}
-                </td>
-                <td className="py-4 px-4 text-center">
+                {showStatus && (
+                  <td className="py-4 px-4">
+                    {getExecutionStatusBadge(step.executionStatus)}
+                  </td>
+                )}
+                {showAction && <td className="py-4 px-4 text-center">
                   {isCompleted ? (
                     <span className="text-xs text-gray-500 font-medium">Completed</span>
                   ) : (
@@ -303,7 +309,7 @@ export function PipelineListView({
                       )}
                     </Button>
                   )}
-                </td>
+                </td>}
               </tr>
             )
           })}

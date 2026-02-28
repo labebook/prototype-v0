@@ -426,6 +426,7 @@ export default function ProjectPipelineDetailPage() {
                 </div>
                 <PipelineListView
                   steps={pipelineSteps}
+                  hideColumns={['status']}
                   onParametersClick={step => console.log("Parameters:", step)}
                   onProtocolClick={step => console.log("Protocol:", step)}
                   onBuffersClick={step => console.log("Buffers:", step)}

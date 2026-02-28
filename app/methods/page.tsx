@@ -119,6 +119,7 @@ export default function MethodsPage() {
             ) : (
               <PipelineListView
                 steps={methods}
+                hideColumns={['status', 'action']}
                 onParametersClick={step => console.log("Parameters:", step)}
                 onProtocolClick={step => console.log("Protocol:", step)}
                 onBuffersClick={step => console.log("Buffers:", step)}
