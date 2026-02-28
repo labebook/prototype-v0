@@ -3,13 +3,14 @@
 import type React from "react"
 
 import { useState, useId } from "react"
-import { Download, Pencil, Info, Settings, X, BookOpen, ChevronDown, ChevronUp } from "lucide-react"
+import { Download, Pencil, Info, Settings, X, BookOpen, ChevronDown, ChevronUp, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { useTeam } from "@/hooks/useTeam"
 
 interface ChemicalForm {
   name: string
@@ -442,12 +443,17 @@ const EditableParameter = ({
 }
 
 export default function WesternBlotExampleProtocolPage() {
+  const { teams } = useTeam()
+
   const [activeTab, setActiveTab] = useState("general-protocol")
   const [showTheoryHints, setShowTheoryHints] = useState(true)
   const [showReferences, setShowReferences] = useState(false)
   const [expandedReferences, setExpandedReferences] = useState<number[]>([])
   const [showParameterSummary, setShowParameterSummary] = useState(false)
   const [editingParameter, setEditingParameter] = useState<ParameterRange | null>(null)
+  const [showSaveModal, setShowSaveModal] = useState(false)
+  const [selectedWorkspace, setSelectedWorkspace] = useState<string>("personal")
+  const [savedWorkspace, setSavedWorkspace] = useState<string | null>(null)
   const uniqueId = useId()
 
   const [parameters, setParameters] = useState<ParameterRange[]>([
@@ -1007,7 +1013,10 @@ export default function WesternBlotExampleProtocolPage() {
             <Settings className="h-4 w-4" />
             Parameters ({parameters.length})
           </Button>
-          <Button className="h-10 leading-10 px-4 bg-black hover:bg-gray-800 text-white text-base font-normal rounded-lg">
+          <Button
+            className="h-10 leading-10 px-4 bg-black hover:bg-gray-800 text-white text-base font-normal rounded-lg"
+            onClick={() => setShowSaveModal(true)}
+          >
             Save Protocol
           </Button>
           <Button
@@ -1826,6 +1835,86 @@ export default function WesternBlotExampleProtocolPage() {
           onClose={() => setEditingParameter(null)}
           onSave={(value) => handleParameterSave(editingParameter.id, value)}
         />
+      )}
+
+      {/* Save Protocol Modal */}
+      {showSaveModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-semibold">Save Protocol</h2>
+              <button
+                onClick={() => setShowSaveModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-500 mb-4">Choose a workspace to save this protocol to:</p>
+
+            <div className="flex flex-col gap-2">
+              {/* Personal workspace */}
+              <button
+                onClick={() => setSelectedWorkspace("personal")}
+                className={cn(
+                  "flex items-center justify-between px-4 py-3 rounded-lg border text-left transition-colors",
+                  selectedWorkspace === "personal"
+                    ? "border-black bg-gray-50"
+                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                )}
+              >
+                <div>
+                  <div className="text-sm font-medium">Personal</div>
+                  <div className="text-xs text-gray-500 mt-0.5">Only visible to you</div>
+                </div>
+                {selectedWorkspace === "personal" && <Check className="h-4 w-4 text-black shrink-0" />}
+              </button>
+
+              {/* Team workspaces */}
+              {teams.map((team) => (
+                <button
+                  key={team.id}
+                  onClick={() => setSelectedWorkspace(team.id)}
+                  className={cn(
+                    "flex items-center justify-between px-4 py-3 rounded-lg border text-left transition-colors",
+                    selectedWorkspace === team.id
+                      ? "border-black bg-gray-50"
+                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                  )}
+                >
+                  <div>
+                    <div className="text-sm font-medium">{team.name}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      {team.members.length} member{team.members.length !== 1 ? "s" : ""}
+                      {team.description ? ` · ${team.description}` : ""}
+                    </div>
+                  </div>
+                  {selectedWorkspace === team.id && <Check className="h-4 w-4 text-black shrink-0" />}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setShowSaveModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1 bg-black hover:bg-gray-800 text-white"
+                onClick={() => {
+                  setSavedWorkspace(selectedWorkspace)
+                  setShowSaveModal(false)
+                }}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
