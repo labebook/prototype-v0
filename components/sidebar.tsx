@@ -65,7 +65,7 @@ export function Sidebar() {
                 <Link
                     href="/pipelines"
                     className={`flex items-center px-4 py-2.5 text-sm ${
-                        isActive("/pipelines") || pathname.startsWith("/pipeline/")
+                        isActive("/pipelines") || pathname.startsWith("/pipeline/") || pathname.startsWith("/pipelines/")
                             ? "bg-blue-50 text-blue-700 font-medium"
                             : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                     }`}

@@ -45,6 +45,7 @@ export interface TeamPipeline {
   shareCount: number
   attachments: number
   folderId: string | null
+  projectId?: string
   // Team-specific fields
   teamId: string
   ownerId: string

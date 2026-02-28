@@ -281,7 +281,7 @@ export default function ProjectDetailPage() {
                 {currentFolderId === null && projectPipelines.map(pipeline => (
                   <Link
                     key={pipeline.id}
-                    href={`/pipeline/${pipeline.id}`}
+                    href={`/projects/${projectId}/pipeline/${pipeline.id}`}
                     className="group flex items-center gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors"
                   >
                     <LayoutGrid className="h-5 w-5 text-gray-400 shrink-0" />
@@ -345,7 +345,7 @@ export default function ProjectDetailPage() {
                   projectPipelines.map(pipeline => (
                     <Link
                       key={pipeline.id}
-                      href={`/pipeline/${pipeline.id}`}
+                      href={`/projects/${projectId}/pipeline/${pipeline.id}`}
                       className="group flex items-center gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors"
                     >
                       <LayoutGrid className="h-5 w-5 text-gray-400 shrink-0" />
