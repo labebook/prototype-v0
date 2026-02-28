@@ -9,6 +9,9 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { PipelineCanvas, type BlockData, type ConnectionData } from "./pipeline-canvas"
 import { PipelineListView } from "./pipeline-list-view"
+import { ParametersModal, BufferRecipesModal, MaterialsModal } from "./pipeline-modals"
+import { WesternBlotPlanOverlay } from "./western-blot-plan-overlay"
+import { CustomModulePlanOverlay } from "./custom-module-plan-overlay"
 
 interface NewPipelineEditorProps {
   hideHeader?: boolean
@@ -29,6 +32,13 @@ export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onVi
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null)
   const [sidebarTab, setSidebarTab] = useState<"methods" | "custom-modules">("methods")
   const [searchQuery, setSearchQuery] = useState("")
+  const [modalState, setModalState] = useState<{ type: "parameters" | "buffers" | "materials" | "plan-western-blot" | "plan-custom-module" | null; stepName?: string }>({ type: null })
+  const closeModal = () => setModalState({ type: null })
+
+  const openModalForStep = (type: "parameters" | "buffers" | "materials", stepName: string) =>
+    setModalState({ type, stepName })
+  const openPlanForStep = (stepName: string) =>
+    setModalState({ type: stepName === "Western Blot" ? "plan-western-blot" : "plan-custom-module", stepName })
 
   // Pipeline state
   const [blocks, setBlocks] = useState<BlockData[]>([])
@@ -388,12 +398,16 @@ export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onVi
                 steps={transformedSteps}
                 hideColumns={['status', 'action']}
                 onReorder={handleStepsReorder}
+                onPlanClick={step => openPlanForStep(step.name)}
+                onParametersClick={step => openModalForStep("parameters", step.name)}
+                onMaterialsClick={step => openModalForStep("materials", step.name)}
+                onBuffersClick={step => openModalForStep("buffers", step.name)}
               />
             )}
           </div>
 
           {/* Properties Panel */}
-          {showPropertiesPanel && selectedBlock && (
+          {showPropertiesPanel && selectedBlock && viewMode === "visual" && (
             <div className="w-72 border-l border-gray-200 bg-white flex flex-col overflow-y-auto">
               {/* Panel header */}
               <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
@@ -441,19 +455,31 @@ export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onVi
                 <div>
                   <p className="text-xs font-medium text-gray-500 mb-2">Actions</p>
                   <div className="grid grid-cols-2 gap-2">
-                    <button className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors">
+                    <button
+                      onClick={() => openPlanForStep(selectedBlock.name)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+                    >
                       <Filter className="h-3.5 w-3.5 shrink-0" />
                       Plan
                     </button>
-                    <button className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors">
+                    <button
+                      onClick={() => openModalForStep("parameters", selectedBlock.name)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+                    >
                       <Grid3X3 className="h-3.5 w-3.5 shrink-0" />
                       Parameters
                     </button>
-                    <button className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors">
+                    <button
+                      onClick={() => openModalForStep("materials", selectedBlock.name)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+                    >
                       <Package className="h-3.5 w-3.5 shrink-0" />
                       Materials
                     </button>
-                    <button className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors">
+                    <button
+                      onClick={() => openModalForStep("buffers", selectedBlock.name)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+                    >
                       <FlaskConical className="h-3.5 w-3.5 shrink-0" />
                       Buffers
                     </button>
@@ -500,6 +526,65 @@ export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onVi
           )}
         </div>
       </div>
+
+      {/* Modals */}
+      {modalState.type === "parameters" && modalState.stepName && (
+        <ParametersModal
+          isOpen
+          onClose={closeModal}
+          stepName={modalState.stepName}
+          isEditable
+          onApply={closeModal}
+        />
+      )}
+      {modalState.type === "buffers" && modalState.stepName && (
+        <BufferRecipesModal
+          isOpen
+          onClose={closeModal}
+          stepName={modalState.stepName}
+          buffers={[
+            {
+              name: "RIPA Buffer",
+              components: [
+                { component: "Tris-HCl (pH 7.4)", concentration: "50 mM", volume: "5 ml" },
+                { component: "NaCl", concentration: "150 mM", volume: "8.77 g/L" },
+                { component: "NP-40", concentration: "1%", volume: "10 ml" },
+                { component: "Sodium deoxycholate", concentration: "0.5%", volume: "5 g/L" },
+              ],
+            },
+            {
+              name: "PBS",
+              components: [
+                { component: "NaCl", concentration: "137 mM", volume: "8 g/L" },
+                { component: "KCl", concentration: "2.7 mM", volume: "0.2 g/L" },
+                { component: "Na₂HPO₄", concentration: "10 mM", volume: "1.44 g/L" },
+              ],
+            },
+          ]}
+        />
+      )}
+      {modalState.type === "materials" && modalState.stepName && (
+        <MaterialsModal
+          isOpen
+          onClose={closeModal}
+          stepName={modalState.stepName}
+          materials={{
+            reagents: ["RIPA buffer or NP-40 buffer", "Protease/phosphatase inhibitor cocktail", "PBS"],
+            consumables: ["15 ml centrifuge tubes", "1.5 ml microcentrifuge tubes", "Pipette tips"],
+            equipment: ["Refrigerated centrifuge", "Ice bucket", "Pipettes", "Vortex mixer"],
+          }}
+        />
+      )}
+      <WesternBlotPlanOverlay
+        isOpen={modalState.type === "plan-western-blot"}
+        onClose={closeModal}
+        onApply={closeModal}
+      />
+      <CustomModulePlanOverlay
+        isOpen={modalState.type === "plan-custom-module"}
+        onClose={closeModal}
+        onApply={closeModal}
+      />
     </div>
   )
 }

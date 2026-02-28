@@ -20,6 +20,9 @@ import {
   User,
 } from "lucide-react"
 import { PipelineListView } from "@/components/pipeline-list-view"
+import { ParametersModal, BufferRecipesModal, MaterialsModal } from "@/components/pipeline-modals"
+import { WesternBlotPlanOverlay } from "@/components/western-blot-plan-overlay"
+import { CustomModulePlanOverlay } from "@/components/custom-module-plan-overlay"
 import { ModuleInputDialog } from "@/components/module-input-dialog"
 import { ModuleExecutionDialog } from "@/components/module-execution-dialog"
 import { ModuleOutputDialog } from "@/components/module-output-dialog"
@@ -49,6 +52,10 @@ export default function ProjectPipelineDetailPage() {
   const [moduleDataMap, setModuleDataMap] = useState<Record<string, ModuleData>>({})
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set())
   const [isMounted, setIsMounted] = useState(false)
+  const [stepModal, setStepModal] = useState<{ type: "parameters" | "buffers" | "materials" | "plan-western-blot" | "plan-custom-module" | null; stepName?: string }>({ type: null })
+  const closeStepModal = () => setStepModal({ type: null })
+  const openModalForStep = (type: "parameters" | "buffers" | "materials", stepName: string) => setStepModal({ type, stepName })
+  const openPlanForStep = (stepName: string) => setStepModal({ type: stepName === "Western Blot" ? "plan-western-blot" : "plan-custom-module", stepName })
 
   useEffect(() => { setIsMounted(true) }, [])
 
@@ -395,12 +402,10 @@ export default function ProjectPipelineDetailPage() {
                 <PipelineListView
                   steps={pipelineSteps}
                   hideColumns={['status']}
-                  onParametersClick={step => console.log("Parameters:", step)}
-                  onProtocolClick={step => console.log("Protocol:", step)}
-                  onBuffersClick={step => console.log("Buffers:", step)}
-                  onCalculationsClick={step => console.log("Calculations:", step)}
-                  onMaterialsClick={step => console.log("Materials:", step)}
-                  onPlanClick={step => console.log("Plan:", step)}
+                  onParametersClick={step => openModalForStep("parameters", step.name)}
+                  onBuffersClick={step => openModalForStep("buffers", step.name)}
+                  onMaterialsClick={step => openModalForStep("materials", step.name)}
+                  onPlanClick={step => openPlanForStep(step.name)}
                   onRunStep={handleRunStep}
                   completedModules={completedModules}
                 />
@@ -485,6 +490,38 @@ export default function ProjectPipelineDetailPage() {
           />
         </>
       )}
+
+      {stepModal.type === "parameters" && stepModal.stepName && (
+        <ParametersModal isOpen onClose={closeStepModal} stepName={stepModal.stepName} isEditable onApply={closeStepModal} />
+      )}
+      {stepModal.type === "buffers" && stepModal.stepName && (
+        <BufferRecipesModal
+          isOpen onClose={closeStepModal} stepName={stepModal.stepName}
+          buffers={[
+            { name: "RIPA Buffer", components: [
+              { component: "Tris-HCl (pH 7.4)", concentration: "50 mM", volume: "5 ml" },
+              { component: "NaCl", concentration: "150 mM", volume: "8.77 g/L" },
+              { component: "NP-40", concentration: "1%", volume: "10 ml" },
+            ]},
+            { name: "PBS", components: [
+              { component: "NaCl", concentration: "137 mM", volume: "8 g/L" },
+              { component: "KCl", concentration: "2.7 mM", volume: "0.2 g/L" },
+            ]},
+          ]}
+        />
+      )}
+      {stepModal.type === "materials" && stepModal.stepName && (
+        <MaterialsModal
+          isOpen onClose={closeStepModal} stepName={stepModal.stepName}
+          materials={{
+            reagents: ["RIPA buffer or NP-40 buffer", "Protease/phosphatase inhibitor cocktail", "PBS"],
+            consumables: ["15 ml centrifuge tubes", "1.5 ml microcentrifuge tubes", "Pipette tips"],
+            equipment: ["Refrigerated centrifuge", "Ice bucket", "Pipettes", "Vortex mixer"],
+          }}
+        />
+      )}
+      <WesternBlotPlanOverlay isOpen={stepModal.type === "plan-western-blot"} onClose={closeStepModal} onApply={closeStepModal} />
+      <CustomModulePlanOverlay isOpen={stepModal.type === "plan-custom-module"} onClose={closeStepModal} onApply={closeStepModal} />
     </div>
   )
 }
