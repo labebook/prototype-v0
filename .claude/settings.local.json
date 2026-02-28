@@ -3,7 +3,8 @@
     "allow": [
       "mcp__serena__find_file",
       "Bash(grep:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(pnpm build:*)"
     ]
   },
   "outputStyle": "default"
