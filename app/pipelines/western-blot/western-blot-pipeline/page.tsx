@@ -517,6 +517,7 @@ export default function WesternBlotPipelinePage() {
                     onMaterialsClick={handleMaterialsClick}
                     onPlanClick={handlePlanClick}
                     updatedStepId={updatedStepId}
+                    hideColumns={['status', 'action']}
                   />
                 </div>
               )}

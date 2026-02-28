@@ -385,6 +385,7 @@ export default function AntibodyIsolationPipeline() {
                     steps={pipelineSteps}
                     onSelectStep={handleSelectStep}
                     selectedStepId={selectedStepId}
+                    hideColumns={['status', 'action']}
                   />
                 </div>
               )}
