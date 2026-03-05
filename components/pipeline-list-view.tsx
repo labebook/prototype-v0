@@ -260,9 +260,7 @@ export function PipelineListView({
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-3">
                       {showMethodIcon && (
-                        <div className="shrink-0 w-8 h-8 rounded-md border border-gray-200 bg-gray-50 flex items-center justify-center">
-                          <FlaskConical className="h-4 w-4 text-gray-500" />
-                        </div>
+                        <FlaskConical className="shrink-0 h-4 w-4 text-gray-400" />
                       )}
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
