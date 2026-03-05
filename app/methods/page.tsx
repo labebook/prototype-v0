@@ -5,89 +5,166 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { ChevronRight, Folder, FlaskConical, Plus } from "lucide-react"
 import { PipelineListView } from "@/components/pipeline-list-view"
 
-const sampleMethods = [
-  {
-    id: "M001",
-    step: 1,
-    name: "SDS-PAGE",
-    description: "Separates proteins by molecular weight under denaturing conditions using a polyacrylamide gel matrix.",
-    category: "method",
-    objective: "Separate proteins by molecular weight using polyacrylamide gel electrophoresis",
-    method: "Sodium dodecyl sulfate–polyacrylamide gel electrophoresis",
-    ready: true,
-    protocolId: "#101",
-    parametersState: "configured" as const,
-    dateSelected: "2025-03-22",
-    author: "Dr. Smith",
-    executionStatus: "idle" as const,
-  },
-  {
-    id: "M002",
-    step: 2,
-    name: "Western Blot",
-    description: "Detects specific proteins in a sample via antibody-based probing after gel electrophoresis transfer.",
-    category: "method",
-    objective: "Detect specific proteins in a sample using antibody-based detection",
-    method: "Protein detection technique using antibodies",
-    ready: true,
-    protocolId: "#202",
-    parametersState: "selected" as const,
-    dateSelected: "2025-03-18",
-    author: "Dr. Johnson",
-    executionStatus: "idle" as const,
-  },
-  {
-    id: "M003",
-    step: 3,
-    name: "PCR",
-    description: "Amplifies specific DNA sequences exponentially using thermocycling and polymerase enzymes.",
-    category: "method",
-    objective: "Amplify specific DNA sequences for analysis",
-    method: "Polymerase chain reaction for DNA amplification",
-    ready: true,
-    protocolId: undefined,
-    parametersState: "none" as const,
-    dateSelected: undefined,
-    author: undefined,
-    executionStatus: "idle" as const,
-  },
-  {
-    id: "M004",
-    step: 4,
-    name: "ELISA",
-    description: "Quantifies proteins or antibodies in solution using enzyme-linked colorimetric detection.",
-    category: "method",
-    objective: "Quantify proteins or antibodies using enzyme-linked detection",
-    method: "Enzyme-linked immunosorbent assay",
-    ready: true,
-    protocolId: "#404",
-    parametersState: "configured" as const,
-    dateSelected: "2025-03-10",
-    author: "Dr. Lee",
-    executionStatus: "idle" as const,
-  },
-  {
-    id: "M005",
-    step: 5,
-    name: "Mass Spectrometry",
-    description: "Identifies and quantifies molecules by measuring the mass-to-charge ratio of ionized species.",
-    category: "method",
-    objective: "Identify and quantify molecules by mass-to-charge ratio",
-    method: "Analytical technique to measure mass-to-charge ratio of ions",
-    ready: false,
-    protocolId: undefined,
-    parametersState: "none" as const,
-    dateSelected: undefined,
-    author: undefined,
-    executionStatus: "idle" as const,
-  },
+// ── Data ────────────────────────────────────────────────────────────────────
+
+const methodFolders = [
+  { id: "sds-page",          name: "SDS-PAGE" },
+  { id: "western-blot",      name: "Western Blot" },
+  { id: "pcr",               name: "PCR" },
+  { id: "elisa",             name: "ELISA" },
+  { id: "mass-spectrometry", name: "Mass Spectrometry" },
 ]
 
+const methodsByFolder: Record<string, Array<{
+  id: string
+  step: number
+  name: string
+  description: string
+  category: string
+  objective: string
+  method: string
+  ready: boolean
+  protocolId?: string
+  parametersState: "none" | "selected" | "configured"
+  dateSelected?: string
+  author?: string
+  executionStatus: "idle" | "running" | "completed" | "failed"
+}>> = {
+  "sds-page": [
+    {
+      id: "sds-1", step: 1,
+      name: "Standard SDS-PAGE",
+      description: "Separates proteins by molecular weight under denaturing conditions using a polyacrylamide gel matrix.",
+      category: "method", objective: "Resolve proteins by molecular weight", method: "SDS-PAGE",
+      ready: true, protocolId: "#101", parametersState: "configured", dateSelected: "2025-03-22", author: "Dr. Smith", executionStatus: "idle",
+    },
+    {
+      id: "sds-2", step: 2,
+      name: "Gradient SDS-PAGE",
+      description: "Uses a gel with a continuous acrylamide gradient to resolve proteins across a broad molecular weight range.",
+      category: "method", objective: "Broad-range protein separation", method: "Gradient SDS-PAGE",
+      ready: true, protocolId: "#102", parametersState: "selected", dateSelected: "2025-03-20", author: "Dr. Smith", executionStatus: "idle",
+    },
+    {
+      id: "sds-3", step: 3,
+      name: "Tricine SDS-PAGE",
+      description: "Optimized for resolving small proteins and peptides below 10 kDa using a tricine buffer system.",
+      category: "method", objective: "Resolve small peptides and low MW proteins", method: "Tricine SDS-PAGE",
+      ready: false, parametersState: "none", executionStatus: "idle",
+    },
+  ],
+  "western-blot": [
+    {
+      id: "wb-1", step: 1,
+      name: "Standard Western Blot",
+      description: "Detects specific proteins via antibody-based probing following gel electrophoresis and membrane transfer.",
+      category: "method", objective: "Detect target proteins with antibodies", method: "Western Blot",
+      ready: true, protocolId: "#201", parametersState: "configured", dateSelected: "2025-03-18", author: "Dr. Johnson", executionStatus: "idle",
+    },
+    {
+      id: "wb-2", step: 2,
+      name: "Chemiluminescent Western Blot",
+      description: "Uses HRP-conjugated secondary antibodies and ECL substrate for high-sensitivity protein detection.",
+      category: "method", objective: "High-sensitivity protein detection via ECL", method: "Chemiluminescent WB",
+      ready: true, protocolId: "#202", parametersState: "selected", dateSelected: "2025-03-15", author: "Dr. Johnson", executionStatus: "idle",
+    },
+    {
+      id: "wb-3", step: 3,
+      name: "Fluorescent Western Blot",
+      description: "Employs fluorescently labeled antibodies for multiplexed, quantitative protein detection on a single membrane.",
+      category: "method", objective: "Multiplexed quantitative protein detection", method: "Fluorescent WB",
+      ready: false, parametersState: "none", executionStatus: "idle",
+    },
+  ],
+  "pcr": [
+    {
+      id: "pcr-1", step: 1,
+      name: "Standard PCR",
+      description: "Amplifies specific DNA sequences exponentially using thermocycling and thermostable polymerase enzymes.",
+      category: "method", objective: "Amplify target DNA sequences", method: "PCR",
+      ready: true, protocolId: "#301", parametersState: "configured", dateSelected: "2025-03-12", author: "Dr. Lee", executionStatus: "idle",
+    },
+    {
+      id: "pcr-2", step: 2,
+      name: "Quantitative PCR (qPCR)",
+      description: "Measures DNA or RNA abundance in real time using fluorescent reporters during amplification.",
+      category: "method", objective: "Quantify nucleic acid targets in real time", method: "qPCR",
+      ready: true, protocolId: "#302", parametersState: "selected", dateSelected: "2025-03-10", author: "Dr. Lee", executionStatus: "idle",
+    },
+    {
+      id: "pcr-3", step: 3,
+      name: "RT-PCR",
+      description: "Reverse transcribes RNA into cDNA prior to PCR amplification, enabling detection of mRNA targets.",
+      category: "method", objective: "Detect and quantify mRNA expression", method: "RT-PCR",
+      ready: false, parametersState: "none", executionStatus: "idle",
+    },
+  ],
+  "elisa": [
+    {
+      id: "elisa-1", step: 1,
+      name: "Direct ELISA",
+      description: "Quantifies antigen directly bound to a plate using an enzyme-conjugated primary antibody.",
+      category: "method", objective: "Direct antigen quantification", method: "Direct ELISA",
+      ready: true, protocolId: "#401", parametersState: "configured", dateSelected: "2025-03-08", author: "Dr. Park", executionStatus: "idle",
+    },
+    {
+      id: "elisa-2", step: 2,
+      name: "Sandwich ELISA",
+      description: "Captures antigen between two antibodies for highly specific and sensitive protein quantification.",
+      category: "method", objective: "High-sensitivity protein quantification", method: "Sandwich ELISA",
+      ready: true, protocolId: "#402", parametersState: "configured", dateSelected: "2025-03-05", author: "Dr. Park", executionStatus: "idle",
+    },
+    {
+      id: "elisa-3", step: 3,
+      name: "Competitive ELISA",
+      description: "Measures analyte concentration by competition with labeled antigen for limited antibody binding sites.",
+      category: "method", objective: "Detect small molecules and haptens", method: "Competitive ELISA",
+      ready: false, parametersState: "none", executionStatus: "idle",
+    },
+  ],
+  "mass-spectrometry": [
+    {
+      id: "ms-1", step: 1,
+      name: "LC-MS/MS Proteomics",
+      description: "Identifies and quantifies proteins in complex mixtures by liquid chromatography coupled tandem mass spectrometry.",
+      category: "method", objective: "Global proteome identification and quantification", method: "LC-MS/MS",
+      ready: true, protocolId: "#501", parametersState: "configured", dateSelected: "2025-03-01", author: "Dr. Chen", executionStatus: "idle",
+    },
+    {
+      id: "ms-2", step: 2,
+      name: "MALDI-TOF MS",
+      description: "Uses matrix-assisted laser desorption to ionize samples, enabling rapid protein or peptide mass fingerprinting.",
+      category: "method", objective: "Rapid mass fingerprinting of proteins", method: "MALDI-TOF",
+      ready: false, parametersState: "none", executionStatus: "idle",
+    },
+    {
+      id: "ms-3", step: 3,
+      name: "Selected Reaction Monitoring (SRM)",
+      description: "Targeted mass spectrometry approach for precise quantification of predefined protein analytes.",
+      category: "method", objective: "Targeted quantification of specific proteins", method: "SRM/MRM",
+      ready: false, parametersState: "none", executionStatus: "idle",
+    },
+  ],
+}
+
+// ── Component ────────────────────────────────────────────────────────────────
+
 export default function MethodsPage() {
-  const [methods] = useState(sampleMethods)
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(null)
+
+  const activeFolder = methodFolders.find(f => f.id === activeFolderId) ?? null
+  const activeMethods = activeFolderId ? (methodsByFolder[activeFolderId] ?? []) : []
+
+  const navigateIntoFolder = (folder: { id: string; name: string }) => {
+    setActiveFolderId(folder.id)
+  }
+
+  const navigateToRoot = () => {
+    setActiveFolderId(null)
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -98,7 +175,7 @@ export default function MethodsPage() {
           <div className="mx-auto max-w-[1200px] px-6 py-8">
 
             {/* ── Page header ───────────────────────────────────────── */}
-            <div className="flex items-end justify-between mb-8 pb-6 border-b border-gray-200">
+            <div className="flex items-end justify-between pb-6 border-b border-gray-200 mb-0">
               <div>
                 <h1 className="text-[32px] font-semibold">Methods</h1>
                 <p className="text-gray-500 mt-1">
@@ -111,19 +188,62 @@ export default function MethodsPage() {
               </Button>
             </div>
 
-            {/* ── Methods list ──────────────────────────────────────── */}
-            {methods.length === 0 ? (
-              <div className="py-24 text-center">
-                <p className="text-lg font-medium text-gray-700 mb-1">No methods yet</p>
-                <p className="text-gray-500 mb-6">Get started by creating your first method</p>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  New method
-                </Button>
+            {/* ── Breadcrumb ────────────────────────────────────────── */}
+            {activeFolder && (
+              <div className="flex items-center gap-1.5 py-3 text-sm border-b border-gray-100">
+                <button
+                  onClick={navigateToRoot}
+                  className="text-gray-500 hover:text-gray-900 transition-colors"
+                >
+                  Methods
+                </button>
+                <ChevronRight className="h-3.5 w-3.5 text-gray-300" />
+                <span className="text-gray-900 font-medium">{activeFolder.name}</span>
               </div>
-            ) : (
+            )}
+
+            {/* ── Column headers ────────────────────────────────────── */}
+            <div className="flex items-center gap-4 -mx-6 px-6 py-2 border-b border-gray-100">
+              <div className="h-5 w-5 shrink-0" />
+              <div className="flex-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Name</div>
+              <div className="w-20 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                {activeFolder ? "Methods" : "Methods"}
+              </div>
+              <div className="w-32 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Modified</div>
+              <div className="w-5 shrink-0" />
+            </div>
+
+            {/* ── Folder view (root) ────────────────────────────────── */}
+            {!activeFolder && (
+              <>
+                {methodFolders.map(folder => (
+                  <button
+                    key={folder.id}
+                    onClick={() => navigateIntoFolder(folder)}
+                    className="group flex items-center gap-4 w-full py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors text-left"
+                  >
+                    <Folder className="h-5 w-5 text-gray-400 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-medium text-gray-900">{folder.name}</span>
+                    </div>
+                    <div className="w-20 text-right">
+                      <span className="text-xs text-gray-400">
+                        {methodsByFolder[folder.id]?.length ?? 0}
+                      </span>
+                    </div>
+                    <div className="w-32 text-right">
+                      <span className="text-sm text-gray-400">—</span>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                ))}
+              </>
+            )}
+
+            {/* ── Method list view (inside folder) ─────────────────── */}
+            {activeFolder && (
               <PipelineListView
-                steps={methods}
+                steps={activeMethods}
                 hideColumns={['status', 'action']}
                 showMethodIcon
                 onParametersClick={step => console.log("Parameters:", step)}
