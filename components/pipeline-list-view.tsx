@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 interface PipelineStep {
   step: number
   name: string
+  description?: string
   category: string
   objective: string
   method: string
@@ -41,6 +42,7 @@ interface PipelineListViewProps {
   completedModules?: Set<string>
   updatedStepId?: string | null
   hideColumns?: ('status' | 'action')[]
+  showMethodIcon?: boolean
   onReorder?: (newSteps: PipelineStep[]) => void
   // kept for backward-compat (e.g. editor page)
   onStepClick?: (step: PipelineStep) => void
@@ -97,6 +99,7 @@ export function PipelineListView({
   completedModules,
   updatedStepId,
   hideColumns = [],
+  showMethodIcon = false,
   onReorder,
   onStepClick,
   selectedStepId,
@@ -255,13 +258,25 @@ export function PipelineListView({
                     </td>
                   )}
                   <td className="py-4 px-4">
-                    <div className="flex items-center gap-2">
-                      <div className="text-sm font-medium text-gray-900">{step.name}</div>
-                      {fileCount > 0 && (
-                        <span className="inline-flex items-center gap-0.5 text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">
-                          📎 {fileCount}
-                        </span>
+                    <div className="flex items-center gap-3">
+                      {showMethodIcon && (
+                        <div className="shrink-0 w-8 h-8 rounded-md border border-gray-200 bg-gray-50 flex items-center justify-center">
+                          <FlaskConical className="h-4 w-4 text-gray-500" />
+                        </div>
                       )}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <div className="text-sm font-medium text-gray-900">{step.name}</div>
+                          {fileCount > 0 && (
+                            <span className="inline-flex items-center gap-0.5 text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">
+                              📎 {fileCount}
+                            </span>
+                          )}
+                        </div>
+                        {step.description && (
+                          <div className="text-xs text-gray-500 mt-0.5 leading-relaxed">{step.description}</div>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="py-4 px-4 text-center">

@@ -13,6 +13,7 @@ const sampleMethods = [
     id: "M001",
     step: 1,
     name: "SDS-PAGE",
+    description: "Separates proteins by molecular weight under denaturing conditions using a polyacrylamide gel matrix.",
     category: "method",
     objective: "Separate proteins by molecular weight using polyacrylamide gel electrophoresis",
     method: "Sodium dodecyl sulfate–polyacrylamide gel electrophoresis",
@@ -27,6 +28,7 @@ const sampleMethods = [
     id: "M002",
     step: 2,
     name: "Western Blot",
+    description: "Detects specific proteins in a sample via antibody-based probing after gel electrophoresis transfer.",
     category: "method",
     objective: "Detect specific proteins in a sample using antibody-based detection",
     method: "Protein detection technique using antibodies",
@@ -41,6 +43,7 @@ const sampleMethods = [
     id: "M003",
     step: 3,
     name: "PCR",
+    description: "Amplifies specific DNA sequences exponentially using thermocycling and polymerase enzymes.",
     category: "method",
     objective: "Amplify specific DNA sequences for analysis",
     method: "Polymerase chain reaction for DNA amplification",
@@ -55,6 +58,7 @@ const sampleMethods = [
     id: "M004",
     step: 4,
     name: "ELISA",
+    description: "Quantifies proteins or antibodies in solution using enzyme-linked colorimetric detection.",
     category: "method",
     objective: "Quantify proteins or antibodies using enzyme-linked detection",
     method: "Enzyme-linked immunosorbent assay",
@@ -69,6 +73,7 @@ const sampleMethods = [
     id: "M005",
     step: 5,
     name: "Mass Spectrometry",
+    description: "Identifies and quantifies molecules by measuring the mass-to-charge ratio of ionized species.",
     category: "method",
     objective: "Identify and quantify molecules by mass-to-charge ratio",
     method: "Analytical technique to measure mass-to-charge ratio of ions",
@@ -120,6 +125,7 @@ export default function MethodsPage() {
               <PipelineListView
                 steps={methods}
                 hideColumns={['status', 'action']}
+                showMethodIcon
                 onParametersClick={step => console.log("Parameters:", step)}
                 onProtocolClick={step => console.log("Protocol:", step)}
                 onBuffersClick={step => console.log("Buffers:", step)}
