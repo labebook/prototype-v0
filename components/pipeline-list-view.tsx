@@ -220,7 +220,7 @@ export function PipelineListView({
         <thead>
           <tr className="border-b border-gray-200">
             {onReorder && <th className="w-8 py-3 px-2" />}
-            <th className="w-[250px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Method Name</th>
+            <th className="w-[250px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Method</th>
             <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Plan</th>
             {showParameters && <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Parameters</th>}
             {showProtocol   && <th className="w-[100px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Protocol ID</th>}
@@ -282,10 +282,9 @@ export function PipelineListView({
                         <FlaskConical className="shrink-0 h-4 w-4 text-gray-400 mt-0.5" />
                       )}
                       <div className="min-w-0">
-                        <div className="text-sm font-medium text-gray-900">{step.name}</div>
-                        <div className="text-xs text-gray-400 mt-0.5 leading-relaxed">
-                          {step.description || step.objective || ""}
-                        </div>
+                        <div className="text-[10px] text-gray-400 mb-0.5">{step.name}</div>
+                        <div className="text-sm font-medium text-gray-900">{step.objective || step.description || ""}</div>
+                        <div className="text-xs text-gray-400 mt-0.5">{step.method}</div>
                       </div>
                     </div>
                   </td>
