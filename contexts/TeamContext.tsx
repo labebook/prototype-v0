@@ -72,6 +72,7 @@ interface TeamContextValue {
   // Pipeline actions
   renamePipeline: (id: string, name: string) => void
   duplicatePipeline: (id: string) => TeamPipeline | null
+  copyPipelineToProject: (id: string, projectId: string) => TeamPipeline | null
 
   // Filtering
   getMyPipelines: () => TeamPipeline[]
@@ -409,6 +410,21 @@ export function TeamProvider({ children }: TeamProviderProps) {
     return copy
   }, [pipelines])
 
+  const copyPipelineToProject = useCallback((id: string, projectId: string): TeamPipeline | null => {
+    const source = pipelines.find(p => p.id === id)
+    if (!source) return null
+    const copy: TeamPipeline = {
+      ...source,
+      id: `p${Date.now()}`,
+      name: source.name,
+      projectId,
+      lastModified: new Date().toISOString().split('T')[0],
+      ownerId: currentUserId,
+    }
+    setPipelines(prev => [...prev, copy])
+    return copy
+  }, [pipelines])
+
   // Filter pipelines by category
   const getMyPipelines = useCallback(() => {
     if (!currentTeam) return []
@@ -456,6 +472,7 @@ export function TeamProvider({ children }: TeamProviderProps) {
     projects,
     renamePipeline,
     duplicatePipeline,
+    copyPipelineToProject,
     getMyPipelines,
     getFavouritePipelines,
     getSharedPipelines,

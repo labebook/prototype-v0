@@ -22,7 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { ArrowLeft, Copy, Download, LayoutGrid, List, MoreHorizontal, Pencil, Share2, Type } from "lucide-react"
+import { ArrowLeft, Check, Copy, Download, FolderKanban, LayoutGrid, List, MoreHorizontal, Pencil, Search, Share2, Type } from "lucide-react"
 import { PipelineListView } from "@/components/pipeline-list-view"
 import { StaticPipelineCanvas } from "@/components/static-pipeline-canvas"
 import { cn } from "@/lib/utils"
@@ -138,8 +138,12 @@ export default function LibraryPipelinePage() {
   const [viewMode, setViewMode] = useState<"visual" | "list">("list")
   const [renameOpen, setRenameOpen] = useState(false)
   const [renameValue, setRenameValue] = useState("")
+  const [copyToProjectOpen, setCopyToProjectOpen] = useState(false)
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
+  const [projectSearch, setProjectSearch] = useState("")
+  const [copyDone, setCopyDone] = useState(false)
 
-  const { pipelines, renamePipeline, duplicatePipeline } = useTeam()
+  const { pipelines, projects, renamePipeline, duplicatePipeline, copyPipelineToProject } = useTeam()
 
   function handleRenameOpen() {
     const pipeline = pipelines.find(p => p.id === id)
@@ -156,6 +160,19 @@ export default function LibraryPipelinePage() {
   function handleDuplicate() {
     const copy = duplicatePipeline(id)
     if (copy) router.push(`/pipelines/${copy.id}`)
+  }
+
+  function handleCopyToProject() {
+    if (!selectedProjectId) return
+    copyPipelineToProject(id, selectedProjectId)
+    setCopyDone(true)
+  }
+
+  function handleCopyModalClose() {
+    setCopyToProjectOpen(false)
+    setSelectedProjectId(null)
+    setProjectSearch("")
+    setCopyDone(false)
   }
 
   const formatDate = (dateString: string) =>
@@ -229,6 +246,10 @@ export default function LibraryPipelinePage() {
               </div>
 
               <div className="flex items-center gap-2 mt-1 shrink-0">
+                <Button variant="outline" size="sm" onClick={() => setCopyToProjectOpen(true)}>
+                  <FolderKanban className="mr-1.5 h-4 w-4" />
+                  Copy to project
+                </Button>
                 <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-900">
                   <Share2 className="mr-1.5 h-4 w-4" />
                   Share
@@ -318,6 +339,83 @@ export default function LibraryPipelinePage() {
         </main>
       </div>
       <Footer />
+
+      {/* ── Copy to project modal ─────────────────────────────── */}
+      <Dialog open={copyToProjectOpen} onOpenChange={open => { if (!open) handleCopyModalClose() }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Copy to project</DialogTitle>
+          </DialogHeader>
+
+          {copyDone ? (
+            <div className="py-8 flex flex-col items-center gap-3 text-center">
+              <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                <Check className="h-6 w-6 text-green-600" />
+              </div>
+              <p className="font-medium text-gray-900">Pipeline copied successfully</p>
+              <p className="text-sm text-gray-500">
+                A copy of <span className="font-medium">{pipeline.name}</span> has been added to the selected project.
+              </p>
+              <Button className="mt-2" onClick={handleCopyModalClose}>Done</Button>
+            </div>
+          ) : (
+            <>
+              <div className="relative mb-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                <Input
+                  placeholder="Search projects…"
+                  value={projectSearch}
+                  onChange={e => setProjectSearch(e.target.value)}
+                  className="pl-9"
+                  autoFocus
+                />
+              </div>
+
+              <div className="max-h-64 overflow-y-auto -mx-6 px-6 divide-y divide-gray-100">
+                {projects
+                  .filter(p => p.name.toLowerCase().includes(projectSearch.toLowerCase()))
+                  .map(project => (
+                    <button
+                      key={project.id}
+                      onClick={() => setSelectedProjectId(project.id)}
+                      className={cn(
+                        "w-full flex items-center gap-3 py-3 text-left transition-colors",
+                        selectedProjectId === project.id ? "text-gray-900" : "text-gray-700 hover:text-gray-900"
+                      )}
+                    >
+                      <div className={cn(
+                        "h-4 w-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors",
+                        selectedProjectId === project.id
+                          ? "border-gray-900 bg-gray-900"
+                          : "border-gray-300"
+                      )}>
+                        {selectedProjectId === project.id && (
+                          <div className="h-1.5 w-1.5 rounded-full bg-white" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{project.name}</p>
+                        {project.description && (
+                          <p className="text-xs text-gray-400 truncate">{project.description}</p>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                {projects.filter(p => p.name.toLowerCase().includes(projectSearch.toLowerCase())).length === 0 && (
+                  <p className="py-8 text-center text-sm text-gray-400">No projects found</p>
+                )}
+              </div>
+
+              <DialogFooter className="mt-2">
+                <Button variant="outline" onClick={handleCopyModalClose}>Cancel</Button>
+                <Button onClick={handleCopyToProject} disabled={!selectedProjectId}>
+                  Copy to project
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* ── Rename dialog ──────────────────────────────────────── */}
       <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
