@@ -208,19 +208,21 @@ export function PipelineListView({
     <div className="w-full h-full overflow-auto">
       <table className={cn("w-full", cardRows ? "border-separate border-spacing-y-2" : "border-collapse")} role="table">
         <thead>
-          <tr className={cardRows ? "" : "border-b border-gray-200"}>
-            {!cardRows && onReorder && <th className="w-8 py-3 px-2" />}
-            {!cardRows && <th className="w-[250px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Method</th>}
-            {!cardRows && <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Plan</th>}
-            {!cardRows && showParameters && <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Parameters</th>}
-            {!cardRows && showProtocol   && <th className="w-[100px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Protocol ID</th>}
-            {!cardRows && <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Materials</th>}
-            {!cardRows && <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Buffer Recipes</th>}
-            {!cardRows && <th className="w-[120px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Date Created</th>}
-            {!cardRows && <th className="w-[120px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Author</th>}
-            {!cardRows && showStatus && <th className="w-[130px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Status</th>}
-            {!cardRows && showAction && <th className="w-[100px] py-3 px-4 text-center text-sm font-medium text-gray-500">Action</th>}
-          </tr>
+          {!cardRows && (
+            <tr className="border-b border-gray-200">
+              {onReorder && <th className="w-8 py-3 px-2" />}
+              <th className="w-[250px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Method</th>
+              <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Plan</th>
+              {showParameters && <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Parameters</th>}
+              {showProtocol   && <th className="w-[100px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Protocol ID</th>}
+              <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Materials</th>
+              <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Buffer Recipes</th>
+              <th className="w-[120px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Date Created</th>
+              <th className="w-[120px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Author</th>
+              {showStatus && <th className="w-[130px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Status</th>}
+              {showAction && <th className="w-[100px] py-3 px-4 text-center text-sm font-medium text-gray-500">Action</th>}
+            </tr>
+          )}
         </thead>
         <tbody>
           {steps.map((originalStep, index) => {
