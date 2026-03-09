@@ -8,6 +8,7 @@ import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -142,8 +143,11 @@ export default function LibraryPipelinePage() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const [projectSearch, setProjectSearch] = useState("")
   const [copyDone, setCopyDone] = useState(false)
+  const [editingDescription, setEditingDescription] = useState(false)
+  const [descGoal, setDescGoal] = useState("")
+  const [descContext, setDescContext] = useState("")
 
-  const { pipelines, projects, renamePipeline, duplicatePipeline, copyPipelineToProject } = useTeam()
+  const { pipelines, projects, renamePipeline, updatePipelineDescription, duplicatePipeline, copyPipelineToProject } = useTeam()
 
   function handleRenameOpen() {
     const pipeline = pipelines.find(p => p.id === id)
@@ -166,6 +170,18 @@ export default function LibraryPipelinePage() {
     if (!selectedProjectId) return
     copyPipelineToProject(id, selectedProjectId)
     setCopyDone(true)
+  }
+
+  function handleDescriptionEditOpen() {
+    const pipeline = pipelines.find(p => p.id === id)
+    setDescGoal(pipeline?.description.goal ?? "")
+    setDescContext(pipeline?.description.context ?? "")
+    setEditingDescription(true)
+  }
+
+  function handleDescriptionSave() {
+    updatePipelineDescription(id, { goal: descGoal, context: descContext })
+    setEditingDescription(false)
   }
 
   function handleCopyModalClose() {
@@ -235,9 +251,40 @@ export default function LibraryPipelinePage() {
                     <Badge variant="outline">In progress</Badge>
                   )}
                 </div>
-                <p className="text-gray-500 mt-1">{pipeline.description.goal}</p>
-                {pipeline.description.context && (
-                  <p className="text-gray-400 text-sm mt-1">{pipeline.description.context}</p>
+                {editingDescription ? (
+                  <div className="mt-2 flex flex-col gap-2 max-w-xl">
+                    <Textarea
+                      value={descGoal}
+                      onChange={e => setDescGoal(e.target.value)}
+                      placeholder="Goal"
+                      rows={2}
+                      className="text-sm resize-none"
+                      autoFocus
+                    />
+                    <Textarea
+                      value={descContext}
+                      onChange={e => setDescContext(e.target.value)}
+                      placeholder="Context (optional)"
+                      rows={2}
+                      className="text-sm resize-none text-gray-500"
+                    />
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" onClick={handleDescriptionSave}>Save</Button>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingDescription(false)}>Cancel</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className="group mt-1 cursor-text"
+                    onClick={handleDescriptionEditOpen}
+                  >
+                    <p className="text-gray-500 group-hover:text-gray-700">
+                      {pipeline.description.goal || <span className="text-gray-300 italic">Add a goal…</span>}
+                    </p>
+                    {pipeline.description.context && (
+                      <p className="text-gray-400 text-sm mt-0.5">{pipeline.description.context}</p>
+                    )}
+                  </div>
                 )}
                 <p className="text-sm text-gray-400 mt-2">
                   {owner?.name ?? "Unknown"} · {formatDate(pipeline.lastModified)}

@@ -7,17 +7,27 @@ import { Footer } from "@/components/footer"
 import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ShareProjectDialog } from "@/components/share-project-dialog"
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { NewPipelineEditor } from "@/components/new-pipeline-editor"
+import {
   ArrowLeft,
   ChevronRight,
-  Edit,
   FileText,
   Folder,
+  FolderPlus,
   LayoutGrid,
+  Pencil,
   Plus,
-  Share2,
   Trash2,
   Users,
 } from "lucide-react"
@@ -38,7 +48,7 @@ export default function ProjectDetailPage() {
   const router = useRouter()
   const projectId = params.projectId as string
 
-  const { currentTeam, projects, projectFolders, pipelines, canEdit, getProjectParticipants } = useTeam()
+  const { currentTeam, projects, projectFolders, pipelines, canEdit, getProjectParticipants, updateProject, addProjectFolder } = useTeam()
 
   const project = projects.find(p => p.id === projectId)
 
@@ -46,6 +56,19 @@ export default function ProjectDetailPage() {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
   const [folderPath, setFolderPath] = useState<Array<{ id: string; name: string }>>([])
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [showPipelineEditor, setShowPipelineEditor] = useState(false)
+
+  // Inline name editing
+  const [editingName, setEditingName] = useState(false)
+  const [nameValue, setNameValue] = useState("")
+
+  // Inline description editing
+  const [editingDesc, setEditingDesc] = useState(false)
+  const [descValue, setDescValue] = useState("")
+
+  // New folder dialog
+  const [newFolderOpen, setNewFolderOpen] = useState(false)
+  const [newFolderName, setNewFolderName] = useState("")
 
   if (!currentTeam) {
     return (
@@ -95,6 +118,33 @@ export default function ProjectDetailPage() {
   const getInitials = (name: string) =>
     name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)
 
+  function openEditName() {
+    setNameValue(project?.name ?? "")
+    setEditingName(true)
+  }
+  function saveEditName() {
+    const trimmed = nameValue.trim()
+    if (trimmed) updateProject(projectId, { name: trimmed })
+    setEditingName(false)
+  }
+
+  function openEditDesc() {
+    setDescValue(project?.description ?? "")
+    setEditingDesc(true)
+  }
+  function saveEditDesc() {
+    updateProject(projectId, { description: descValue.trim() })
+    setEditingDesc(false)
+  }
+
+  function handleNewFolder() {
+    const trimmed = newFolderName.trim()
+    if (!trimmed) return
+    addProjectFolder(trimmed, currentFolderId ?? undefined)
+    setNewFolderName("")
+    setNewFolderOpen(false)
+  }
+
   const allFolders = projectFolders.filter(f => f.teamId === currentTeam.id)
   const levelFolders = currentFolderId
     ? allFolders.filter(f => f.parentId === currentFolderId)
@@ -135,10 +185,22 @@ export default function ProjectDetailPage() {
     { id: "files",     label: "Files" },
   ]
 
+  if (showPipelineEditor) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 flex flex-col">
+          <NewPipelineEditor onClose={() => setShowPipelineEditor(false)} />
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
   const addButtonLabel =
     filterTab === "files"     ? "Upload file" :
-    filterTab === "pipelines" ? "Add pipeline" :
-                                "New"
+    filterTab === "pipelines" ? "New pipeline" :
+                                "New pipeline"
 
   // ── Column header row ───────────────────────────────────────────────────
   const ColumnHeaders = () => (
@@ -171,10 +233,50 @@ export default function ProjectDetailPage() {
             {/* ── Page header ───────────────────────────────────────── */}
             <div className="flex items-start justify-between pb-6 border-b border-gray-200">
               <div>
-                <h1 className="text-[32px] font-semibold">{project.name}</h1>
-                {project.description && (
-                  <p className="text-gray-500 mt-1">{project.description}</p>
+                {editingName ? (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={nameValue}
+                      onChange={e => setNameValue(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") saveEditName(); if (e.key === "Escape") setEditingName(false) }}
+                      className="text-2xl font-semibold h-auto py-1 w-80"
+                      autoFocus
+                    />
+                    <Button size="sm" onClick={saveEditName}>Save</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setEditingName(false)}>Cancel</Button>
+                  </div>
+                ) : (
+                  <div className="group flex items-center gap-2 cursor-pointer" onClick={openEditName}>
+                    <h1 className="text-[32px] font-semibold">{project.name}</h1>
+                    <Pencil className="h-4 w-4 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity mt-1" />
+                  </div>
                 )}
+
+                {editingDesc ? (
+                  <div className="mt-1 flex flex-col gap-2 max-w-xl">
+                    <Textarea
+                      value={descValue}
+                      onChange={e => setDescValue(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Escape") setEditingDesc(false) }}
+                      placeholder="Add a description…"
+                      rows={2}
+                      className="text-sm resize-none"
+                      autoFocus
+                    />
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" onClick={saveEditDesc}>Save</Button>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingDesc(false)}>Cancel</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="group flex items-start gap-1.5 cursor-pointer mt-1" onClick={openEditDesc}>
+                    <p className="text-gray-500 group-hover:text-gray-700">
+                      {project.description || <span className="text-gray-300 italic">Add a description…</span>}
+                    </p>
+                    <Pencil className="h-3.5 w-3.5 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity mt-1 shrink-0" />
+                  </div>
+                )}
+
                 <p className="text-sm text-gray-400 mt-2">
                   {owner?.name ?? "Unknown"}
                   {" · "}

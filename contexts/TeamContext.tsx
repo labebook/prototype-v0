@@ -71,6 +71,7 @@ interface TeamContextValue {
 
   // Pipeline actions
   renamePipeline: (id: string, name: string) => void
+  updatePipelineDescription: (id: string, description: { goal: string; context: string }) => void
   duplicatePipeline: (id: string) => TeamPipeline | null
   copyPipelineToProject: (id: string, projectId: string) => TeamPipeline | null
 
@@ -78,6 +79,10 @@ interface TeamContextValue {
   getMyPipelines: () => TeamPipeline[]
   getFavouritePipelines: () => TeamPipeline[]
   getSharedPipelines: () => TeamPipeline[]
+
+  // Project actions
+  updateProject: (id: string, fields: { name?: string; description?: string }) => void
+  addProjectFolder: (name: string, parentId?: string) => void
 
   // Project participants
   addProjectParticipant: (projectId: string, userId: string) => void
@@ -113,7 +118,7 @@ export function TeamProvider({ children }: TeamProviderProps) {
 
   const [pipelines, setPipelines] = useState<TeamPipeline[]>(mockPipelines)
   const [pipelineFolders] = useState<TeamPipelineFolder[]>(mockPipelineFolders)
-  const [projectFolders] = useState<ProjectFolder[]>(mockProjectFolders)
+  const [projectFolders, setProjectFolders] = useState<ProjectFolder[]>(mockProjectFolders)
   const [projects, setProjects] = useState<Project[]>(mockProjects)
   const [activities, setActivities] = useState<ActivityEntry[]>(mockActivities)
   const [discussions, setDiscussions] = useState<TeamDiscussion[]>(mockTeamDiscussions)
@@ -311,6 +316,31 @@ export function TeamProvider({ children }: TeamProviderProps) {
     return activities.filter(a => a.projectId === projectId)
   }, [activities])
 
+  // ── Project actions ──────────────────────────────────────────────────────
+  const updateProject = useCallback((id: string, fields: { name?: string; description?: string }) => {
+    setProjects(prev =>
+      prev.map(p =>
+        p.id === id
+          ? { ...p, ...fields, lastModifiedBy: currentUserId, lastModifiedDate: new Date().toISOString().split('T')[0] }
+          : p
+      )
+    )
+  }, [])
+
+  const addProjectFolder = useCallback((name: string, parentId?: string) => {
+    if (!currentTeamId) return
+    const folder: ProjectFolder = {
+      id: `pf${Date.now()}`,
+      name,
+      parentId,
+      teamId: currentTeamId,
+      createdBy: currentUserId,
+      createdDate: new Date().toISOString().split('T')[0],
+      editPermissions: [currentUserId],
+    }
+    setProjectFolders(prev => [...prev, folder])
+  }, [currentTeamId])
+
   // ── Project participants ─────────────────────────────────────────────────
   const addProjectParticipant = useCallback((projectId: string, userId: string) => {
     setProjects(prev =>
@@ -396,6 +426,12 @@ export function TeamProvider({ children }: TeamProviderProps) {
     )
   }, [])
 
+  const updatePipelineDescription = useCallback((id: string, description: { goal: string; context: string }) => {
+    setPipelines(prev =>
+      prev.map(p => p.id === id ? { ...p, description, lastModified: new Date().toISOString().split('T')[0] } : p)
+    )
+  }, [])
+
   const duplicatePipeline = useCallback((id: string): TeamPipeline | null => {
     const source = pipelines.find(p => p.id === id)
     if (!source) return null
@@ -471,11 +507,14 @@ export function TeamProvider({ children }: TeamProviderProps) {
     projectFolders,
     projects,
     renamePipeline,
+    updatePipelineDescription,
     duplicatePipeline,
     copyPipelineToProject,
     getMyPipelines,
     getFavouritePipelines,
     getSharedPipelines,
+    updateProject,
+    addProjectFolder,
     addProjectParticipant,
     removeProjectParticipant,
     getProjectParticipants,
