@@ -1,10 +1,14 @@
 "use client"
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { FileText, MoreVertical, Edit, Trash2, Plus } from "lucide-react"
 import {
   DropdownMenu,
@@ -12,12 +16,38 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { useTeam } from "@/hooks/useTeam"
 import { getUserById } from "@/lib/mockData"
 
 export default function ProjectsPage() {
   const router = useRouter()
-  const { currentTeam, projects } = useTeam()
+  const { currentTeam, projects, createProject, updateProject } = useTeam()
+  const [showNewProject, setShowNewProject] = useState(false)
+  const [newName, setNewName] = useState("")
+  const [newDescription, setNewDescription] = useState("")
+  const [editingProject, setEditingProject] = useState<{ id: string; name: string; description: string } | null>(null)
+
+  const handleCreate = () => {
+    if (!newName.trim()) return
+    const project = createProject(newName.trim(), newDescription.trim())
+    setShowNewProject(false)
+    setNewName("")
+    setNewDescription("")
+    router.push(`/projects/${project.id}`)
+  }
+
+  const handleEditSave = () => {
+    if (!editingProject || !editingProject.name.trim()) return
+    updateProject(editingProject.id, { name: editingProject.name.trim(), description: editingProject.description.trim() })
+    setEditingProject(null)
+  }
 
   const handleOpenProject = (projectId: string) => {
     router.push(`/projects/${projectId}`)
@@ -64,7 +94,7 @@ export default function ProjectsPage() {
                   {currentTeam.name} · {teamProjects.length} {teamProjects.length === 1 ? "project" : "projects"}
                 </p>
               </div>
-              <Button>
+              <Button onClick={() => setShowNewProject(true)}>
                 <Plus className="mr-2 h-4 w-4" />
                 New project
               </Button>
@@ -118,7 +148,7 @@ export default function ProjectsPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="bg-white">
-                          <DropdownMenuItem onClick={e => e.stopPropagation()}>
+                          <DropdownMenuItem onClick={e => { e.stopPropagation(); setEditingProject({ id: project.id, name: project.name, description: project.description ?? "" }) }}>
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
                           </DropdownMenuItem>
@@ -140,6 +170,76 @@ export default function ProjectsPage() {
         </main>
       </div>
       <Footer />
+
+      {/* ── Edit project dialog ──────────────────────────────────────── */}
+      <Dialog open={!!editingProject} onOpenChange={open => { if (!open) setEditingProject(null) }}>
+        <DialogContent className="max-w-md bg-white">
+          <DialogHeader>
+            <DialogTitle>Edit project</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-proj-name">Project name</Label>
+              <Input
+                id="edit-proj-name"
+                value={editingProject?.name ?? ""}
+                onChange={e => setEditingProject(p => p ? { ...p, name: e.target.value } : p)}
+                onKeyDown={e => e.key === "Enter" && handleEditSave()}
+                autoFocus
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-proj-desc">Description <span className="text-gray-400 font-normal">(optional)</span></Label>
+              <Textarea
+                id="edit-proj-desc"
+                value={editingProject?.description ?? ""}
+                onChange={e => setEditingProject(p => p ? { ...p, description: e.target.value } : p)}
+                className="min-h-[80px]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingProject(null)}>Cancel</Button>
+            <Button onClick={handleEditSave} disabled={!editingProject?.name.trim()}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── New project dialog ───────────────────────────────────────── */}
+      <Dialog open={showNewProject} onOpenChange={setShowNewProject}>
+        <DialogContent className="max-w-md bg-white">
+          <DialogHeader>
+            <DialogTitle>New project</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="proj-name">Project name</Label>
+              <Input
+                id="proj-name"
+                placeholder="e.g. Protein Expression Study"
+                value={newName}
+                onChange={e => setNewName(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleCreate()}
+                autoFocus
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="proj-desc">Description <span className="text-gray-400 font-normal">(optional)</span></Label>
+              <Textarea
+                id="proj-desc"
+                placeholder="What is this project about?"
+                value={newDescription}
+                onChange={e => setNewDescription(e.target.value)}
+                className="min-h-[80px]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewProject(false)}>Cancel</Button>
+            <Button onClick={handleCreate} disabled={!newName.trim()}>Create project</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

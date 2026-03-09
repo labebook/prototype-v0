@@ -81,6 +81,7 @@ interface TeamContextValue {
   getSharedPipelines: () => TeamPipeline[]
 
   // Project actions
+  createProject: (name: string, description?: string) => Project
   updateProject: (id: string, fields: { name?: string; description?: string }) => void
   addProjectFolder: (name: string, parentId?: string) => void
 
@@ -317,6 +318,21 @@ export function TeamProvider({ children }: TeamProviderProps) {
   }, [activities])
 
   // ── Project actions ──────────────────────────────────────────────────────
+  const createProject = useCallback((name: string, description?: string): Project => {
+    const project: Project = {
+      id: `pr${Date.now()}`,
+      name,
+      description: description ?? '',
+      folderId: '',
+      teamId: currentTeamId ?? '',
+      ownerId: currentUserId,
+      createdDate: new Date().toISOString().split('T')[0],
+      participants: [],
+    }
+    setProjects(prev => [...prev, project])
+    return project
+  }, [currentTeamId])
+
   const updateProject = useCallback((id: string, fields: { name?: string; description?: string }) => {
     setProjects(prev =>
       prev.map(p =>
@@ -513,6 +529,7 @@ export function TeamProvider({ children }: TeamProviderProps) {
     getMyPipelines,
     getFavouritePipelines,
     getSharedPipelines,
+    createProject,
     updateProject,
     addProjectFolder,
     addProjectParticipant,
