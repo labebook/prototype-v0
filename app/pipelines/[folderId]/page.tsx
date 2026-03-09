@@ -378,7 +378,7 @@ export default function LibraryPipelinePage() {
                 onCalculationsClick={step => console.log("Calculations:", step)}
                 onMaterialsClick={step => console.log("Materials:", step)}
                 onPlanClick={step => console.log("Plan:", step)}
-                hideColumns={['status', 'action']}
+                hideColumns={['status', 'action', 'parameters', 'protocol']}
               />
             )}
 

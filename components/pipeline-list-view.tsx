@@ -41,7 +41,7 @@ interface PipelineListViewProps {
   onEditOutput?: (stepId: string) => void
   completedModules?: Set<string>
   updatedStepId?: string | null
-  hideColumns?: ('status' | 'action')[]
+  hideColumns?: ('status' | 'action' | 'parameters' | 'protocol')[]
   showMethodIcon?: boolean
   onReorder?: (newSteps: PipelineStep[]) => void
   // kept for backward-compat (e.g. editor page)
@@ -105,8 +105,10 @@ export function PipelineListView({
   selectedStepId,
   moduleDataMap,
 }: PipelineListViewProps) {
-  const showStatus = !hideColumns.includes('status')
-  const showAction = !hideColumns.includes('action')
+  const showStatus     = !hideColumns.includes('status')
+  const showAction     = !hideColumns.includes('action')
+  const showParameters = !hideColumns.includes('parameters')
+  const showProtocol   = !hideColumns.includes('protocol')
 
   // Internal accordion state
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -188,15 +190,15 @@ export function PipelineListView({
 
   // Total colspan for the accordion row
   const totalCols =
-    (onReorder ? 1 : 0) +   // grip
-    1 +                       // Method Name
-    1 +                       // Plan
-    1 +                       // Parameters
-    1 +                       // Protocol ID
-    1 +                       // Materials
-    1 +                       // Buffer Recipes
-    1 +                       // Date Selected
-    1 +                       // Author
+    (onReorder ? 1 : 0) +
+    1 +                          // Method Name
+    1 +                          // Plan
+    (showParameters ? 1 : 0) +  // Parameters
+    (showProtocol   ? 1 : 0) +  // Protocol ID
+    1 +                          // Materials
+    1 +                          // Buffer Recipes
+    1 +                          // Date Selected
+    1 +                          // Author
     (showStatus ? 1 : 0) +
     (showAction ? 1 : 0)
 
@@ -208,11 +210,11 @@ export function PipelineListView({
             {onReorder && <th className="w-8 py-3 px-2" />}
             <th className="w-[250px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Method Name</th>
             <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Plan</th>
-            <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Parameters</th>
-            <th className="w-[100px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Protocol ID</th>
+            {showParameters && <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Parameters</th>}
+            {showProtocol   && <th className="w-[100px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Protocol ID</th>}
             <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Materials</th>
             <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Buffer Recipes</th>
-            <th className="w-[120px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Date Selected</th>
+            <th className="w-[120px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Date Created</th>
             <th className="w-[120px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Author</th>
             {showStatus && <th className="w-[130px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Status</th>}
             {showAction && <th className="w-[100px] py-3 px-4 text-center text-sm font-medium text-gray-500">Action</th>}
@@ -291,27 +293,31 @@ export function PipelineListView({
                       )}
                     </div>
                   </td>
-                  <td className="py-4 px-4 text-center">
-                    <button
-                      className={cn("w-8 h-8 rounded-md flex items-center justify-center transition-colors cursor-pointer", getParametersButtonColor(step))}
-                      onClick={(e) => { e.stopPropagation(); onParametersClick?.(step) }}
-                      title="Configure parameters"
-                    >
-                      <Grid3X3 className="h-4 w-4" />
-                    </button>
-                  </td>
-                  <td className="py-4 px-4">
-                    {step.protocolId === "CM-001" ? (
+                  {showParameters && (
+                    <td className="py-4 px-4 text-center">
                       <button
-                        onClick={(e) => { e.stopPropagation(); onProtocolClick?.(step) }}
-                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
+                        className={cn("w-8 h-8 rounded-md flex items-center justify-center transition-colors cursor-pointer", getParametersButtonColor(step))}
+                        onClick={(e) => { e.stopPropagation(); onParametersClick?.(step) }}
+                        title="Configure parameters"
                       >
-                        {step.protocolId}
+                        <Grid3X3 className="h-4 w-4" />
                       </button>
-                    ) : (
-                      <div className="text-sm text-gray-600">{step.protocolId || "—"}</div>
-                    )}
-                  </td>
+                    </td>
+                  )}
+                  {showProtocol && (
+                    <td className="py-4 px-4">
+                      {step.protocolId === "CM-001" ? (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onProtocolClick?.(step) }}
+                          className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
+                        >
+                          {step.protocolId}
+                        </button>
+                      ) : (
+                        <div className="text-sm text-gray-600">{step.protocolId || "—"}</div>
+                      )}
+                    </td>
+                  )}
                   <td className="py-4 px-4 text-center">
                     <button
                       className="w-8 h-8 rounded-md flex items-center justify-center text-gray-600 bg-gray-100 hover:bg-gray-200 cursor-pointer transition-colors"
