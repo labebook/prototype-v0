@@ -244,7 +244,8 @@ export default function MethodsPage() {
             {activeFolder && (
               <PipelineListView
                 steps={activeMethods}
-                hideColumns={['status', 'action']}
+                hideColumns={['status', 'action', 'dateSelected', 'author']}
+                showCreatedColumn
                 showMethodIcon
                 onParametersClick={step => console.log("Parameters:", step)}
                 onProtocolClick={step => console.log("Protocol:", step)}
