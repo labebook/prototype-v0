@@ -69,6 +69,10 @@ interface TeamContextValue {
   projectFolders: ProjectFolder[]
   projects: Project[]
 
+  // Pipeline actions
+  renamePipeline: (id: string, name: string) => void
+  duplicatePipeline: (id: string) => TeamPipeline | null
+
   // Filtering
   getMyPipelines: () => TeamPipeline[]
   getFavouritePipelines: () => TeamPipeline[]
@@ -384,6 +388,27 @@ export function TeamProvider({ children }: TeamProviderProps) {
     [currentUser.email, teams] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
+  // ── Pipeline actions ─────────────────────────────────────────────────────
+  const renamePipeline = useCallback((id: string, name: string) => {
+    setPipelines(prev =>
+      prev.map(p => p.id === id ? { ...p, name, lastModified: new Date().toISOString().split('T')[0] } : p)
+    )
+  }, [])
+
+  const duplicatePipeline = useCallback((id: string): TeamPipeline | null => {
+    const source = pipelines.find(p => p.id === id)
+    if (!source) return null
+    const copy: TeamPipeline = {
+      ...source,
+      id: `p${Date.now()}`,
+      name: `${source.name} (Copy)`,
+      lastModified: new Date().toISOString().split('T')[0],
+      ownerId: currentUserId,
+    }
+    setPipelines(prev => [...prev, copy])
+    return copy
+  }, [pipelines])
+
   // Filter pipelines by category
   const getMyPipelines = useCallback(() => {
     if (!currentTeam) return []
@@ -429,6 +454,8 @@ export function TeamProvider({ children }: TeamProviderProps) {
     pipelineFolders,
     projectFolders,
     projects,
+    renamePipeline,
+    duplicatePipeline,
     getMyPipelines,
     getFavouritePipelines,
     getSharedPipelines,

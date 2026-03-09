@@ -7,7 +7,22 @@ import { Footer } from "@/components/footer"
 import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Download, LayoutGrid, List, Share2 } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { ArrowLeft, Copy, Download, LayoutGrid, List, MoreHorizontal, Pencil, Share2, Type } from "lucide-react"
 import { PipelineListView } from "@/components/pipeline-list-view"
 import { StaticPipelineCanvas } from "@/components/static-pipeline-canvas"
 import { cn } from "@/lib/utils"
@@ -121,8 +136,27 @@ export default function LibraryPipelinePage() {
   const id = params.folderId as string
 
   const [viewMode, setViewMode] = useState<"visual" | "list">("list")
+  const [renameOpen, setRenameOpen] = useState(false)
+  const [renameValue, setRenameValue] = useState("")
 
-  const { pipelines } = useTeam()
+  const { pipelines, renamePipeline, duplicatePipeline } = useTeam()
+
+  function handleRenameOpen() {
+    const pipeline = pipelines.find(p => p.id === id)
+    setRenameValue(pipeline?.name ?? "")
+    setRenameOpen(true)
+  }
+
+  function handleRenameConfirm() {
+    const trimmed = renameValue.trim()
+    if (trimmed) renamePipeline(id, trimmed)
+    setRenameOpen(false)
+  }
+
+  function handleDuplicate() {
+    const copy = duplicatePipeline(id)
+    if (copy) router.push(`/pipelines/${copy.id}`)
+  }
 
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString("en-US", {
@@ -203,6 +237,28 @@ export default function LibraryPipelinePage() {
                   <Download className="mr-1.5 h-4 w-4" />
                   Export
                 </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-900 px-2">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-44">
+                    <DropdownMenuItem onClick={() => router.push(`/pipelines/${id}/edit`)}>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleRenameOpen}>
+                      <Type className="mr-2 h-4 w-4" />
+                      Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleDuplicate}>
+                      <Copy className="mr-2 h-4 w-4" />
+                      Duplicate
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 
@@ -262,6 +318,25 @@ export default function LibraryPipelinePage() {
         </main>
       </div>
       <Footer />
+
+      {/* ── Rename dialog ──────────────────────────────────────── */}
+      <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Rename pipeline</DialogTitle>
+          </DialogHeader>
+          <Input
+            value={renameValue}
+            onChange={e => setRenameValue(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") handleRenameConfirm() }}
+            autoFocus
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameOpen(false)}>Cancel</Button>
+            <Button onClick={handleRenameConfirm} disabled={!renameValue.trim()}>Rename</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

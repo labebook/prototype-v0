@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Pencil, Save, Share2, Play, LayoutGrid, List, X, Search, Plus, Filter, Grid3X3, Package, FlaskConical, CalendarDays, User } from "lucide-react"
+import { Pencil, Save, Share2, Play, LayoutGrid, List, X, Search, Plus, Filter, Grid3X3, Package, FlaskConical, CalendarDays, User, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
@@ -17,9 +17,10 @@ interface NewPipelineEditorProps {
   hideHeader?: boolean
   viewMode?: "visual" | "list"
   onViewModeChange?: (mode: "visual" | "list") => void
+  onClose?: () => void
 }
 
-export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onViewModeChange }: NewPipelineEditorProps = {}) {
+export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onViewModeChange, onClose }: NewPipelineEditorProps = {}) {
   const [pipelineName, setPipelineName] = useState("New Pipeline")
   const [isEditingName, setIsEditingName] = useState(false)
   const [showPropertiesPanel, setShowPropertiesPanel] = useState(false)
@@ -239,7 +240,16 @@ export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onVi
       {/* Header */}
       {!hideHeader && <div className="border-b border-gray-200">
         <div className="w-full flex justify-between items-center px-6 h-16">
-          <div className="flex items-center">
+          <div className="flex items-center gap-3">
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-700 transition-colors"
+                aria-label="Back to pipelines"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+            )}
             {isEditingName ? (
               <Input
                 value={pipelineName}

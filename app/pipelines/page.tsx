@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ChevronRight, Folder, LayoutGrid, Plus } from "lucide-react"
 import { useTeam } from "@/hooks/useTeam"
+import { NewPipelineEditor } from "@/components/new-pipeline-editor"
 import Link from "next/link"
 
 const mockFolders = [
@@ -21,6 +22,7 @@ const mockFolders = [
 export default function MyPipelinesPage() {
   const { currentUser, pipelines } = useTeam()
 
+  const [showEditor, setShowEditor] = useState(false)
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
   const [folderPath, setFolderPath] = useState<Array<{ id: string; name: string }>>([])
 
@@ -54,6 +56,18 @@ export default function MyPipelinesPage() {
 
   const isEmpty = levelFolders.length === 0 && visiblePipelines.length === 0
 
+  if (showEditor) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 flex flex-col">
+          <NewPipelineEditor onClose={() => setShowEditor(false)} />
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -70,7 +84,7 @@ export default function MyPipelinesPage() {
                   {myPipelines.length} {myPipelines.length === 1 ? "pipeline" : "pipelines"}
                 </p>
               </div>
-              <Button>
+              <Button onClick={() => setShowEditor(true)}>
                 <Plus className="mr-2 h-4 w-4" />
                 New pipeline
               </Button>
@@ -120,7 +134,7 @@ export default function MyPipelinesPage() {
                   {currentFolderId ? "This folder is empty" : "No pipelines yet"}
                 </p>
                 {currentFolderId === null && (
-                  <Button>
+                  <Button onClick={() => setShowEditor(true)}>
                     <Plus className="mr-2 h-4 w-4" />
                     New pipeline
                   </Button>
