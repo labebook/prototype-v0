@@ -210,7 +210,7 @@ export function PipelineListView({
         <thead>
           <tr className={cardRows ? "" : "border-b border-gray-200"}>
             {!cardRows && onReorder && <th className="w-8 py-3 px-2" />}
-            {!cardRows && <th className="w-[250px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Method Name</th>}
+            {!cardRows && <th className="w-[250px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Method</th>}
             {!cardRows && <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Plan</th>}
             {!cardRows && showParameters && <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Parameters</th>}
             {!cardRows && showProtocol   && <th className="w-[100px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Protocol ID</th>}
@@ -271,16 +271,17 @@ export function PipelineListView({
                       )}
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <div className="text-sm font-medium text-gray-900">{step.name}</div>
+                          <div className="text-sm font-semibold text-gray-900 leading-snug">{step.name}</div>
                           {fileCount > 0 && (
                             <span className="inline-flex items-center gap-0.5 text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">
-                              📎 {fileCount}
+                              {fileCount}
                             </span>
                           )}
                         </div>
-                        {step.description && (
-                          <div className="text-xs text-gray-500 mt-0.5 leading-relaxed">{step.description}</div>
+                        {step.objective && (
+                          <div className="text-xs text-gray-500 mt-0.5 leading-relaxed">{step.objective}</div>
                         )}
+                        <div className="text-xs text-gray-400 mt-1">{step.method}</div>
                       </div>
                     </div>
                   </td>
