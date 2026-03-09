@@ -262,7 +262,7 @@ export default function AntibodyIsolationPipeline() {
               >
                 <div className="flex items-center">
                   <Layers className="h-4 w-4 mr-2" />
-                  <span className="font-medium">Custom Modules</span>
+                  <span className="font-medium">Operational Procedures</span>
                 </div>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

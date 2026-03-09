@@ -39,7 +39,7 @@ export function CustomModuleBreadcrumb() {
             </li>
             <li>
               <Link href="/custom-modules" className="text-gray-600 hover:text-gray-900">
-                Custom Modules
+                Operational Procedures
               </Link>
             </li>
             {isModuleDetail && moduleSlug && (

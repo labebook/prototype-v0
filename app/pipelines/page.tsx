@@ -6,29 +6,40 @@ import { Footer } from "@/components/footer"
 import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ChevronRight, Folder, LayoutGrid, Plus } from "lucide-react"
+import { ChevronRight, Folder, FolderPlus, LayoutGrid, Plus } from "lucide-react"
 import { useTeam } from "@/hooks/useTeam"
 import { NewPipelineEditor } from "@/components/new-pipeline-editor"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import Link from "next/link"
 
-const mockFolders = [
-  { id: "f1", name: "Active Research",  parentId: null },
-  { id: "f2", name: "Experiments",      parentId: "f1" },
-  { id: "f3", name: "Drafts",           parentId: "f1" },
-  { id: "f4", name: "Archives",         parentId: null },
-  { id: "f5", name: "Shared with me",   parentId: null },
+const initialFolders = [
+  { id: "f1", name: "Active Research",  parentId: null as string | null },
+  { id: "f2", name: "Experiments",      parentId: "f1" as string | null },
+  { id: "f3", name: "Drafts",           parentId: "f1" as string | null },
+  { id: "f4", name: "Archives",         parentId: null as string | null },
+  { id: "f5", name: "Shared with me",   parentId: null as string | null },
 ]
 
 export default function MyPipelinesPage() {
   const { currentUser, pipelines } = useTeam()
 
   const [showEditor, setShowEditor] = useState(false)
+  const [folders, setFolders] = useState(initialFolders)
+  const [newFolderOpen, setNewFolderOpen] = useState(false)
+  const [newFolderName, setNewFolderName] = useState("")
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
   const [folderPath, setFolderPath] = useState<Array<{ id: string; name: string }>>([])
 
   const myPipelines = pipelines.filter(p => p.ownerId === currentUser.id)
 
-  const levelFolders = mockFolders.filter(f => f.parentId === currentFolderId)
+  const levelFolders = folders.filter(f => f.parentId === currentFolderId)
 
   // Pipelines only show at root level for this demo
   const visiblePipelines = currentFolderId === null ? myPipelines : []
@@ -47,6 +58,14 @@ export default function MyPipelinesPage() {
       setCurrentFolderId(newPath[newPath.length - 1].id)
       setFolderPath(newPath)
     }
+  }
+
+  function handleNewFolder() {
+    const trimmed = newFolderName.trim()
+    if (!trimmed) return
+    setFolders(prev => [...prev, { id: `f${Date.now()}`, name: trimmed, parentId: currentFolderId }])
+    setNewFolderName("")
+    setNewFolderOpen(false)
   }
 
   const formatDate = (dateString: string) =>
@@ -84,10 +103,16 @@ export default function MyPipelinesPage() {
                   {myPipelines.length} {myPipelines.length === 1 ? "pipeline" : "pipelines"}
                 </p>
               </div>
-              <Button onClick={() => setShowEditor(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                New pipeline
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={() => setNewFolderOpen(true)}>
+                  <FolderPlus className="mr-2 h-4 w-4" />
+                  New folder
+                </Button>
+                <Button onClick={() => setShowEditor(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  New pipeline
+                </Button>
+              </div>
             </div>
 
             {/* ── Folder breadcrumb ─────────────────────────────────── */}
@@ -193,6 +218,26 @@ export default function MyPipelinesPage() {
         </main>
       </div>
       <Footer />
+
+      {/* ── New folder dialog ─────────────────────────────────────── */}
+      <Dialog open={newFolderOpen} onOpenChange={setNewFolderOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>New folder</DialogTitle>
+          </DialogHeader>
+          <Input
+            placeholder="Folder name"
+            value={newFolderName}
+            onChange={e => setNewFolderName(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") handleNewFolder() }}
+            autoFocus
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewFolderOpen(false)}>Cancel</Button>
+            <Button onClick={handleNewFolder} disabled={!newFolderName.trim()}>Create</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

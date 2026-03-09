@@ -7,7 +7,7 @@ import { UserDropdown } from "@/components/user-dropdown"
 
 const navItems = [
   { label: "Browse Methods", href: "/" },
-  { label: "Team Workspace", href: "/projects" },
+  { label: "My research workspace", href: "/projects" },
   { label: "Discussions", href: "/discussions" },
 ]
 

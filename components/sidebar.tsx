@@ -97,7 +97,7 @@ export function Sidebar() {
                 }`}
               >
                 <Layers className="mr-2 h-4 w-4" />
-                Custom Modules
+                Operational Procedures
               </Link>
             </li>
         </ul>

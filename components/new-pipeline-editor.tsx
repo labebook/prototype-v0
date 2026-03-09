@@ -353,7 +353,7 @@ export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onVi
                 )}
                 onClick={() => { setSidebarTab("custom-modules"); setSearchQuery("") }}
               >
-                Custom
+                Op. Proc.
               </button>
             </div>
           </div>

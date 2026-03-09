@@ -39,9 +39,9 @@ export default function CustomModulesPage() {
             {/* ── Page header ───────────────────────────────────────── */}
             <div className="flex items-end justify-between pb-6 border-b border-gray-200 mb-8">
               <div>
-                <h1 className="text-[32px] font-semibold">Custom Modules</h1>
+                <h1 className="text-[32px] font-semibold">Operational Procedures</h1>
                 <p className="text-gray-500 mt-1">
-                  Browse and manage your custom modules
+                  Browse and manage your operational procedures
                 </p>
               </div>
               <Button>
