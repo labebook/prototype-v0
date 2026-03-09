@@ -38,6 +38,8 @@ interface ModuleData {
   inputData: { text: string; files: File[] }
   outputData: { text: string; files: File[] }
   checkedSteps: string[]
+  startedAt?: string
+  completedAt?: string
 }
 
 export default function ProjectPipelineDetailPage() {
@@ -124,6 +126,9 @@ export default function ProjectPipelineDetailPage() {
     setWorkflowStep(isFirstStep(stepId) ? "input" : "output")
   }
 
+  const nowLabel = () =>
+    new Date().toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })
+
   const handleInputContinue = (data: { text: string; files: File[] }) => {
     if (currentExecutingModule) {
       setModuleDataMap(prev => ({
@@ -131,12 +136,13 @@ export default function ProjectPipelineDetailPage() {
         [currentExecutingModule]: {
           ...prev[currentExecutingModule],
           inputData: data,
-          outputData: { text: "", files: [] },
-          checkedSteps: [],
+          outputData: prev[currentExecutingModule]?.outputData ?? { text: "", files: [] },
+          checkedSteps: prev[currentExecutingModule]?.checkedSteps ?? [],
+          startedAt: prev[currentExecutingModule]?.startedAt ?? nowLabel(),
         },
       }))
-      // First step skips execution and goes straight to output
-      setWorkflowStep("output")
+      setCurrentExecutingModule(null)
+      setWorkflowStep(null)
     }
   }
 
@@ -154,27 +160,13 @@ export default function ProjectPipelineDetailPage() {
     if (currentExecutingModule) {
       setModuleDataMap(prev => ({
         ...prev,
-        [currentExecutingModule]: { ...prev[currentExecutingModule], outputData: data },
+        [currentExecutingModule]: {
+          ...prev[currentExecutingModule],
+          outputData: data,
+          completedAt: nowLabel(),
+        },
       }))
       setCompletedModules(prev => new Set([...prev, currentExecutingModule]))
-
-      const currentStepIndex = pipelineSteps.findIndex(s => s.id === currentExecutingModule)
-      const isLastModule = currentStepIndex === pipelineSteps.length - 1
-
-      if (!isLastModule) {
-        const nextStepId = pipelineSteps[currentStepIndex + 1]?.id
-        if (nextStepId) {
-          setCurrentExecutingModule(nextStepId)
-          setModuleDataMap(prev => ({
-            ...prev,
-            [nextStepId]: { inputData: data, outputData: { text: "", files: [] }, checkedSteps: [] },
-          }))
-          // Subsequent steps skip input and execution, go straight to output
-          setWorkflowStep("output")
-          return
-        }
-      }
-
       setCurrentExecutingModule(null)
       setWorkflowStep(null)
     }
@@ -403,14 +395,35 @@ export default function ProjectPipelineDetailPage() {
                 </div>
                 <PipelineListView
                   steps={pipelineSteps}
-                  hideColumns={['status']}
+                  hideColumns={['status', 'action', 'dateSelected', 'author']}
+                  showCreatedColumn
                   onParametersClick={step => openModalForStep("parameters", step.name)}
                   onBuffersClick={step => openModalForStep("buffers", step.name)}
                   onMaterialsClick={step => openModalForStep("materials", step.name)}
                   onPlanClick={step => openPlanForStep(step.name)}
-                  onRunStep={handleRunStep}
-                  onEditOutput={stepId => {
-                    setCurrentExecutingModule(stepId)
+                  onInputClick={step => {
+                    const stepIndex = pipelineSteps.findIndex(s => s.id === step.id)
+                    if (stepIndex > 0) {
+                      // Copy previous step's output directly as input
+                      const prevStepId = pipelineSteps[stepIndex - 1].id
+                      const prevOutput = moduleDataMap[prevStepId]?.outputData ?? { text: "", files: [] }
+                      setModuleDataMap(prev => ({
+                        ...prev,
+                        [step.id]: {
+                          ...prev[step.id],
+                          inputData: prevOutput,
+                          outputData: prev[step.id]?.outputData ?? { text: "", files: [] },
+                          checkedSteps: prev[step.id]?.checkedSteps ?? [],
+                          startedAt: prev[step.id]?.startedAt ?? nowLabel(),
+                        },
+                      }))
+                    } else {
+                      setCurrentExecutingModule(step.id)
+                      setWorkflowStep("input")
+                    }
+                  }}
+                  onOutputClick={step => {
+                    setCurrentExecutingModule(step.id)
                     setWorkflowStep("output")
                   }}
                   completedModules={completedModules}

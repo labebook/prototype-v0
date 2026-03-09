@@ -134,8 +134,8 @@ export function ModuleInputDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleContinue} className="bg-blue-600 hover:bg-blue-700">
-            Continue to Steps
+          <Button onClick={handleContinue}>
+            Save
           </Button>
         </DialogFooter>
       </DialogContent>

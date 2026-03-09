@@ -141,8 +141,8 @@ export function ModuleOutputDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleComplete} className="bg-green-600 hover:bg-green-700">
-            {isLastModule ? 'Complete Pipeline' : 'Complete & Continue to Next Module'}
+          <Button onClick={handleComplete}>
+            Save
           </Button>
         </DialogFooter>
       </DialogContent>
