@@ -320,10 +320,6 @@ export default function ProjectDetailPage() {
                       <Users className="mr-1.5 h-4 w-4" />
                       Share
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-900">
-                      <Edit className="mr-1.5 h-4 w-4" />
-                      Edit
-                    </Button>
                     <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-600">
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -350,10 +346,18 @@ export default function ProjectDetailPage() {
                     </button>
                   ))}
                 </div>
-                <Button size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  {addButtonLabel}
-                </Button>
+                <div className="flex items-center gap-2">
+                  {filterTab !== "files" && (
+                    <Button size="sm" variant="outline" onClick={() => setNewFolderOpen(true)}>
+                      <FolderPlus className="mr-2 h-4 w-4" />
+                      New folder
+                    </Button>
+                  )}
+                  <Button size="sm" onClick={() => filterTab !== "files" ? setShowPipelineEditor(true) : undefined}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    {addButtonLabel}
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -477,9 +481,9 @@ export default function ProjectDetailPage() {
                   <div className="py-24 text-center">
                     <LayoutGrid className="h-10 w-10 text-gray-300 mx-auto mb-4" />
                     <p className="text-gray-500 mb-4">No pipelines yet</p>
-                    <Button>
+                    <Button onClick={() => setShowPipelineEditor(true)}>
                       <Plus className="mr-2 h-4 w-4" />
-                      Add pipeline
+                      New pipeline
                     </Button>
                   </div>
                 ) : (
@@ -554,6 +558,26 @@ export default function ProjectDetailPage() {
         </main>
       </div>
       <Footer />
+
+      {/* ── New folder dialog ─────────────────────────────────────── */}
+      <Dialog open={newFolderOpen} onOpenChange={setNewFolderOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>New folder</DialogTitle>
+          </DialogHeader>
+          <Input
+            placeholder="Folder name"
+            value={newFolderName}
+            onChange={e => setNewFolderName(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") handleNewFolder() }}
+            autoFocus
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewFolderOpen(false)}>Cancel</Button>
+            <Button onClick={handleNewFolder} disabled={!newFolderName.trim()}>Create</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <ShareProjectDialog
         open={shareDialogOpen}
