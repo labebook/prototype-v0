@@ -202,50 +202,36 @@ export default function MethodsPage() {
               </div>
             )}
 
-            {/* ── Column headers ────────────────────────────────────── */}
-            <div className="flex items-center gap-4 -mx-6 px-6 py-2 border-b border-gray-100">
-              <div className="h-5 w-5 shrink-0" />
-              <div className="flex-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Name</div>
-              <div className="w-20 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                {activeFolder ? "Methods" : "Methods"}
-              </div>
-              <div className="w-32 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Modified</div>
-              <div className="w-5 shrink-0" />
-            </div>
-
             {/* ── Folder view (root) ────────────────────────────────── */}
             {!activeFolder && (
-              <>
+              <div className="mt-4 flex flex-col gap-2">
                 {methodFolders.map(folder => (
                   <button
                     key={folder.id}
                     onClick={() => navigateIntoFolder(folder)}
-                    className="group flex items-center gap-4 w-full py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors text-left"
+                    className="group flex items-center gap-4 w-full px-4 py-3.5 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-left shadow-sm"
                   >
                     <Folder className="h-5 w-5 text-gray-400 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <span className="text-sm font-medium text-gray-900">{folder.name}</span>
                     </div>
-                    <div className="w-20 text-right">
-                      <span className="text-xs text-gray-400">
-                        {methodsByFolder[folder.id]?.length ?? 0}
-                      </span>
-                    </div>
-                    <div className="w-32 text-right">
-                      <span className="text-sm text-gray-400">—</span>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <span className="text-xs text-gray-400 mr-2">
+                      {methodsByFolder[folder.id]?.length ?? 0} methods
+                    </span>
+                    <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 group-hover:text-gray-500 transition-colors" />
                   </button>
                 ))}
-              </>
+              </div>
             )}
 
             {/* ── Method list view (inside folder) ─────────────────── */}
             {activeFolder && (
+              <div className="mt-4">
               <PipelineListView
                 steps={activeMethods}
                 hideColumns={['status', 'action']}
                 showMethodIcon
+                cardRows
                 onParametersClick={step => console.log("Parameters:", step)}
                 onProtocolClick={step => console.log("Protocol:", step)}
                 onBuffersClick={step => console.log("Buffers:", step)}
@@ -253,6 +239,7 @@ export default function MethodsPage() {
                 onMaterialsClick={step => console.log("Materials:", step)}
                 onPlanClick={step => console.log("Plan:", step)}
               />
+              </div>
             )}
 
           </div>

@@ -43,6 +43,7 @@ interface PipelineListViewProps {
   updatedStepId?: string | null
   hideColumns?: ('status' | 'action' | 'parameters' | 'protocol')[]
   showMethodIcon?: boolean
+  cardRows?: boolean
   onReorder?: (newSteps: PipelineStep[]) => void
   // kept for backward-compat (e.g. editor page)
   onStepClick?: (step: PipelineStep) => void
@@ -100,6 +101,7 @@ export function PipelineListView({
   updatedStepId,
   hideColumns = [],
   showMethodIcon = false,
+  cardRows = false,
   onReorder,
   onStepClick,
   selectedStepId,
@@ -204,20 +206,20 @@ export function PipelineListView({
 
   return (
     <div className="w-full h-full overflow-auto">
-      <table className="w-full border-collapse" role="table">
+      <table className={cn("w-full", cardRows ? "border-separate border-spacing-y-2" : "border-collapse")} role="table">
         <thead>
-          <tr className="border-b border-gray-200">
-            {onReorder && <th className="w-8 py-3 px-2" />}
-            <th className="w-[250px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Method Name</th>
-            <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Plan</th>
-            {showParameters && <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Parameters</th>}
-            {showProtocol   && <th className="w-[100px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Protocol ID</th>}
-            <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Materials</th>
-            <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Buffer Recipes</th>
-            <th className="w-[120px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Date Created</th>
-            <th className="w-[120px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Author</th>
-            {showStatus && <th className="w-[130px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Status</th>}
-            {showAction && <th className="w-[100px] py-3 px-4 text-center text-sm font-medium text-gray-500">Action</th>}
+          <tr className={cardRows ? "" : "border-b border-gray-200"}>
+            {!cardRows && onReorder && <th className="w-8 py-3 px-2" />}
+            {!cardRows && <th className="w-[250px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Method Name</th>}
+            {!cardRows && <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Plan</th>}
+            {!cardRows && showParameters && <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Parameters</th>}
+            {!cardRows && showProtocol   && <th className="w-[100px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Protocol ID</th>}
+            {!cardRows && <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Materials</th>}
+            {!cardRows && <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Buffer Recipes</th>}
+            {!cardRows && <th className="w-[120px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Date Created</th>}
+            {!cardRows && <th className="w-[120px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Author</th>}
+            {!cardRows && showStatus && <th className="w-[130px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Status</th>}
+            {!cardRows && showAction && <th className="w-[100px] py-3 px-4 text-center text-sm font-medium text-gray-500">Action</th>}
           </tr>
         </thead>
         <tbody>
@@ -244,8 +246,11 @@ export function PipelineListView({
                   onDragEnd={onReorder   ? handleDragEnd : undefined}
                   onClick={onStepClick   ? () => onStepClick(step) : undefined}
                   className={cn(
-                    "border-b border-gray-200 transition-colors",
-                    isCompleted && !isExpanded ? "bg-gray-50 opacity-70" : "hover:bg-gray-50",
+                    "transition-colors",
+                    cardRows
+                      ? "bg-white border border-gray-200 shadow-sm rounded-lg hover:border-gray-300 hover:bg-gray-50 [&>td:first-child]:rounded-l-lg [&>td:last-child]:rounded-r-lg"
+                      : "border-b border-gray-200",
+                    isCompleted && !isExpanded ? "bg-gray-50 opacity-70" : (!cardRows ? "hover:bg-gray-50" : ""),
                     updatedStepId === step.id   ? "bg-green-50 hover:bg-green-50" : "",
                     dragOverId    === step.id   ? "border-t-2 border-t-black" : "",
                     onReorder   ? "cursor-default" : "",
