@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { Heart } from "lucide-react"
+import { Bookmark } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
@@ -241,10 +241,14 @@ export default function SearchResults() {
                     </h3>
                     <button
                       onClick={() => toggleFavorite(result.id)}
-                      className={`text-gray-400 hover:text-red-500 ${result.isFavorite ? "text-red-500" : ""}`}
-                      aria-label={result.isFavorite ? "Remove from favorites" : "Add to favorites"}
+                      className={`inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-md border transition-colors ${
+                        result.isFavorite
+                          ? "border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100"
+                          : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                      }`}
                     >
-                      <Heart className={`h-6 w-6 ${result.isFavorite ? "fill-red-500" : ""}`} />
+                      <Bookmark className={`h-3.5 w-3.5 ${result.isFavorite ? "fill-blue-600" : ""}`} />
+                      {result.isFavorite ? "Saved" : "Save"}
                     </button>
                   </div>
                   <p className="text-gray-700">{result.description}</p>

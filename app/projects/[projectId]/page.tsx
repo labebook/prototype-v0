@@ -434,7 +434,7 @@ export default function ProjectDetailPage() {
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-gray-900">{pipeline.name}</span>
                         {pipeline.isReady ? (
-                          <Badge className="bg-green-100 text-green-700 border-0 text-xs">Ready</Badge>
+                          <Badge className="bg-blue-100 text-blue-700 border-0 text-xs">Running</Badge>
                         ) : (
                           <Badge variant="outline" className="text-xs">In progress</Badge>
                         )}

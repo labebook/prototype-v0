@@ -6,7 +6,7 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Textarea } from "@/components/ui/textarea"
 import {
   ArrowLeft,
   ChevronRight,
@@ -15,6 +15,7 @@ import {
   FileText,
   Folder,
   Paperclip,
+  Pencil,
   Play,
   Share2,
   User,
@@ -51,13 +52,17 @@ export default function ProjectPipelineDetailPage() {
   const pipelineId = params.pipelineId as string
 
   const [activeTab, setActiveTab] = useState<Tab>("steps")
-  const { currentTeam, currentUser, pipelines, pipelineFolders, projects, canEdit, getProjectActivities } = useTeam()
+  const { currentTeam, currentUser, pipelines, pipelineFolders, projects, canEdit, getProjectActivities, renamePipeline, updatePipelineDescription } = useTeam()
 
   const [currentExecutingModule, setCurrentExecutingModule] = useState<string | null>(null)
   const [workflowStep, setWorkflowStep] = useState<"input" | "execution" | "output" | null>(null)
   const [moduleDataMap, setModuleDataMap] = useState<Record<string, ModuleData>>({})
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set())
   const [isMounted, setIsMounted] = useState(false)
+  const [editingTitle, setEditingTitle] = useState(false)
+  const [titleValue, setTitleValue] = useState("")
+  const [editingDescription, setEditingDescription] = useState(false)
+  const [descGoal, setDescGoal] = useState("")
   const [stepModal, setStepModal] = useState<{ type: "parameters" | "buffers" | "materials" | "plan-western-blot" | "plan-custom-module" | null; stepName?: string }>({ type: null })
   const closeStepModal = () => setStepModal({ type: null })
   const openModalForStep = (type: "parameters" | "buffers" | "materials", stepName: string) => setStepModal({ type, stepName })
@@ -174,6 +179,24 @@ export default function ProjectPipelineDetailPage() {
       setCurrentExecutingModule(null)
       setWorkflowStep(null)
     }
+  }
+
+  function handleTitleEditOpen() {
+    setTitleValue(pipeline.name)
+    setEditingTitle(true)
+  }
+  function handleTitleSave() {
+    const trimmed = titleValue.trim()
+    if (trimmed) renamePipeline(pipelineId, trimmed)
+    setEditingTitle(false)
+  }
+  function handleDescriptionEditOpen() {
+    setDescGoal(pipeline.description.goal ?? "")
+    setEditingDescription(true)
+  }
+  function handleDescriptionSave() {
+    updatePipelineDescription(pipelineId, { goal: descGoal, context: "" })
+    setEditingDescription(false)
   }
 
   const pipelineSteps = [
@@ -307,17 +330,46 @@ export default function ProjectPipelineDetailPage() {
             {/* ── Page header ─────────────────────────────────────────── */}
             <div className="flex items-start justify-between pb-6 border-b border-gray-200">
               <div>
-                <div className="flex items-center gap-3 mb-1">
-                  <h1 className="text-[32px] font-semibold">{pipeline.name}</h1>
-                  {pipeline.isReady ? (
-                    <Badge className="bg-green-100 text-green-700 border-0">Ready</Badge>
-                  ) : (
-                    <Badge variant="outline">In progress</Badge>
-                  )}
-                </div>
-                <p className="text-gray-500 mt-1">{pipeline.description.goal}</p>
-                {pipeline.description.context && (
-                  <p className="text-gray-400 text-sm mt-1">{pipeline.description.context}</p>
+                {editingTitle ? (
+                  <div className="flex items-center gap-2 mb-1">
+                    <input
+                      className="text-[32px] font-semibold border-b border-gray-300 focus:border-blue-500 outline-none bg-transparent w-full"
+                      value={titleValue}
+                      onChange={e => setTitleValue(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") handleTitleSave(); if (e.key === "Escape") setEditingTitle(false) }}
+                      autoFocus
+                    />
+                    <Button size="sm" onClick={handleTitleSave}>Save</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setEditingTitle(false)}>Cancel</Button>
+                  </div>
+                ) : (
+                  <div className="group flex items-center gap-2 cursor-pointer mb-1" onClick={canEditPipeline ? handleTitleEditOpen : undefined}>
+                    <h1 className="text-[32px] font-semibold">{pipeline.name}</h1>
+                    {canEditPipeline && <Pencil className="h-4 w-4 text-gray-300 mt-1" />}
+                  </div>
+                )}
+                {editingDescription ? (
+                  <div className="mt-2 flex flex-col gap-2 max-w-xl">
+                    <Textarea
+                      value={descGoal}
+                      onChange={e => setDescGoal(e.target.value)}
+                      placeholder="Goal"
+                      rows={2}
+                      className="text-sm resize-none"
+                      autoFocus
+                    />
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" onClick={handleDescriptionSave}>Save</Button>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingDescription(false)}>Cancel</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="group flex items-start gap-1.5 cursor-pointer mt-1" onClick={canEditPipeline ? handleDescriptionEditOpen : undefined}>
+                    <p className="text-gray-500 group-hover:text-gray-700">
+                      {pipeline.description.goal || (canEditPipeline && <span className="text-gray-300 italic">Add a goal…</span>)}
+                    </p>
+                    {canEditPipeline && <Pencil className="h-3.5 w-3.5 text-gray-300 mt-1 shrink-0" />}
+                  </div>
                 )}
                 <p className="text-sm text-gray-400 mt-2">
                   {owner?.name ?? "Unknown"}

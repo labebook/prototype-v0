@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { FileText, MoreVertical, Edit, Trash2, Plus } from "lucide-react"
+import { FileText, MoreVertical, Edit, Trash2, Plus, Share2 } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog"
 import { useTeam } from "@/hooks/useTeam"
 import { getUserById } from "@/lib/mockData"
+import { ShareProjectDialog } from "@/components/share-project-dialog"
 
 export default function ProjectsPage() {
   const router = useRouter()
@@ -33,6 +34,7 @@ export default function ProjectsPage() {
   const [newName, setNewName] = useState("")
   const [newDescription, setNewDescription] = useState("")
   const [editingProject, setEditingProject] = useState<{ id: string; name: string; description: string } | null>(null)
+  const [sharingProjectId, setSharingProjectId] = useState<string | null>(null)
 
   const handleCreate = () => {
     if (!newName.trim()) return
@@ -152,6 +154,10 @@ export default function ProjectsPage() {
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
                           </DropdownMenuItem>
+                          <DropdownMenuItem onClick={e => { e.stopPropagation(); setSharingProjectId(project.id) }}>
+                            <Share2 className="mr-2 h-4 w-4" />
+                            Share
+                          </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-red-600 focus:text-red-700 focus:bg-red-50"
                             onClick={e => e.stopPropagation()}
@@ -170,6 +176,15 @@ export default function ProjectsPage() {
         </main>
       </div>
       <Footer />
+
+      {/* ── Share project dialog ─────────────────────────────────────── */}
+      {sharingProjectId && (
+        <ShareProjectDialog
+          open={!!sharingProjectId}
+          onOpenChange={open => { if (!open) setSharingProjectId(null) }}
+          projectId={sharingProjectId}
+        />
+      )}
 
       {/* ── Edit project dialog ──────────────────────────────────────── */}
       <Dialog open={!!editingProject} onOpenChange={open => { if (!open) setEditingProject(null) }}>

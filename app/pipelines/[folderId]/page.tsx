@@ -6,7 +6,6 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -145,7 +144,6 @@ export default function LibraryPipelinePage() {
   const [copyDone, setCopyDone] = useState(false)
   const [editingDescription, setEditingDescription] = useState(false)
   const [descGoal, setDescGoal] = useState("")
-  const [descContext, setDescContext] = useState("")
 
   const { pipelines, projects, renamePipeline, updatePipelineDescription, duplicatePipeline, copyPipelineToProject } = useTeam()
 
@@ -175,12 +173,11 @@ export default function LibraryPipelinePage() {
   function handleDescriptionEditOpen() {
     const pipeline = pipelines.find(p => p.id === id)
     setDescGoal(pipeline?.description.goal ?? "")
-    setDescContext(pipeline?.description.context ?? "")
     setEditingDescription(true)
   }
 
   function handleDescriptionSave() {
-    updatePipelineDescription(id, { goal: descGoal, context: descContext })
+    updatePipelineDescription(id, { goal: descGoal, context: "" })
     setEditingDescription(false)
   }
 
@@ -243,13 +240,11 @@ export default function LibraryPipelinePage() {
             {/* ── Page header ───────────────────────────────────────── */}
             <div className="flex items-start justify-between pb-6 border-b border-gray-200">
               <div>
-                <div className="flex items-center gap-3 mb-1">
-                  <h1 className="text-[32px] font-semibold">{pipeline.name}</h1>
-                  {pipeline.isReady ? (
-                    <Badge className="bg-green-100 text-green-700 border-0">Ready</Badge>
-                  ) : (
-                    <Badge variant="outline">In progress</Badge>
-                  )}
+                <div className="flex items-center gap-2 mb-1 group/title">
+                  <div className="group flex items-center gap-2 cursor-pointer" onClick={handleRenameOpen}>
+                    <h1 className="text-[32px] font-semibold">{pipeline.name}</h1>
+                    <Pencil className="h-4 w-4 text-gray-300 mt-1" />
+                  </div>
                 </div>
                 {editingDescription ? (
                   <div className="mt-2 flex flex-col gap-2 max-w-xl">
@@ -261,29 +256,17 @@ export default function LibraryPipelinePage() {
                       className="text-sm resize-none"
                       autoFocus
                     />
-                    <Textarea
-                      value={descContext}
-                      onChange={e => setDescContext(e.target.value)}
-                      placeholder="Context (optional)"
-                      rows={2}
-                      className="text-sm resize-none text-gray-500"
-                    />
                     <div className="flex items-center gap-2">
                       <Button size="sm" onClick={handleDescriptionSave}>Save</Button>
                       <Button size="sm" variant="ghost" onClick={() => setEditingDescription(false)}>Cancel</Button>
                     </div>
                   </div>
                 ) : (
-                  <div
-                    className="group mt-1 cursor-text"
-                    onClick={handleDescriptionEditOpen}
-                  >
+                  <div className="group flex items-start gap-1.5 cursor-pointer mt-1" onClick={handleDescriptionEditOpen}>
                     <p className="text-gray-500 group-hover:text-gray-700">
                       {pipeline.description.goal || <span className="text-gray-300 italic">Add a goal…</span>}
                     </p>
-                    {pipeline.description.context && (
-                      <p className="text-gray-400 text-sm mt-0.5">{pipeline.description.context}</p>
-                    )}
+                    <Pencil className="h-3.5 w-3.5 text-gray-300 mt-1 shrink-0" />
                   </div>
                 )}
                 <p className="text-sm text-gray-400 mt-2">
