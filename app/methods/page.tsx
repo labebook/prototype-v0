@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ChevronRight, Folder, FlaskConical } from "lucide-react"
+import { ChevronRight, Folder } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -17,6 +17,13 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { PipelineListView } from "@/components/pipeline-list-view"
+import {
+  ParametersModal,
+  BufferRecipesModal,
+  MaterialsModal,
+} from "@/components/pipeline-modals"
+import { WesternBlotPlanOverlay } from "@/components/western-blot-plan-overlay"
+import { CustomModulePlanOverlay } from "@/components/custom-module-plan-overlay"
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -169,6 +176,11 @@ const initialMethodsByFolder: Record<string, Method[]> = {
 export default function MethodsPage() {
   const [methodsByFolder, setMethodsByFolder] = useState(initialMethodsByFolder)
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null)
+  const [activeModal, setActiveModal] = useState<{
+    type: "parameters" | "buffers" | "materials" | "plan-western-blot" | "plan-custom"
+    stepName: string
+  } | null>(null)
+
   const [editingMethod, setEditingMethod] = useState<{
     folderId: string
     id: string
@@ -243,7 +255,7 @@ export default function MethodsPage() {
                     onClick={() => setActiveFolderId(folder.id)}
                     className="group flex items-center gap-4 w-full py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors text-left"
                   >
-                    <Folder className="h-5 w-5 text-gray-400 shrink-0" />
+                    <Folder className="h-5 w-5 text-amber-400 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <span className="text-sm font-medium text-gray-900">{folder.name}</span>
                     </div>
@@ -265,12 +277,15 @@ export default function MethodsPage() {
                 hideColumns={['status', 'action', 'dateSelected', 'author']}
                 showCreatedColumn
                 showMethodIcon
-                onParametersClick={step => console.log("Parameters:", step)}
+                onParametersClick={step => setActiveModal({ type: "parameters", stepName: step.name })}
                 onProtocolClick={step => console.log("Protocol:", step)}
-                onBuffersClick={step => console.log("Buffers:", step)}
+                onBuffersClick={step => setActiveModal({ type: "buffers", stepName: step.name })}
                 onCalculationsClick={step => console.log("Calculations:", step)}
-                onMaterialsClick={step => console.log("Materials:", step)}
-                onPlanClick={step => console.log("Plan:", step)}
+                onMaterialsClick={step => setActiveModal({ type: "materials", stepName: step.name })}
+                onPlanClick={step => setActiveModal({
+                  type: activeFolderId === "western-blot" ? "plan-western-blot" : "plan-custom",
+                  stepName: step.name,
+                })}
                 onEditMethod={step =>
                   setEditingMethod({
                     folderId: activeFolder.id,
@@ -286,6 +301,82 @@ export default function MethodsPage() {
         </main>
       </div>
       <Footer />
+
+      {/* ── Parameters modal ─────────────────────────────────────────── */}
+      <ParametersModal
+        isOpen={activeModal?.type === "parameters"}
+        onClose={() => setActiveModal(null)}
+        stepName={activeModal?.stepName ?? ""}
+        isEditable={true}
+      />
+
+      {/* ── Buffer Recipes modal ──────────────────────────────────────── */}
+      <BufferRecipesModal
+        isOpen={activeModal?.type === "buffers"}
+        onClose={() => setActiveModal(null)}
+        stepName={activeModal?.stepName ?? ""}
+        buffers={[
+          {
+            name: "Running Buffer (1×)",
+            components: [
+              { component: "Tris base", concentration: "25 mM", volume: "3.03 g/L" },
+              { component: "Glycine", concentration: "192 mM", volume: "14.4 g/L" },
+              { component: "SDS", concentration: "0.1%", volume: "1 g/L" },
+            ],
+          },
+          {
+            name: "Sample Buffer (2×)",
+            components: [
+              { component: "Tris-HCl pH 6.8", concentration: "100 mM", volume: "1 mL" },
+              { component: "SDS", concentration: "4%", volume: "0.4 g" },
+              { component: "Glycerol", concentration: "20%", volume: "2 mL" },
+              { component: "β-mercaptoethanol", concentration: "200 mM", volume: "140 μL" },
+            ],
+          },
+        ]}
+      />
+
+      {/* ── Materials modal ───────────────────────────────────────────── */}
+      <MaterialsModal
+        isOpen={activeModal?.type === "materials"}
+        onClose={() => setActiveModal(null)}
+        stepName={activeModal?.stepName ?? ""}
+        materials={{
+          reagents: [
+            "Acrylamide/Bis-acrylamide (30%)",
+            "Tris-HCl buffer pH 8.8",
+            "Tris-HCl buffer pH 6.8",
+            "SDS (10%)",
+            "Ammonium persulfate (APS, 10%)",
+            "TEMED",
+          ],
+          consumables: [
+            "Glass plates and spacers",
+            "Gel casting system",
+            "Microcentrifuge tubes",
+            "Pipette tips",
+            "Protein ladder",
+          ],
+          equipment: [
+            "Electrophoresis power supply",
+            "Gel electrophoresis tank",
+            "Heat block or boiling water bath",
+            "Microcentrifuge",
+          ],
+        }}
+      />
+
+      {/* ── Plan overlays ─────────────────────────────────────────────── */}
+      <WesternBlotPlanOverlay
+        isOpen={activeModal?.type === "plan-western-blot"}
+        onClose={() => setActiveModal(null)}
+        onApply={() => setActiveModal(null)}
+      />
+      <CustomModulePlanOverlay
+        isOpen={activeModal?.type === "plan-custom"}
+        onClose={() => setActiveModal(null)}
+        onApply={() => setActiveModal(null)}
+      />
 
       {/* ── Edit method dialog ────────────────────────────────────────── */}
       <Dialog open={!!editingMethod} onOpenChange={open => { if (!open) setEditingMethod(null) }}>

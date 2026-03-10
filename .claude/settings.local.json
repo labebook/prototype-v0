@@ -4,7 +4,8 @@
       "mcp__serena__find_file",
       "Bash(grep:*)",
       "Bash(ls:*)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(head:*)"
     ]
   },
   "outputStyle": "default"

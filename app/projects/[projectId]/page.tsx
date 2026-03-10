@@ -408,7 +408,7 @@ export default function ProjectDetailPage() {
                     onClick={() => navigateIntoFolder(folder)}
                     className="group flex items-center gap-4 w-full py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors text-left"
                   >
-                    <Folder className="h-5 w-5 text-gray-400 shrink-0" />
+                    <Folder className="h-5 w-5 text-amber-400 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <span className="text-sm font-medium text-gray-900">{folder.name}</span>
                     </div>
@@ -429,7 +429,7 @@ export default function ProjectDetailPage() {
                     href={`/projects/${projectId}/pipeline/${pipeline.id}`}
                     className="group flex items-center gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors"
                   >
-                    <LayoutGrid className="h-5 w-5 text-gray-400 shrink-0" />
+                    <LayoutGrid className="h-5 w-5 text-blue-500 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-gray-900">{pipeline.name}</span>
@@ -457,7 +457,7 @@ export default function ProjectDetailPage() {
                     key={file.id}
                     className="group flex items-center gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors cursor-default"
                   >
-                    <FileText className="h-5 w-5 text-gray-400 shrink-0" />
+                    <FileText className="h-5 w-5 text-violet-400 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <span className="text-sm font-medium text-gray-900">{file.name}</span>
                       <p className="text-xs text-gray-400 mt-0.5">{file.size}</p>
@@ -493,7 +493,7 @@ export default function ProjectDetailPage() {
                       href={`/projects/${projectId}/pipeline/${pipeline.id}`}
                       className="group flex items-center gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors"
                     >
-                      <LayoutGrid className="h-5 w-5 text-gray-400 shrink-0" />
+                      <LayoutGrid className="h-5 w-5 text-blue-500 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-gray-900">{pipeline.name}</span>
@@ -536,7 +536,7 @@ export default function ProjectDetailPage() {
                       key={file.id}
                       className="group flex items-center gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors cursor-default"
                     >
-                      <FileText className="h-5 w-5 text-gray-400 shrink-0" />
+                      <FileText className="h-5 w-5 text-violet-400 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <span className="text-sm font-medium text-gray-900">{file.name}</span>
                         <p className="text-xs text-gray-400 mt-0.5">{file.size}</p>
