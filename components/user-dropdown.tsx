@@ -25,6 +25,7 @@ export function UserDropdown() {
         <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium text-sm">
           {currentUser.name.charAt(0)}
         </div>
+        <ChevronDown className="ml-1 h-3.5 w-3.5 text-gray-400" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56 bg-white border-gray-200">
