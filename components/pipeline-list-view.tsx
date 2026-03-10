@@ -52,6 +52,7 @@ interface PipelineListViewProps {
   onStepClick?: (step: PipelineStep) => void
   selectedStepId?: string | null
   moduleDataMap?: Record<string, { inputData: IoData; outputData: IoData; startedAt?: string; completedAt?: string }>
+  onEditMethod?: (step: PipelineStep) => void
 }
 
 // ── File chip ────────────────────────────────────────────────────────────────
@@ -111,6 +112,7 @@ export function PipelineListView({
   onStepClick,
   selectedStepId,
   moduleDataMap,
+  onEditMethod,
 }: PipelineListViewProps) {
   const showStatus      = !hideColumns.includes('status')
   const showAction      = !hideColumns.includes('action')
@@ -212,7 +214,8 @@ export function PipelineListView({
     (showStatus ? 1 : 0) +
     (showAction ? 1 : 0) +
     (onInputClick  ? 1 : 0) +      // Input
-    (onOutputClick ? 1 : 0)        // Output
+    (onOutputClick ? 1 : 0) +      // Output
+    (onEditMethod  ? 1 : 0)        // Edit
 
   return (
     <div className="w-full h-full overflow-auto">
@@ -233,6 +236,7 @@ export function PipelineListView({
             {showAction && <th className="w-[100px] py-3 px-4 text-center text-sm font-medium text-gray-500">Action</th>}
             {onInputClick  && <th className="w-[160px] py-3 px-4 text-left text-sm font-medium text-gray-500">Input</th>}
             {onOutputClick && <th className="w-[160px] py-3 px-4 text-left text-sm font-medium text-gray-500">Output</th>}
+            {onEditMethod  && <th className="w-[48px] py-3 px-2" />}
           </tr>
         </thead>
         <tbody>
@@ -261,7 +265,7 @@ export function PipelineListView({
                   onDragEnd={onReorder   ? handleDragEnd : undefined}
                   onClick={onStepClick   ? () => onStepClick(step) : undefined}
                   className={cn(
-                    "border-b border-gray-200 transition-colors",
+                    "group border-b border-gray-200 transition-colors",
                     isCompleted && !isExpanded ? "bg-gray-50 opacity-70" : "hover:bg-gray-50",
                     updatedStepId === step.id   ? "bg-green-50 hover:bg-green-50" : "",
                     dragOverId    === step.id   ? "border-t-2 border-t-black" : "",
@@ -282,9 +286,9 @@ export function PipelineListView({
                         <FlaskConical className="shrink-0 h-4 w-4 text-gray-400 mt-0.5" />
                       )}
                       <div className="min-w-0">
-                        <div className="text-[10px] text-gray-400 mb-0.5">{step.name}</div>
-                        <div className="text-sm font-medium text-gray-900">{step.objective || step.description || ""}</div>
-                        <div className="text-xs text-gray-400 mt-0.5">{step.method}</div>
+                        <div className="text-[10px] text-gray-400 mb-0.5">{step.method}</div>
+                        <div className="text-sm font-medium text-gray-900">{step.name}</div>
+                        <div className="text-xs text-gray-400 mt-0.5">{step.objective || step.description || ""}</div>
                       </div>
                     </div>
                   </td>
@@ -477,6 +481,18 @@ export function PipelineListView({
                       </td>
                     )
                   })()}
+                  {/* ── Edit method button ────────────────────────────────── */}
+                  {onEditMethod && (
+                    <td className="py-4 px-2 align-top">
+                      <button
+                        className="w-8 h-8 rounded-md flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors opacity-0 group-hover:opacity-100"
+                        onClick={e => { e.stopPropagation(); onEditMethod(originalStep) }}
+                        title="Edit method"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                    </td>
+                  )}
                 </tr>
 
                 {/* ── Accordion I/O row ─────────────────────────────────── */}

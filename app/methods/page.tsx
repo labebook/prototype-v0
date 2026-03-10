@@ -4,20 +4,23 @@ import { useState } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Sidebar } from "@/components/sidebar"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { ChevronRight, Folder, FlaskConical } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { PipelineListView } from "@/components/pipeline-list-view"
 
-// ── Data ────────────────────────────────────────────────────────────────────
+// ── Types ────────────────────────────────────────────────────────────────────
 
-const methodFolders = [
-  { id: "sds-page",          name: "SDS-PAGE" },
-  { id: "western-blot",      name: "Western Blot" },
-  { id: "pcr",               name: "PCR" },
-  { id: "elisa",             name: "ELISA" },
-  { id: "mass-spectrometry", name: "Mass Spectrometry" },
-]
-
-const methodsByFolder: Record<string, Array<{
+type Method = {
   id: string
   step: number
   name: string
@@ -31,7 +34,19 @@ const methodsByFolder: Record<string, Array<{
   dateSelected?: string
   author?: string
   executionStatus: "idle" | "running" | "completed" | "failed"
-}>> = {
+}
+
+// ── Initial data ─────────────────────────────────────────────────────────────
+
+const initialFolders = [
+  { id: "sds-page",          name: "SDS-PAGE" },
+  { id: "western-blot",      name: "Western Blot" },
+  { id: "pcr",               name: "PCR" },
+  { id: "elisa",             name: "ELISA" },
+  { id: "mass-spectrometry", name: "Mass Spectrometry" },
+]
+
+const initialMethodsByFolder: Record<string, Method[]> = {
   "sds-page": [
     {
       id: "sds-1", step: 1,
@@ -152,17 +167,29 @@ const methodsByFolder: Record<string, Array<{
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function MethodsPage() {
+  const [methodsByFolder, setMethodsByFolder] = useState(initialMethodsByFolder)
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null)
+  const [editingMethod, setEditingMethod] = useState<{
+    folderId: string
+    id: string
+    name: string
+    description: string
+  } | null>(null)
 
-  const activeFolder = methodFolders.find(f => f.id === activeFolderId) ?? null
+  const activeFolder = initialFolders.find(f => f.id === activeFolderId) ?? null
   const activeMethods = activeFolderId ? (methodsByFolder[activeFolderId] ?? []) : []
 
-  const navigateIntoFolder = (folder: { id: string; name: string }) => {
-    setActiveFolderId(folder.id)
-  }
-
-  const navigateToRoot = () => {
-    setActiveFolderId(null)
+  const handleEditSave = () => {
+    if (!editingMethod || !editingMethod.name.trim()) return
+    setMethodsByFolder(prev => ({
+      ...prev,
+      [editingMethod.folderId]: prev[editingMethod.folderId].map(m =>
+        m.id === editingMethod.id
+          ? { ...m, name: editingMethod.name.trim(), description: editingMethod.description.trim() }
+          : m
+      ),
+    }))
+    setEditingMethod(null)
   }
 
   return (
@@ -187,7 +214,7 @@ export default function MethodsPage() {
             {activeFolder && (
               <div className="flex items-center gap-1.5 py-3 text-sm border-b border-gray-100">
                 <button
-                  onClick={navigateToRoot}
+                  onClick={() => setActiveFolderId(null)}
                   className="text-gray-500 hover:text-gray-900 transition-colors"
                 >
                   Methods
@@ -203,7 +230,6 @@ export default function MethodsPage() {
                 <div className="h-5 w-5 shrink-0" />
                 <div className="flex-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Name</div>
                 <div className="w-20 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Methods</div>
-                <div className="w-32 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Modified</div>
                 <div className="w-5 shrink-0" />
               </div>
             )}
@@ -211,10 +237,10 @@ export default function MethodsPage() {
             {/* ── Folder view (root) ────────────────────────────────── */}
             {!activeFolder && (
               <>
-                {methodFolders.map(folder => (
+                {initialFolders.map(folder => (
                   <button
                     key={folder.id}
-                    onClick={() => navigateIntoFolder(folder)}
+                    onClick={() => setActiveFolderId(folder.id)}
                     className="group flex items-center gap-4 w-full py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors text-left"
                   >
                     <Folder className="h-5 w-5 text-gray-400 shrink-0" />
@@ -225,9 +251,6 @@ export default function MethodsPage() {
                       <span className="text-xs text-gray-400">
                         {methodsByFolder[folder.id]?.length ?? 0}
                       </span>
-                    </div>
-                    <div className="w-32 text-right">
-                      <span className="text-sm text-gray-400">—</span>
                     </div>
                     <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
@@ -248,6 +271,14 @@ export default function MethodsPage() {
                 onCalculationsClick={step => console.log("Calculations:", step)}
                 onMaterialsClick={step => console.log("Materials:", step)}
                 onPlanClick={step => console.log("Plan:", step)}
+                onEditMethod={step =>
+                  setEditingMethod({
+                    folderId: activeFolder.id,
+                    id: step.id,
+                    name: step.name,
+                    description: step.description ?? "",
+                  })
+                }
               />
             )}
 
@@ -255,6 +286,42 @@ export default function MethodsPage() {
         </main>
       </div>
       <Footer />
+
+      {/* ── Edit method dialog ────────────────────────────────────────── */}
+      <Dialog open={!!editingMethod} onOpenChange={open => { if (!open) setEditingMethod(null) }}>
+        <DialogContent className="max-w-md bg-white">
+          <DialogHeader>
+            <DialogTitle>Edit method</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-method-name">Method name</Label>
+              <Input
+                id="edit-method-name"
+                value={editingMethod?.name ?? ""}
+                onChange={e => setEditingMethod(m => m ? { ...m, name: e.target.value } : m)}
+                onKeyDown={e => e.key === "Enter" && handleEditSave()}
+                autoFocus
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-method-desc">
+                Description <span className="text-gray-400 font-normal">(optional)</span>
+              </Label>
+              <Textarea
+                id="edit-method-desc"
+                value={editingMethod?.description ?? ""}
+                onChange={e => setEditingMethod(m => m ? { ...m, description: e.target.value } : m)}
+                className="min-h-[80px]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingMethod(null)}>Cancel</Button>
+            <Button onClick={handleEditSave} disabled={!editingMethod?.name.trim()}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
