@@ -51,7 +51,7 @@ interface PipelineListViewProps {
   // kept for backward-compat (e.g. editor page)
   onStepClick?: (step: PipelineStep) => void
   selectedStepId?: string | null
-  moduleDataMap?: Record<string, { inputData: IoData; outputData: IoData; startedAt?: string; completedAt?: string }>
+  moduleDataMap?: Record<string, { inputData: IoData; outputData: IoData; startedAt?: string; completedAt?: string; inputUser?: string; outputUser?: string }>
   onEditMethod?: (step: PipelineStep) => void
   showStepConnector?: boolean
 }
@@ -433,8 +433,12 @@ export function PipelineListView({
                       <td className="py-4 px-4 align-top">
                         {hasInput ? (
                           <div className="flex flex-col gap-1">
-                            {stepData?.startedAt && (
-                              <p className="text-[10px] text-gray-400">{stepData.startedAt}</p>
+                            {(stepData?.inputUser || stepData?.startedAt) && (
+                              <p className="text-[10px] text-gray-400">
+                                {stepData.inputUser && <span className="font-medium text-gray-500">{stepData.inputUser}</span>}
+                                {stepData.inputUser && stepData.startedAt && " · "}
+                                {stepData.startedAt}
+                              </p>
                             )}
                             {inputData.text?.trim() && (
                               <p className="text-xs text-gray-700 line-clamp-2 leading-relaxed">{inputData.text}</p>
@@ -471,8 +475,12 @@ export function PipelineListView({
                       <td className="py-4 px-4 align-top">
                         {hasOutput ? (
                           <div className="flex flex-col gap-1">
-                            {stepData?.completedAt && (
-                              <p className="text-[10px] text-gray-400">{stepData.completedAt}</p>
+                            {(stepData?.outputUser || stepData?.completedAt) && (
+                              <p className="text-[10px] text-gray-400">
+                                {stepData.outputUser && <span className="font-medium text-gray-500">{stepData.outputUser}</span>}
+                                {stepData.outputUser && stepData.completedAt && " · "}
+                                {stepData.completedAt}
+                              </p>
                             )}
                             {outputData.text?.trim() && (
                               <p className="text-xs text-gray-700 line-clamp-2 leading-relaxed">{outputData.text}</p>

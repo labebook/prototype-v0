@@ -40,6 +40,8 @@ interface ModuleData {
   checkedSteps: string[]
   startedAt?: string
   completedAt?: string
+  inputUser?: string
+  outputUser?: string
 }
 
 export default function ProjectPipelineDetailPage() {
@@ -49,7 +51,7 @@ export default function ProjectPipelineDetailPage() {
   const pipelineId = params.pipelineId as string
 
   const [activeTab, setActiveTab] = useState<Tab>("steps")
-  const { currentTeam, pipelines, pipelineFolders, projects, canEdit, getProjectActivities } = useTeam()
+  const { currentTeam, currentUser, pipelines, pipelineFolders, projects, canEdit, getProjectActivities } = useTeam()
 
   const [currentExecutingModule, setCurrentExecutingModule] = useState<string | null>(null)
   const [workflowStep, setWorkflowStep] = useState<"input" | "execution" | "output" | null>(null)
@@ -139,6 +141,7 @@ export default function ProjectPipelineDetailPage() {
           outputData: prev[currentExecutingModule]?.outputData ?? { text: "", files: [] },
           checkedSteps: prev[currentExecutingModule]?.checkedSteps ?? [],
           startedAt: prev[currentExecutingModule]?.startedAt ?? nowLabel(),
+          inputUser: prev[currentExecutingModule]?.inputUser ?? currentUser.name,
         },
       }))
       setCurrentExecutingModule(null)
@@ -164,6 +167,7 @@ export default function ProjectPipelineDetailPage() {
           ...prev[currentExecutingModule],
           outputData: data,
           completedAt: nowLabel(),
+          outputUser: currentUser.name,
         },
       }))
       setCompletedModules(prev => new Set([...prev, currentExecutingModule]))
@@ -416,6 +420,7 @@ export default function ProjectPipelineDetailPage() {
                           outputData: prev[step.id]?.outputData ?? { text: "", files: [] },
                           checkedSteps: prev[step.id]?.checkedSteps ?? [],
                           startedAt: prev[step.id]?.startedAt ?? nowLabel(),
+                          inputUser: prev[step.id]?.inputUser ?? currentUser.name,
                         },
                       }))
                     } else {
