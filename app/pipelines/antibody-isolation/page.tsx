@@ -383,6 +383,7 @@ export default function AntibodyIsolationPipeline() {
                 <div className="px-0">
                   <PipelineListView
                     steps={pipelineSteps}
+                    showStepConnector
                     onSelectStep={handleSelectStep}
                     selectedStepId={selectedStepId}
                     hideColumns={['status', 'action']}

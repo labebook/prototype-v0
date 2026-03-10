@@ -395,6 +395,7 @@ export default function ProjectPipelineDetailPage() {
                 </div>
                 <PipelineListView
                   steps={pipelineSteps}
+                  showStepConnector
                   hideColumns={['status', 'action', 'dateSelected', 'author']}
                   showCreatedColumn
                   onParametersClick={step => openModalForStep("parameters", step.name)}

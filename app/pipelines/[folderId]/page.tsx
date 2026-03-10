@@ -372,6 +372,7 @@ export default function LibraryPipelinePage() {
             ) : (
               <PipelineListView
                 steps={steps}
+                showStepConnector
                 onParametersClick={step => console.log("Parameters:", step)}
                 onProtocolClick={step => console.log("Protocol:", step)}
                 onBuffersClick={step => console.log("Buffers:", step)}

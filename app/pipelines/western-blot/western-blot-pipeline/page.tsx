@@ -510,6 +510,7 @@ export default function WesternBlotPipelinePage() {
                 <div className="px-0">
                   <PipelineListView
                     steps={pipelineSteps}
+                    showStepConnector
                     onParametersClick={handleParametersClick}
                     onProtocolClick={handleProtocolIdClick}
                     onBuffersClick={handleBuffersClick}

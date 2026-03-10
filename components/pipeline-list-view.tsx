@@ -53,6 +53,7 @@ interface PipelineListViewProps {
   selectedStepId?: string | null
   moduleDataMap?: Record<string, { inputData: IoData; outputData: IoData; startedAt?: string; completedAt?: string }>
   onEditMethod?: (step: PipelineStep) => void
+  showStepConnector?: boolean
 }
 
 // ── File chip ────────────────────────────────────────────────────────────────
@@ -113,6 +114,7 @@ export function PipelineListView({
   selectedStepId,
   moduleDataMap,
   onEditMethod,
+  showStepConnector = false,
 }: PipelineListViewProps) {
   const showStatus      = !hideColumns.includes('status')
   const showAction      = !hideColumns.includes('action')
@@ -201,6 +203,7 @@ export function PipelineListView({
 
   // Total colspan for the accordion row
   const totalCols =
+    (showStepConnector ? 1 : 0) +
     (onReorder ? 1 : 0) +
     1 +                             // Method Name
     1 +                             // Plan
@@ -222,6 +225,7 @@ export function PipelineListView({
       <table className="w-full border-collapse" role="table">
         <thead>
           <tr className="border-b border-gray-200">
+            {showStepConnector && <th className="w-10 py-3 px-2" />}
             {onReorder && <th className="w-8 py-3 px-2" />}
             <th className="w-[250px] py-3 px-4 text-left   text-sm font-medium text-gray-500">Method</th>
             <th className="w-[80px]  py-3 px-4 text-center text-sm font-medium text-gray-500">Plan</th>
@@ -275,6 +279,20 @@ export function PipelineListView({
                     isExpanded  ? "bg-blue-50 hover:bg-blue-50" : "",
                   )}
                 >
+                  {showStepConnector && (
+                    <td className="py-0 px-2 w-10 align-top" style={{ height: "1px" }}>
+                      <div className="flex flex-col items-center" style={{ height: "100%" }}>
+                        <div className="pt-4 flex flex-col items-center flex-1">
+                          <div className="h-7 w-7 rounded-full border-2 border-gray-200 bg-white flex items-center justify-center text-xs font-semibold text-gray-400 shrink-0 z-10">
+                            {index + 1}
+                          </div>
+                          {index < steps.length - 1 && (
+                            <div className="w-0.5 bg-gray-200 flex-1 mt-1" />
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                  )}
                   {onReorder && (
                     <td className="py-4 px-2">
                       <GripVertical className="h-4 w-4 text-gray-300 cursor-grab" />

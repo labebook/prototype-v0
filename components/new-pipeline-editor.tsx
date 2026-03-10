@@ -406,6 +406,7 @@ export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onVi
             ) : (
               <PipelineListView
                 steps={transformedSteps}
+                showStepConnector
                 hideColumns={['status', 'action']}
                 onReorder={handleStepsReorder}
                 onPlanClick={step => openPlanForStep(step.name)}
