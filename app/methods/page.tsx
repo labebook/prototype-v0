@@ -264,7 +264,7 @@ export default function MethodsPage() {
                         {methodsByFolder[folder.id]?.length ?? 0}
                       </span>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 " />
                   </button>
                 ))}
               </>

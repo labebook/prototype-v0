@@ -184,7 +184,7 @@ export default function MyPipelinesPage() {
                 <div className="w-32 text-right">
                   <span className="text-sm text-gray-400">—</span>
                 </div>
-                <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 " />
               </button>
             ))}
 
@@ -210,7 +210,7 @@ export default function MyPipelinesPage() {
                 <div className="w-32 text-right">
                   <span className="text-sm text-gray-400">{formatDate(pipeline.lastModified)}</span>
                 </div>
-                <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 " />
               </Link>
             ))}
 

@@ -100,7 +100,7 @@ export function ShareProjectDialog({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="opacity-0 group-hover:opacity-100 h-7 w-7 text-gray-400 hover:text-red-500 transition-all shrink-0"
+                          className="h-7 w-7 text-gray-400 hover:text-red-500 transition-all shrink-0"
                           onClick={() => removeProjectParticipant(projectId, user.id)}
                           title="Remove from project"
                         >
@@ -141,7 +141,7 @@ export function ShareProjectDialog({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="opacity-0 group-hover:opacity-100 h-7 w-7 text-gray-400 hover:text-blue-600 transition-all shrink-0"
+                        className="h-7 w-7 text-gray-400 hover:text-blue-600 transition-all shrink-0"
                         onClick={() => addProjectParticipant(projectId, user.id)}
                         title="Add to project"
                       >

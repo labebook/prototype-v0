@@ -141,7 +141,7 @@ export default function ProjectsPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-gray-700"
+                            className="text-gray-400 hover:text-gray-700"
                             onClick={e => e.stopPropagation()}
                           >
                             <MoreVertical className="h-4 w-4" />

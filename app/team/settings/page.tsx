@@ -203,7 +203,7 @@ export default function TeamSettingsPage() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all"
+                                className="text-gray-400 hover:text-red-500 transition-all"
                                 onClick={() => setMemberToRemove(member.userId)}
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -247,7 +247,7 @@ export default function TeamSettingsPage() {
                             </div>
                             <RoleBadge role={invitation.role} />
                             {userIsPI && (
-                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="flex items-center gap-1">
                                 <Button
                                   variant="ghost"
                                   size="icon"

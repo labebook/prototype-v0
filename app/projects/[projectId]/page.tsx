@@ -248,7 +248,7 @@ export default function ProjectDetailPage() {
                 ) : (
                   <div className="group flex items-center gap-2 cursor-pointer" onClick={openEditName}>
                     <h1 className="text-[32px] font-semibold">{project.name}</h1>
-                    <Pencil className="h-4 w-4 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity mt-1" />
+                    <Pencil className="h-4 w-4 text-gray-300  mt-1" />
                   </div>
                 )}
 
@@ -273,7 +273,7 @@ export default function ProjectDetailPage() {
                     <p className="text-gray-500 group-hover:text-gray-700">
                       {project.description || <span className="text-gray-300 italic">Add a description…</span>}
                     </p>
-                    <Pencil className="h-3.5 w-3.5 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity mt-1 shrink-0" />
+                    <Pencil className="h-3.5 w-3.5 text-gray-300  mt-1 shrink-0" />
                   </div>
                 )}
 
@@ -418,7 +418,7 @@ export default function ProjectDetailPage() {
                     <div className="w-32 text-right">
                       <span className="text-sm text-gray-400">—</span>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 " />
                   </button>
                 ))}
 
@@ -447,7 +447,7 @@ export default function ProjectDetailPage() {
                     <div className="w-32 text-right">
                       <span className="text-sm text-gray-400">{formatDate(pipeline.lastModified)}</span>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 " />
                   </Link>
                 ))}
 
@@ -511,7 +511,7 @@ export default function ProjectDetailPage() {
                       <div className="w-32 text-right">
                         <span className="text-sm text-gray-400">{formatDate(pipeline.lastModified)}</span>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 " />
                     </Link>
                   ))
                 )}

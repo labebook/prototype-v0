@@ -373,7 +373,7 @@ export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onVi
                     <p className="text-xs text-gray-400 mt-0.5 leading-snug">{item.description}</p>
                   </div>
                   <button
-                    className="opacity-0 group-hover:opacity-100 shrink-0 mt-0.5 w-5 h-5 rounded flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-all"
+                    className="shrink-0 mt-0.5 w-5 h-5 rounded flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-all"
                     onClick={() => handleAddItem(item, sidebarTab === "methods" ? "method" : "module")}
                     title="Add to pipeline"
                   >

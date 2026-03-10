@@ -485,7 +485,7 @@ export function PipelineListView({
                   {onEditMethod && (
                     <td className="py-4 px-2 align-top">
                       <button
-                        className="w-8 h-8 rounded-md flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors opacity-0 group-hover:opacity-100"
+                        className="w-8 h-8 rounded-md flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
                         onClick={e => { e.stopPropagation(); onEditMethod(originalStep) }}
                         title="Edit method"
                       >
