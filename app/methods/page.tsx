@@ -4,8 +4,7 @@ import { useState } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Sidebar } from "@/components/sidebar"
-import { Button } from "@/components/ui/button"
-import { ChevronRight, Folder, FlaskConical, Plus } from "lucide-react"
+import { ChevronRight, Folder, FlaskConical } from "lucide-react"
 import { PipelineListView } from "@/components/pipeline-list-view"
 
 // ── Data ────────────────────────────────────────────────────────────────────
@@ -182,10 +181,6 @@ export default function MethodsPage() {
                   Browse and manage your collection of scientific methods
                 </p>
               </div>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                New method
-              </Button>
             </div>
 
             {/* ── Breadcrumb ────────────────────────────────────────── */}
@@ -202,16 +197,16 @@ export default function MethodsPage() {
               </div>
             )}
 
-            {/* ── Column headers ────────────────────────────────────── */}
-            <div className="flex items-center gap-4 -mx-6 px-6 py-2 border-b border-gray-100">
-              <div className="h-5 w-5 shrink-0" />
-              <div className="flex-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Name</div>
-              <div className="w-20 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                {activeFolder ? "Methods" : "Methods"}
+            {/* ── Column headers (root only) ────────────────────────── */}
+            {!activeFolder && (
+              <div className="flex items-center gap-4 -mx-6 px-6 py-2 border-b border-gray-100">
+                <div className="h-5 w-5 shrink-0" />
+                <div className="flex-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Name</div>
+                <div className="w-20 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Methods</div>
+                <div className="w-32 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Modified</div>
+                <div className="w-5 shrink-0" />
               </div>
-              <div className="w-32 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Modified</div>
-              <div className="w-5 shrink-0" />
-            </div>
+            )}
 
             {/* ── Folder view (root) ────────────────────────────────── */}
             {!activeFolder && (
