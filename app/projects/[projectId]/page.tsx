@@ -37,11 +37,39 @@ import Link from "next/link"
 
 type FilterTab = "all" | "pipelines" | "files"
 
-const mockProjectFiles = [
-  { id: "file-1", name: "Protocol_v2.pdf",      ext: "PDF",  size: "2.4 MB", date: "2025-03-15" },
-  { id: "file-2", name: "Results_Q1.xlsx",       ext: "XLSX", size: "1.1 MB", date: "2025-03-10" },
-  { id: "file-3", name: "Reagents_list.docx",   ext: "DOCX", size: "340 KB", date: "2025-02-28" },
-]
+// Project-specific files
+const mockProjectFilesMap: Record<string, { id: string; name: string; ext: string; size: string; date: string }[]> = {
+  "pr1": [
+    { id: "file-1", name: "Protocol_v2.pdf",      ext: "PDF",  size: "2.4 MB", date: "2025-03-15" },
+    { id: "file-2", name: "Results_Q1.xlsx",       ext: "XLSX", size: "1.1 MB", date: "2025-03-10" },
+    { id: "file-3", name: "Reagents_list.docx",   ext: "DOCX", size: "340 KB", date: "2025-02-28" },
+  ],
+  "pr2": [
+    { id: "file-4", name: "Relevant_Paper.pdf",   ext: "PDF",  size: "1.8 MB", date: "2025-03-01" },
+  ],
+}
+
+// Project-specific folders
+const mockProjectFoldersMap: Record<string, { id: string; name: string; parentId?: string }[]> = {
+  "pr1": [
+    { id: "proj-folder-1", name: "Active Projects" },
+    { id: "proj-folder-2", name: "Archives" },
+  ],
+  "pr2": [
+    { id: "proj-folder-3", name: "Cell Culture" },
+    { id: "proj-folder-4", name: "Drug Treatment" },
+    { id: "proj-folder-5", name: "Western Blot Analysis" },
+    { id: "proj-folder-6", name: "RT-qPCR Gene Expression" },
+  ],
+}
+
+// Project-specific pipelines (those that belong inside folders)
+const mockProjectPipelinesMap: Record<string, { folderId: string; pipelineId: string }[]> = {
+  "pr1": [],
+  "pr2": [
+    { folderId: "proj-folder-5", pipelineId: "p1" }, // Western Blot Analysis pipeline in Western Blot Analysis folder
+  ],
+}
 
 export default function ProjectDetailPage() {
   const params = useParams()
@@ -145,12 +173,30 @@ export default function ProjectDetailPage() {
     setNewFolderOpen(false)
   }
 
-  const allFolders = projectFolders.filter(f => f.teamId === currentTeam.id)
-  const levelFolders = currentFolderId
-    ? allFolders.filter(f => f.parentId === currentFolderId)
-    : allFolders.filter(f => !f.parentId)
+  // Get project-specific folders, files, and pipeline mappings
+  const projectSpecificFolders = mockProjectFoldersMap[projectId] || []
+  const projectSpecificFiles = mockProjectFilesMap[projectId] || []
+  const projectPipelineMappings = mockProjectPipelinesMap[projectId] || []
 
-  const projectPipelines = pipelines.filter(p => p.teamId === currentTeam.id)
+  // Filter folders based on current navigation level
+  const levelFolders = currentFolderId
+    ? projectSpecificFolders.filter(f => f.parentId === currentFolderId)
+    : projectSpecificFolders.filter(f => !f.parentId)
+
+  // Get pipelines for this project - filter by projectId
+  const allProjectPipelines = pipelines.filter(p => p.projectId === projectId)
+  
+  // Separate pipelines at root level vs in folders
+  const pipelinesInFolders = new Set(projectPipelineMappings.map(m => m.pipelineId))
+  const rootPipelines = allProjectPipelines.filter(p => !pipelinesInFolders.has(p.id))
+  
+  // Get pipelines for current folder
+  const getPipelinesInFolder = (folderId: string) => {
+    const pipelineIdsInFolder = projectPipelineMappings
+      .filter(m => m.folderId === folderId)
+      .map(m => m.pipelineId)
+    return allProjectPipelines.filter(p => pipelineIdsInFolder.includes(p.id))
+  }
 
   const navigateIntoFolder = (folder: { id: string; name: string }) => {
     setCurrentFolderId(folder.id)
@@ -394,7 +440,7 @@ export default function ProjectDetailPage() {
             {/* ── All tab ───────────────────────────────────────────── */}
             {filterTab === "all" && (
               <div>
-                {levelFolders.length === 0 && projectPipelines.length === 0 && mockProjectFiles.length === 0 && (
+                {levelFolders.length === 0 && rootPipelines.length === 0 && projectSpecificFiles.length === 0 && currentFolderId === null && (
                   <div className="py-24 text-center">
                     <LayoutGrid className="h-10 w-10 text-gray-300 mx-auto mb-4" />
                     <p className="text-gray-500">This project is empty</p>
@@ -422,8 +468,37 @@ export default function ProjectDetailPage() {
                   </button>
                 ))}
 
-                {/* Pipelines (root level only) */}
-                {currentFolderId === null && projectPipelines.map(pipeline => (
+                {/* Pipelines at root level */}
+                {currentFolderId === null && rootPipelines.map(pipeline => (
+                  <Link
+                    key={pipeline.id}
+                    href={`/projects/${projectId}/pipeline/${pipeline.id}`}
+                    className="group flex items-center gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors"
+                  >
+                    <LayoutGrid className="h-5 w-5 text-blue-500 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-900">{pipeline.name}</span>
+                        {pipeline.isReady ? (
+                          <Badge className="bg-blue-100 text-blue-700 border-0 text-xs">Running</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs">In progress</Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5 truncate">{pipeline.description.goal}</p>
+                    </div>
+                    <div className="w-20 text-right">
+                      <span className="text-xs text-gray-400">Pipeline</span>
+                    </div>
+                    <div className="w-32 text-right">
+                      <span className="text-sm text-gray-400">{formatDate(pipeline.lastModified)}</span>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 " />
+                  </Link>
+                ))}
+
+                {/* Pipelines inside current folder */}
+                {currentFolderId !== null && getPipelinesInFolder(currentFolderId).map(pipeline => (
                   <Link
                     key={pipeline.id}
                     href={`/projects/${projectId}/pipeline/${pipeline.id}`}
@@ -452,7 +527,7 @@ export default function ProjectDetailPage() {
                 ))}
 
                 {/* Files (root level only) */}
-                {currentFolderId === null && mockProjectFiles.map(file => (
+                {currentFolderId === null && projectSpecificFiles.map(file => (
                   <div
                     key={file.id}
                     className="group flex items-center gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors cursor-default"
@@ -477,7 +552,7 @@ export default function ProjectDetailPage() {
             {/* ── Pipelines tab ─────────────────────────────────────── */}
             {filterTab === "pipelines" && (
               <div>
-                {projectPipelines.length === 0 ? (
+                {allProjectPipelines.length === 0 ? (
                   <div className="py-24 text-center">
                     <LayoutGrid className="h-10 w-10 text-gray-300 mx-auto mb-4" />
                     <p className="text-gray-500 mb-4">No pipelines yet</p>
@@ -487,7 +562,7 @@ export default function ProjectDetailPage() {
                     </Button>
                   </div>
                 ) : (
-                  projectPipelines.map(pipeline => (
+                  allProjectPipelines.map(pipeline => (
                     <Link
                       key={pipeline.id}
                       href={`/projects/${projectId}/pipeline/${pipeline.id}`}
@@ -521,7 +596,7 @@ export default function ProjectDetailPage() {
             {/* ── Files tab ─────────────────────────────────────────── */}
             {filterTab === "files" && (
               <div>
-                {mockProjectFiles.length === 0 ? (
+                {projectSpecificFiles.length === 0 ? (
                   <div className="py-24 text-center">
                     <FileText className="h-10 w-10 text-gray-300 mx-auto mb-4" />
                     <p className="text-gray-500 mb-4">No files yet</p>
@@ -531,7 +606,7 @@ export default function ProjectDetailPage() {
                     </Button>
                   </div>
                 ) : (
-                  mockProjectFiles.map(file => (
+                  projectSpecificFiles.map(file => (
                     <div
                       key={file.id}
                       className="group flex items-center gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors cursor-default"
