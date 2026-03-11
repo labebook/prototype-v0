@@ -4,19 +4,45 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
-    Home,
     FolderKanban,
     LayoutGrid,
-    ChevronDown,
-    ChevronRight,
-    Flag as Flask,
-    FileText,
-    Layers, Library,
+    Library,
     Settings,
 } from "lucide-react"
 import { useTeam } from "@/hooks/useTeam"
 import { EnhancedTeamSwitcher } from "@/components/enhanced-team-switcher"
 import { CreateTeamDialog } from "@/components/create-team-dialog"
+
+// Custom unified icons for LIBRARY section
+// All icons use a square container with thin outline and a geometric symbol inside
+
+const IconMethods = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.25">
+    <rect x="2" y="2" width="12" height="12" rx="1" />
+    <rect x="5" y="5" width="6" height="6" />
+  </svg>
+)
+
+const IconOperationalProcedures = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.25">
+    <rect x="2" y="2" width="12" height="12" rx="1" />
+    <rect x="8" y="4.5" width="5" height="5" transform="rotate(45 8 7)" />
+  </svg>
+)
+
+const IconPreparations = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.25">
+    <rect x="2" y="2" width="12" height="12" rx="1" />
+    <path d="M8 4.5L11.5 10.5H4.5L8 4.5Z" />
+  </svg>
+)
+
+const IconExperimentalModels = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.25">
+    <rect x="2" y="2" width="12" height="12" rx="1" />
+    <circle cx="8" cy="8" r="3" />
+  </svg>
+)
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -92,7 +118,7 @@ export function Sidebar() {
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }`}
               >
-                <Flask className="mr-2 h-4 w-4" />
+                <IconMethods className="mr-2 h-4 w-4" />
                 Methods
               </Link>
             </li>
@@ -105,7 +131,7 @@ export function Sidebar() {
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }`}
               >
-                <Layers className="mr-2 h-4 w-4" />
+                <IconOperationalProcedures className="mr-2 h-4 w-4" />
                 Operational Procedures
               </Link>
             </li>
@@ -118,7 +144,7 @@ export function Sidebar() {
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }`}
               >
-                <Flask className="mr-2 h-4 w-4" />
+                <IconPreparations className="mr-2 h-4 w-4" />
                 Preparations
               </Link>
             </li>
@@ -131,7 +157,7 @@ export function Sidebar() {
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }`}
               >
-                <Layers className="mr-2 h-4 w-4" />
+                <IconExperimentalModels className="mr-2 h-4 w-4" />
                 Experimental Models
               </Link>
             </li>
