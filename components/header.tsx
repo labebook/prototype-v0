@@ -45,10 +45,10 @@ export function Header() {
             {/* Explore Plyow Library Tab */}
             <Link
               href="/"
-              className={`px-6 h-11 flex items-center text-sm font-medium rounded-t-lg transition-all duration-200 ${
+              className={`min-w-[220px] h-12 flex items-center justify-center text-base font-medium rounded-t-lg transition-all duration-200 ${
                 !isWorkspaceMode
                   ? `${navbarBg} text-gray-900 border-t border-l border-r border-gray-200`
-                  : "bg-gray-100 text-gray-600 hover:text-gray-900 border-b border-gray-200"
+                  : "bg-gray-100 text-gray-500 hover:text-gray-900 border-b border-gray-200"
               }`}
             >
               Explore Plyow Library
@@ -57,10 +57,10 @@ export function Header() {
             {/* Research Workspace Tab */}
             <Link
               href="/projects"
-              className={`px-6 h-11 flex items-center text-sm font-medium rounded-t-lg transition-all duration-200 ${
+              className={`min-w-[220px] h-12 flex items-center justify-center text-base font-medium rounded-t-lg transition-all duration-200 ${
                 isWorkspaceMode
                   ? `${navbarBg} text-gray-900 border-t border-l border-r border-gray-200`
-                  : "bg-gray-100 text-gray-600 hover:text-gray-900 border-b border-gray-200"
+                  : "bg-gray-100 text-gray-500 hover:text-gray-900 border-b border-gray-200"
               }`}
             >
               Research Workspace
