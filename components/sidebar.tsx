@@ -34,7 +34,7 @@ export function Sidebar() {
   return (
     <aside
       className={`w-64 border-r border-gray-200 h-full flex flex-col transition-colors duration-200 ${
-        isWorkspaceMode ? "bg-blue-50" : "bg-white"
+        isWorkspaceMode ? "bg-gray-100" : "bg-white"
       }`}
     >
       {/* Team Switcher */}
