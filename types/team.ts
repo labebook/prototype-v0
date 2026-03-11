@@ -52,6 +52,8 @@ export interface TeamPipeline {
   sharedWith?: string[]
   lastModifiedBy?: string
   lastModifiedDate?: string
+  // Pipeline status: running (green), planning (blue), completed (greyed out)
+  status?: 'running' | 'planning' | 'completed'
 }
 
 // Extended PipelineFolder type with team fields

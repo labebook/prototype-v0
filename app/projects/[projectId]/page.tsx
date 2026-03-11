@@ -67,7 +67,10 @@ const mockProjectFoldersMap: Record<string, { id: string; name: string; parentId
 const mockProjectPipelinesMap: Record<string, { folderId: string; pipelineId: string }[]> = {
   "pr1": [],
   "pr2": [
-    { folderId: "proj-folder-5", pipelineId: "p1" }, // Western Blot Analysis pipeline in Western Blot Analysis folder
+    { folderId: "proj-folder-5", pipelineId: "p1" },       // Western Blot Analysis (Running)
+    { folderId: "proj-folder-5", pipelineId: "p1-rep-a" }, // Western Blot Replicate A (Planning)
+    { folderId: "proj-folder-5", pipelineId: "p1-rep-b" }, // Western Blot Replicate B (Completed)
+    { folderId: "proj-folder-5", pipelineId: "p1-rep-c" }, // Western Blot Replicate C (Completed)
   ],
 }
 
@@ -498,33 +501,55 @@ export default function ProjectDetailPage() {
                 ))}
 
                 {/* Pipelines inside current folder */}
-                {currentFolderId !== null && getPipelinesInFolder(currentFolderId).map(pipeline => (
-                  <Link
-                    key={pipeline.id}
-                    href={`/projects/${projectId}/pipeline/${pipeline.id}`}
-                    className="group flex items-center gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors"
-                  >
-                    <LayoutGrid className="h-5 w-5 text-blue-500 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-gray-900">{pipeline.name}</span>
-                        {pipeline.isReady ? (
-                          <Badge className="bg-blue-100 text-blue-700 border-0 text-xs">Running</Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-xs">In progress</Badge>
-                        )}
+                {currentFolderId !== null && getPipelinesInFolder(currentFolderId).map(pipeline => {
+                  const isCompleted = pipeline.status === 'completed'
+                  const isPlanning = pipeline.status === 'planning'
+                  const isRunning = pipeline.status === 'running'
+                  
+                  return (
+                    <Link
+                      key={pipeline.id}
+                      href={`/projects/${projectId}/pipeline/${pipeline.id}`}
+                      className={`group flex items-center gap-4 py-3 border-b border-gray-100 -mx-6 px-6 transition-colors ${
+                        isCompleted ? "opacity-50 bg-gray-50" : "hover:bg-gray-50"
+                      }`}
+                    >
+                      <LayoutGrid className={`h-5 w-5 shrink-0 ${
+                        isCompleted ? "text-gray-400" : isPlanning ? "text-blue-500" : "text-green-500"
+                      }`} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-sm font-medium ${isCompleted ? "text-gray-500" : "text-gray-900"}`}>
+                            {pipeline.name}
+                          </span>
+                          {isRunning && (
+                            <Badge className="bg-green-100 text-green-700 border-0 text-xs">Running</Badge>
+                          )}
+                          {isPlanning && (
+                            <Badge className="bg-blue-100 text-blue-700 border-0 text-xs">Planning</Badge>
+                          )}
+                          {isCompleted && (
+                            <Badge className="bg-gray-200 text-gray-500 border-0 text-xs">Run</Badge>
+                          )}
+                        </div>
+                        <p className={`text-xs mt-0.5 truncate ${isCompleted ? "text-gray-400" : "text-gray-400"}`}>
+                          {pipeline.description.goal}
+                        </p>
                       </div>
-                      <p className="text-xs text-gray-400 mt-0.5 truncate">{pipeline.description.goal}</p>
-                    </div>
-                    <div className="w-20 text-right">
-                      <span className="text-xs text-gray-400">Pipeline</span>
-                    </div>
-                    <div className="w-32 text-right">
-                      <span className="text-sm text-gray-400">{formatDate(pipeline.lastModified)}</span>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 " />
-                  </Link>
-                ))}
+                      <div className="w-20 text-right">
+                        <span className={`text-xs ${isCompleted ? "text-gray-400" : "text-gray-400"}`}>
+                          {isCompleted ? "Run" : "Pipeline"}
+                        </span>
+                      </div>
+                      <div className="w-32 text-right">
+                        <span className={`text-sm ${isCompleted ? "text-gray-400" : "text-gray-400"}`}>
+                          {formatDate(pipeline.lastModified)}
+                        </span>
+                      </div>
+                      <ChevronRight className={`h-4 w-4 shrink-0 ${isCompleted ? "text-gray-300" : "text-gray-300"}`} />
+                    </Link>
+                  )
+                })}
 
                 {/* Files (root level only) */}
                 {currentFolderId === null && projectSpecificFiles.map(file => (
@@ -562,33 +587,55 @@ export default function ProjectDetailPage() {
                     </Button>
                   </div>
                 ) : (
-                  allProjectPipelines.map(pipeline => (
-                    <Link
-                      key={pipeline.id}
-                      href={`/projects/${projectId}/pipeline/${pipeline.id}`}
-                      className="group flex items-center gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors"
-                    >
-                      <LayoutGrid className="h-5 w-5 text-blue-500 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-gray-900">{pipeline.name}</span>
-                          {pipeline.isReady ? (
-                            <Badge className="bg-green-100 text-green-700 border-0 text-xs">Ready</Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-xs">In progress</Badge>
-                          )}
+                  allProjectPipelines.map(pipeline => {
+                    const isCompleted = pipeline.status === 'completed'
+                    const isPlanning = pipeline.status === 'planning'
+                    const isRunning = pipeline.status === 'running'
+                    
+                    return (
+                      <Link
+                        key={pipeline.id}
+                        href={`/projects/${projectId}/pipeline/${pipeline.id}`}
+                        className={`group flex items-center gap-4 py-3 border-b border-gray-100 -mx-6 px-6 transition-colors ${
+                          isCompleted ? "opacity-50 bg-gray-50" : "hover:bg-gray-50"
+                        }`}
+                      >
+                        <LayoutGrid className={`h-5 w-5 shrink-0 ${
+                          isCompleted ? "text-gray-400" : isPlanning ? "text-blue-500" : "text-green-500"
+                        }`} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className={`text-sm font-medium ${isCompleted ? "text-gray-500" : "text-gray-900"}`}>
+                              {pipeline.name}
+                            </span>
+                            {isRunning && (
+                              <Badge className="bg-green-100 text-green-700 border-0 text-xs">Running</Badge>
+                            )}
+                            {isPlanning && (
+                              <Badge className="bg-blue-100 text-blue-700 border-0 text-xs">Planning</Badge>
+                            )}
+                            {isCompleted && (
+                              <Badge className="bg-gray-200 text-gray-500 border-0 text-xs">Run</Badge>
+                            )}
+                          </div>
+                          <p className={`text-xs mt-0.5 truncate ${isCompleted ? "text-gray-400" : "text-gray-400"}`}>
+                            {pipeline.description.goal}
+                          </p>
                         </div>
-                        <p className="text-xs text-gray-400 mt-0.5 truncate">{pipeline.description.goal}</p>
-                      </div>
-                      <div className="w-20 text-right">
-                        <span className="text-xs text-gray-400">Pipeline</span>
-                      </div>
-                      <div className="w-32 text-right">
-                        <span className="text-sm text-gray-400">{formatDate(pipeline.lastModified)}</span>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 " />
-                    </Link>
-                  ))
+                        <div className="w-20 text-right">
+                          <span className={`text-xs ${isCompleted ? "text-gray-400" : "text-gray-400"}`}>
+                            {isCompleted ? "Run" : "Pipeline"}
+                          </span>
+                        </div>
+                        <div className="w-32 text-right">
+                          <span className={`text-sm ${isCompleted ? "text-gray-400" : "text-gray-400"}`}>
+                            {formatDate(pipeline.lastModified)}
+                          </span>
+                        </div>
+                        <ChevronRight className={`h-4 w-4 shrink-0 ${isCompleted ? "text-gray-300" : "text-gray-300"}`} />
+                      </Link>
+                    )
+                  })
                 )}
               </div>
             )}
