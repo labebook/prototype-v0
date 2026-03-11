@@ -111,15 +111,15 @@ export function Sidebar() {
             </li>
             <li>
               <Link
-                href="/formulations"
+                href="/preparations"
                 className={`flex items-center px-4 py-2.5 text-sm ${
-                  isActive("/formulations") || pathname.startsWith("/formulations/")
+                  isActive("/preparations") || pathname.startsWith("/preparations/")
                     ? "bg-blue-50 text-blue-700 font-medium"
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }`}
               >
                 <Flask className="mr-2 h-4 w-4" />
-                Formulations
+                Preparations
               </Link>
             </li>
             <li>

@@ -222,8 +222,8 @@ export const mockProjects: Project[] = [
   },
   {
     id: 'pr2',
-    name: 'Antibody Validation',
-    description: 'Testing specificity of custom antibodies',
+    name: 'Drug Response in Breast Cancer Cells',
+    description: 'Assessing signaling and gene expression changes after targeted treatment',
     folderId: 'pf3',
     teamId: 't1',
     ownerId: 'u2',
