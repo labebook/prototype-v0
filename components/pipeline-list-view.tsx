@@ -23,6 +23,8 @@ interface PipelineStep {
   dateSelected?: string
   author?: string
   executionStatus?: 'idle' | 'running' | 'completed' | 'failed'
+  isSubStep?: boolean
+  parentStepId?: string
 }
 
 interface IoData {
@@ -299,13 +301,19 @@ export function PipelineListView({
                     </td>
                   )}
                   <td className="py-4 px-4 align-top">
-                    <div className="flex items-start gap-3 min-h-[56px]">
+                    <div className={cn("flex items-start gap-3 min-h-[56px]", step.isSubStep && "ml-8")}>
+                      {step.isSubStep && (
+                        <div className="flex items-center gap-2 mr-1">
+                          <div className="w-4 h-px bg-gray-300" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                        </div>
+                      )}
                       {showMethodIcon && (
                         <FlaskConical className="shrink-0 h-4 w-4 text-emerald-500 mt-0.5" />
                       )}
                       <div className="min-w-0">
                         <div className="text-[10px] text-gray-400 mb-0.5">{step.method}</div>
-                        <div className="text-sm font-medium text-gray-900">{step.name}</div>
+                        <div className={cn("text-sm font-medium", step.isSubStep ? "text-gray-700" : "text-gray-900")}>{step.name}</div>
                         <div className="text-xs text-gray-400 mt-0.5">{step.objective || step.description || ""}</div>
                       </div>
                     </div>
