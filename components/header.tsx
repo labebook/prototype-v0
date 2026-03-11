@@ -5,16 +5,20 @@ import { usePathname } from "next/navigation"
 import { Search } from "lucide-react"
 import { UserDropdown } from "@/components/user-dropdown"
 
-const navItems = [
-  { label: "Browse Methods", href: "/" },
-  { label: "My research workspace", href: "/projects" },
-]
-
 export function Header() {
   const pathname = usePathname()
 
+  // Determine active mode based on current path
+  const isWorkspaceMode =
+    pathname.startsWith("/projects") ||
+    pathname.startsWith("/team")
+
   return (
-    <header className="w-full bg-white border-b border-gray-200">
+    <header
+      className={`w-full border-b border-gray-200 transition-colors duration-200 ${
+        isWorkspaceMode ? "bg-blue-50" : "bg-white"
+      }`}
+    >
       <div className="w-full flex justify-between items-center px-6 h-16">
         {/* Left: Logo */}
         <div className="flex-shrink-0">
@@ -23,35 +27,42 @@ export function Header() {
           </Link>
         </div>
 
-        {/* Center: Navigation Menu */}
-        <nav className="flex items-center gap-1">
-          <div className="relative mr-1">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search methods..."
-              className="h-9 w-52 rounded-md border border-gray-300 bg-gray-50 pl-8 pr-3 text-sm text-gray-900 placeholder:text-gray-400 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            />
-          </div>
-          {navItems.map((item) => {
-            const isActive =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname === item.href || pathname.startsWith(item.href + "/")
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  isActive
-                    ? "bg-gray-100 text-gray-900"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                }`}
-              >
-                {item.label}
-              </Link>
-            )
-          })}
+        {/* Center: Mode Switch Tabs */}
+        <nav className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg">
+          {/* Explore Plyow Library Tab */}
+          <Link
+            href="/"
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+              !isWorkspaceMode
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            {!isWorkspaceMode && (
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search methods..."
+                  className="h-7 w-40 rounded border border-gray-200 bg-gray-50 pl-8 pr-2 text-xs text-gray-900 placeholder:text-gray-400 hover:bg-white focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  onClick={(e) => e.preventDefault()}
+                />
+              </div>
+            )}
+            Explore Plyow Library
+          </Link>
+
+          {/* Research Workspace Tab */}
+          <Link
+            href="/projects"
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+              isWorkspaceMode
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Research Workspace
+          </Link>
         </nav>
 
         {/* Right: User Avatar */}

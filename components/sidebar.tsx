@@ -26,8 +26,17 @@ export function Sidebar() {
 
   const isActive = (href: string) => pathname === href
 
+  // Determine if we're in workspace mode
+  const isWorkspaceMode =
+    pathname.startsWith("/projects") ||
+    pathname.startsWith("/team")
+
   return (
-    <aside className="w-64 border-r border-gray-200 h-full bg-white flex flex-col">
+    <aside
+      className={`w-64 border-r border-gray-200 h-full flex flex-col transition-colors duration-200 ${
+        isWorkspaceMode ? "bg-blue-50" : "bg-white"
+      }`}
+    >
       {/* Team Switcher */}
       <div className="px-3 pt-4 pb-2">
         <EnhancedTeamSwitcher onCreateTeam={() => setCreateTeamOpen(true)} />
