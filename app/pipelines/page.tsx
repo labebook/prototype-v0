@@ -20,11 +20,8 @@ import { Input } from "@/components/ui/input"
 import Link from "next/link"
 
 const initialFolders = [
-  { id: "f1", name: "Active Research",  parentId: null as string | null },
-  { id: "f2", name: "Experiments",      parentId: "f1" as string | null },
-  { id: "f3", name: "Drafts",           parentId: "f1" as string | null },
-  { id: "f4", name: "Archives",         parentId: null as string | null },
-  { id: "f5", name: "Shared with me",   parentId: null as string | null },
+  { id: "f1", name: "Protein Purification Pipelines",  parentId: null as string | null },
+  { id: "f2", name: "Gene Expression Analysis Pipelines (RT-PCR)",  parentId: null as string | null },
 ]
 
 export default function MyPipelinesPage() {
@@ -37,7 +34,8 @@ export default function MyPipelinesPage() {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
   const [folderPath, setFolderPath] = useState<Array<{ id: string; name: string }>>([])
 
-  const myPipelines = pipelines.filter(p => p.ownerId === currentUser.id)
+  // Filter to show only Western Blot Analysis pipeline (exclude replicates)
+  const myPipelines = pipelines.filter(p => p.ownerId === currentUser.id && p.id === 'p1')
 
   const levelFolders = folders.filter(f => f.parentId === currentFolderId)
 
@@ -201,11 +199,7 @@ export default function MyPipelinesPage() {
                   <p className="text-xs text-gray-400 mt-0.5 truncate">{pipeline.description.goal}</p>
                 </div>
                 <div className="w-20 text-right">
-                  {pipeline.isReady ? (
-                    <Badge className="bg-green-100 text-green-700 border-0 text-xs">Ready</Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-xs">In progress</Badge>
-                  )}
+                  {/* Status column intentionally empty */}
                 </div>
                 <div className="w-32 text-right">
                   <span className="text-sm text-gray-400">{formatDate(pipeline.lastModified)}</span>
