@@ -13,24 +13,26 @@ export function Header() {
     pathname.startsWith("/projects") ||
     pathname.startsWith("/team")
 
+  // Background colors based on mode
+  const leftBg = !isWorkspaceMode ? "bg-white" : "bg-gray-100"
+  const rightBg = isWorkspaceMode ? "bg-white" : "bg-gray-100"
+
   return (
     <header className="w-full border-b border-gray-200 h-14 flex">
-      {/* Left: Logo */}
-      <div className="flex-shrink-0 flex items-center px-6 bg-white">
-        <Link href="/" className="text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors">
-          PLYOW
-        </Link>
-      </div>
+      {/* LEFT MODE ZONE: Logo + Explore Plyow Library */}
+      <div className={`flex-1 flex items-center transition-colors duration-200 ${leftBg}`}>
+        {/* Logo */}
+        <div className="flex-shrink-0 px-6">
+          <Link href="/" className="text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors">
+            PLYOW
+          </Link>
+        </div>
 
-      {/* Segmented Navigation - fills remaining space */}
-      <div className="flex-1 flex">
         {/* Explore Plyow Library Segment */}
         <Link
           href="/"
           className={`flex-1 flex items-center justify-center gap-3 text-base font-medium transition-colors duration-200 ${
-            !isWorkspaceMode
-              ? "bg-white text-gray-900"
-              : "bg-gray-100 text-gray-500 hover:text-gray-700"
+            !isWorkspaceMode ? "text-gray-900" : "text-gray-500 hover:text-gray-700"
           }`}
         >
           {/* Search Field */}
@@ -44,26 +46,27 @@ export function Header() {
           </div>
           Explore Plyow Library
         </Link>
+      </div>
 
-        {/* Vertical Divider */}
-        <div className="w-px bg-gray-200" />
+      {/* Vertical Divider - Mode Boundary */}
+      <div className="w-px bg-gray-200" />
 
+      {/* RIGHT MODE ZONE: Research Workspace + User Avatar */}
+      <div className={`flex-1 flex items-center transition-colors duration-200 ${rightBg}`}>
         {/* Research Workspace Segment */}
         <Link
           href="/projects"
           className={`flex-1 flex items-center justify-center text-base font-medium transition-colors duration-200 ${
-            isWorkspaceMode
-              ? "bg-white text-gray-900"
-              : "bg-gray-100 text-gray-500 hover:text-gray-700"
+            isWorkspaceMode ? "text-gray-900" : "text-gray-500 hover:text-gray-700"
           }`}
         >
           Research Workspace
         </Link>
-      </div>
 
-      {/* Right: User Avatar */}
-      <div className="flex-shrink-0 flex items-center px-6 bg-white">
-        <UserDropdown />
+        {/* User Avatar */}
+        <div className="flex-shrink-0 px-6">
+          <UserDropdown />
+        </div>
       </div>
     </header>
   )
