@@ -109,6 +109,32 @@ export function Sidebar() {
                 Operational Procedures
               </Link>
             </li>
+            <li>
+              <Link
+                href="/formulations"
+                className={`flex items-center px-4 py-2.5 text-sm ${
+                  isActive("/formulations") || pathname.startsWith("/formulations/")
+                    ? "bg-blue-50 text-blue-700 font-medium"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                }`}
+              >
+                <Flask className="mr-2 h-4 w-4" />
+                Formulations
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/experimental-models"
+                className={`flex items-center px-4 py-2.5 text-sm ${
+                  isActive("/experimental-models") || pathname.startsWith("/experimental-models/")
+                    ? "bg-blue-50 text-blue-700 font-medium"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                }`}
+              >
+                <Layers className="mr-2 h-4 w-4" />
+                Experimental Models
+              </Link>
+            </li>
         </ul>
       </nav>
 

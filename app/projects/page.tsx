@@ -83,9 +83,9 @@ export default function ProjectsPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <div className="flex-1 flex">
+      <div className="flex-1 flex min-h-0">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto bg-white">
           <div className="mx-auto max-w-[1200px] px-6 py-8">
 
             {/* ── Page header ───────────────────────────────────────── */}
