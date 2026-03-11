@@ -285,8 +285,11 @@ export function PipelineListView({
                     <td className="py-0 px-2 w-10 align-top" style={{ height: "1px" }}>
                       <div className="flex flex-col items-center" style={{ height: "100%" }}>
                         <div className="pt-4 flex flex-col items-center flex-1">
-                          <div className="h-7 w-7 rounded-full border-2 border-gray-200 bg-white flex items-center justify-center text-xs font-semibold text-gray-400 shrink-0 z-10">
-                            {index + 1}
+                          <div className={cn(
+                            "rounded-full border-2 border-gray-200 bg-white flex items-center justify-center font-semibold text-gray-400 shrink-0 z-10",
+                            step.isSubStep ? "h-6 w-6 text-[10px]" : "h-7 w-7 text-xs"
+                          )}>
+                            {step.step}
                           </div>
                           {index < steps.length - 1 && (
                             <div className="w-0.5 bg-gray-200 flex-1 mt-1" />
