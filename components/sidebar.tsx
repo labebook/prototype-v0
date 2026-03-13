@@ -26,7 +26,7 @@ const IconMethods = ({ className }: { className?: string }) => (
 const IconOperationalProcedures = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.25">
     <rect x="2" y="2" width="12" height="12" rx="1" />
-    <rect x="8" y="4.5" width="5" height="5" transform="rotate(45 8 7)" />
+    <rect x="8" y="4.5" width="5" height="5" transform="matrix(0.707107, 0.707107, -0.707107, 0.707107, 5.596782, -4.190565)" />
   </svg>
 )
 
