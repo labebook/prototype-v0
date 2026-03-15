@@ -66,12 +66,12 @@ export default function PreparationsPage() {
               <PipelineListView
                 steps={preparations}
                 hideColumns={['status', 'action']}
-                onParametersClick={step => router.push(`/preparations/${step.id}`)}
-                onProtocolClick={step => router.push(`/preparations/${step.id}`)}
+                onParametersClick={step => console.log("Parameters:", step)}
+                onProtocolClick={step => console.log("Protocol:", step)}
                 onBuffersClick={step => console.log("Buffers:", step)}
                 onCalculationsClick={step => console.log("Calculations:", step)}
                 onMaterialsClick={step => console.log("Materials:", step)}
-                onPlanClick={step => console.log("Plan:", step)}
+                onPlanClick={step => router.push(`/preparations/${step.id}`)}
               />
             )}
 
