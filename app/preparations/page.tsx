@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Sidebar } from "@/components/sidebar"
@@ -27,6 +28,11 @@ const samplePreparations = [
 
 export default function PreparationsPage() {
   const [preparations] = useState(samplePreparations)
+  const router = useRouter()
+
+  const handleRowClick = (step: typeof samplePreparations[0]) => {
+    router.push(`/preparations/${step.id}`)
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -64,8 +70,9 @@ export default function PreparationsPage() {
               <PipelineListView
                 steps={preparations}
                 hideColumns={['status', 'action']}
-                onParametersClick={step => console.log("Parameters:", step)}
-                onProtocolClick={step => console.log("Protocol:", step)}
+                onStepClick={handleRowClick}
+                onParametersClick={step => router.push(`/preparations/${step.id}`)}
+                onProtocolClick={step => router.push(`/preparations/${step.id}`)}
                 onBuffersClick={step => console.log("Buffers:", step)}
                 onCalculationsClick={step => console.log("Calculations:", step)}
                 onMaterialsClick={step => console.log("Materials:", step)}
