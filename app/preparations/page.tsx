@@ -30,10 +30,6 @@ export default function PreparationsPage() {
   const [preparations] = useState(samplePreparations)
   const router = useRouter()
 
-  const handleRowClick = (step: typeof samplePreparations[0]) => {
-    router.push(`/preparations/${step.id}`)
-  }
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -70,7 +66,6 @@ export default function PreparationsPage() {
               <PipelineListView
                 steps={preparations}
                 hideColumns={['status', 'action']}
-                onStepClick={handleRowClick}
                 onParametersClick={step => router.push(`/preparations/${step.id}`)}
                 onProtocolClick={step => router.push(`/preparations/${step.id}`)}
                 onBuffersClick={step => console.log("Buffers:", step)}
