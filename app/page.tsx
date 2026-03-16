@@ -6,7 +6,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ChevronRight, Check, Beaker, FlaskConical, Package, Box, Monitor, FileText, Folder, ChevronLeft, Grid, List } from "lucide-react"
+import { ChevronRight, Check, Beaker, FlaskConical, Package, Box, Monitor, FileText, Folder, ChevronLeft } from "lucide-react"
 
 // Object dropdown options with nested structure
 const objectOptions = [
@@ -123,7 +123,6 @@ function HomePageContent() {
   
   // Navigation state for drilling into folders
   const [currentPath, setCurrentPath] = useState<string[]>([])
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
 
   const handleSearch = () => {
     const params = new URLSearchParams()
