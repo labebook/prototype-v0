@@ -6,7 +6,9 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ChevronRight, Check, Beaker, FlaskConical, Package, Box, Monitor, FileText, Folder, ChevronLeft } from "lucide-react"
+import { ChevronRight, Check, Beaker, FlaskConical, Package, Box, Monitor, FileText, Folder, ChevronLeft, Plus } from "lucide-react"
+import { PipelineListView } from "@/components/pipeline-list-view"
+import { SDSPagePreparationModal } from "@/components/sds-page-preparation-modal"
 
 // Object dropdown options with nested structure
 const objectOptions = [
@@ -72,6 +74,24 @@ const gelElectrophoresisItems = [
   { id: "power-supplies", label: "Power Supplies", count: 3 },
 ]
 
+// Sample preparations data (same as /preparations page)
+const samplePreparations = [
+  {
+    id: "CM-002",
+    step: 1,
+    name: "SDS-PAGE Gel Preparation",
+    category: "module",
+    objective: "Preparation of polyacrylamide gel for SDS-PAGE electrophoresis.",
+    method: "Preparation Module – Dr. Johnson",
+    ready: true,
+    protocolId: "CM-002",
+    parametersState: "configured" as const,
+    dateSelected: "2025-03-25",
+    author: "Dr. Johnson",
+    executionStatus: "idle" as const,
+  },
+]
+
 // Product data for Electrophoresis Cells with two display types
 const electrophoresisCellsProducts = [
   {
@@ -123,6 +143,9 @@ function HomePageContent() {
   
   // Navigation state for drilling into folders
   const [currentPath, setCurrentPath] = useState<string[]>([])
+  
+  // Modal state for preparations
+  const [isPreparationModalOpen, setIsPreparationModalOpen] = useState(false)
 
   const handleSearch = () => {
     const params = new URLSearchParams()
@@ -546,29 +569,60 @@ function HomePageContent() {
           {/* Main Content Area */}
           <main className="flex-1 overflow-y-auto bg-white">
             <div className="mx-auto max-w-[1200px] px-6 py-8">
-              {/* Page header with back button */}
-              <div className="flex items-end justify-between mb-8 pb-6 border-b border-gray-200">
-                <div className="flex items-center gap-4">
-                  {currentPath.length > 0 && (
-                    <button
-                      onClick={navigateBack}
-                      className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <ChevronLeft className="h-5 w-5 text-gray-600" />
-                    </button>
-                  )}
-                  <div>
-                    <h1 className="text-[32px] font-semibold">{getCurrentTitle()}</h1>
-                    <p className="text-gray-500 mt-1">
-                      {getCurrentDescription()}
-                    </p>
+              {/* Page header with back button - hidden for preparations which has its own header */}
+              {selectedCategory !== "preparations" && (
+                <div className="flex items-end justify-between mb-8 pb-6 border-b border-gray-200">
+                  <div className="flex items-center gap-4">
+                    {currentPath.length > 0 && (
+                      <button
+                        onClick={navigateBack}
+                        className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                      >
+                        <ChevronLeft className="h-5 w-5 text-gray-600" />
+                      </button>
+                    )}
+                    <div>
+                      <h1 className="text-[32px] font-semibold">{getCurrentTitle()}</h1>
+                      <p className="text-gray-500 mt-1">
+                        {getCurrentDescription()}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Content */}
               {selectedCategory === "equipment" ? (
                 renderEquipmentContent()
+              ) : selectedCategory === "preparations" ? (
+                /* Preparations Content - transferred from /preparations page */
+                <div>
+                  {/* Header with New preparation button */}
+                  <div className="flex items-end justify-between pb-6 border-b border-gray-200 mb-8">
+                    <div>
+                      <h1 className="text-[32px] font-semibold">Preparations</h1>
+                      <p className="text-gray-500 mt-1">
+                        Browse and manage preparation protocols
+                      </p>
+                    </div>
+                    <Button>
+                      <Plus className="mr-2 h-4 w-4" />
+                      New preparation
+                    </Button>
+                  </div>
+
+                  {/* Preparations list using PipelineListView */}
+                  <PipelineListView
+                    steps={samplePreparations}
+                    hideColumns={['status', 'action']}
+                    onParametersClick={step => console.log("Parameters:", step)}
+                    onProtocolClick={step => console.log("Protocol:", step)}
+                    onBuffersClick={step => console.log("Buffers:", step)}
+                    onCalculationsClick={step => console.log("Calculations:", step)}
+                    onMaterialsClick={step => console.log("Materials:", step)}
+                    onPlanClick={() => setIsPreparationModalOpen(true)}
+                  />
+                </div>
               ) : (
                 <div className="py-24 text-center">
                   {currentCategory && (() => {
@@ -593,6 +647,12 @@ function HomePageContent() {
       )}
 
       <Footer />
+
+      {/* SDS-PAGE Preparation Modal */}
+      <SDSPagePreparationModal 
+        isOpen={isPreparationModalOpen} 
+        onClose={() => setIsPreparationModalOpen(false)} 
+      />
     </div>
   )
 }
