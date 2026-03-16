@@ -6,7 +6,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ChevronRight, Check, Beaker, FlaskConical, Package, Box, Monitor, FileText } from "lucide-react"
+import { ChevronRight, Check, Beaker, FlaskConical, Package, Box, Monitor, FileText, Folder } from "lucide-react"
 
 // Object dropdown options with nested structure
 const objectOptions = [
@@ -52,6 +52,18 @@ const materialsCategories = [
   { id: "objects", label: "Objects", icon: Box },
   { id: "software", label: "Software", icon: Monitor },
   { id: "preparations", label: "Preparations", icon: FileText },
+]
+
+// Equipment subcategories
+const equipmentItems = [
+  { id: "gel-electrophoresis", label: "Gel Electrophoresis Equipment" },
+  { id: "basic-lab", label: "Basic Lab Equipment" },
+  { id: "micropipettes", label: "Micropipettes" },
+  { id: "microcentrifuge", label: "Benchtop Microcentrifuge" },
+  { id: "spectrophotometer", label: "UV-Vis Spectrophotometer" },
+  { id: "cooling-rack", label: "Cooling Rack PCR" },
+  { id: "laboratory-marker", label: "Laboratory Marker" },
+  { id: "vortex-mixer", label: "Vortex Mixer" },
 ]
 
 function HomePageContent() {
@@ -273,20 +285,37 @@ function HomePageContent() {
                 </div>
               </div>
 
-              {/* Content placeholder */}
-              <div className="py-24 text-center">
-                {currentCategory && (
-                  <>
-                    <currentCategory.icon className="h-10 w-10 text-gray-300 mx-auto mb-4" />
-                    <p className="text-lg font-medium text-gray-700 mb-1">
-                      No {currentCategory.label.toLowerCase()} yet
-                    </p>
-                    <p className="text-gray-500">
-                      {currentCategory.label} will appear here once added to the library.
-                    </p>
-                  </>
-                )}
-              </div>
+              {/* Content */}
+              {selectedCategory === "equipment" ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {equipmentItems.map((item) => (
+                    <button
+                      key={item.id}
+                      className="flex flex-col items-center p-6 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-colors text-center group"
+                      onClick={() => console.log(`Navigate to ${item.id}`)}
+                    >
+                      <Folder className="h-12 w-12 text-amber-400 mb-3 group-hover:text-amber-500 transition-colors" />
+                      <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 leading-tight">
+                        {item.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-24 text-center">
+                  {currentCategory && (
+                    <>
+                      <currentCategory.icon className="h-10 w-10 text-gray-300 mx-auto mb-4" />
+                      <p className="text-lg font-medium text-gray-700 mb-1">
+                        No {currentCategory.label.toLowerCase()} yet
+                      </p>
+                      <p className="text-gray-500">
+                        {currentCategory.label} will appear here once added to the library.
+                      </p>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </main>
         </div>
