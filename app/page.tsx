@@ -6,7 +6,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ChevronRight, Check, Beaker, FlaskConical, Package, Box, Monitor, FileText, Folder, ChevronLeft, Plus } from "lucide-react"
+import { ChevronRight, Check, Beaker, FlaskConical, Package, Box, Monitor, FileText, Folder, ChevronLeft, Plus, Droplets } from "lucide-react"
 import { PipelineListView } from "@/components/pipeline-list-view"
 import { SDSPagePreparationModal } from "@/components/sds-page-preparation-modal"
 
@@ -54,6 +54,7 @@ const materialsCategories = [
   { id: "objects", label: "Objects", icon: Box },
   { id: "software", label: "Software", icon: Monitor },
   { id: "preparations", label: "Preparations", icon: FileText },
+  { id: "buffers-solutions", label: "Buffers and Solutions", icon: Droplets },
 ]
 
 // Equipment subcategories with item counts
