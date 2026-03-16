@@ -1,12 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { ChevronRight, Check } from "lucide-react"
 
 // Object dropdown options with nested structure
@@ -45,27 +44,29 @@ const applicationOptions = [
   "Drying",
 ]
 
-export default function ScientificMethodManager() {
+function HomePageContent() {
   const router = useRouter()
-  const [activeSection, setActiveSection] = useState<"methods" | "materials">("methods")
+  const searchParams = useSearchParams()
+  const activeSection = searchParams.get("section") || "methods"
+  
   const [searchQuery, setSearchQuery] = useState("")
   const [object, setObject] = useState("")
   const [application, setApplication] = useState("")
   const [showMoleculeSubmenu, setShowMoleculeSubmenu] = useState(false)
 
   const handleSearch = () => {
-    const searchParams = new URLSearchParams()
-    if (searchQuery) searchParams.append("query", searchQuery)
-    if (object) searchParams.append("object", object)
-    if (application) searchParams.append("application", application)
-    router.push(`/plyowsearchresults?${searchParams.toString()}`)
+    const params = new URLSearchParams()
+    if (searchQuery) params.append("query", searchQuery)
+    if (object) params.append("object", object)
+    if (application) params.append("application", application)
+    router.push(`/plyowsearchresults?${params.toString()}`)
   }
 
   const handleApplyFilters = () => {
-    const searchParams = new URLSearchParams()
-    if (object) searchParams.append("object", object)
-    if (application) searchParams.append("application", application)
-    router.push(`/plyowsearchresults?${searchParams.toString()}`)
+    const params = new URLSearchParams()
+    if (object) params.append("object", object)
+    if (application) params.append("application", application)
+    router.push(`/plyowsearchresults?${params.toString()}`)
   }
 
   const handleObjectSelect = (value: string) => {
@@ -96,154 +97,147 @@ export default function ScientificMethodManager() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header />
 
-      <main className="flex-1 flex flex-col">
-        {/* Section Tabs - Pill style matching the image */}
-        <div className="w-full bg-white pt-8 pb-6">
-          <div className="max-w-4xl mx-auto px-4">
-            <div className="flex">
-              {/* METHODS Tab */}
-              <button
-                onClick={() => setActiveSection("methods")}
-                className={cn(
-                  "relative px-16 py-3 text-base font-semibold uppercase tracking-wide rounded-t-lg transition-colors",
-                  activeSection === "methods"
-                    ? "bg-[#F5F0E6] text-gray-800 border-l-4 border-l-[#C9A94E]"
-                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                )}
+      <main className="flex-1 flex flex-col items-center justify-center px-4">
+        {activeSection === "methods" ? (
+          <div className="w-full max-w-2xl">
+            {/* Title */}
+            <h1 className="text-3xl font-bold text-gray-900 text-center mb-4">
+              Scientific Method Manager
+            </h1>
+
+            {/* Subtitle */}
+            <p className="text-base text-gray-600 text-center mb-10 leading-relaxed">
+              Search, organize, and build pipelines<br />
+              with scientific methods from our comprehensive library.
+            </p>
+
+            {/* Search Row */}
+            <div className="flex items-center gap-3 mb-6">
+              <input
+                type="text"
+                placeholder="Search methods..."
+                className="flex-1 h-11 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSearch()
+                }}
+              />
+              <Button 
+                className="h-11 bg-blue-500 hover:bg-blue-600 px-6 text-sm font-medium" 
+                onClick={handleSearch}
               >
-                Methods
-              </button>
-              {/* MATERIALS Tab */}
-              <button
-                onClick={() => setActiveSection("materials")}
-                className={cn(
-                  "relative px-16 py-3 text-base font-semibold uppercase tracking-wide rounded-t-lg transition-colors",
-                  activeSection === "materials"
-                    ? "bg-[#F5F0E6] text-gray-800 border-l-4 border-l-[#C9A94E]"
-                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                )}
+                Search
+              </Button>
+            </div>
+
+            {/* OR Separator */}
+            <div className="text-center text-gray-400 text-sm mb-6">
+              OR
+            </div>
+
+            {/* Filters Row */}
+            <div className="flex items-center gap-3">
+              <Select value={object} onValueChange={handleObjectSelect}>
+                <SelectTrigger className="h-11 flex-1 bg-white">
+                  <SelectValue placeholder="Object">{getDisplayValue()}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {objectOptions.map((option) => {
+                    if (typeof option === "string") {
+                      const value = option.toLowerCase().replace(/\s+/g, "-")
+                      return (
+                        <SelectItem key={option} value={value}>
+                          <div className="flex items-center justify-between w-full">
+                            <span>{option}</span>
+                            {object === value && <Check className="h-4 w-4" />}
+                          </div>
+                        </SelectItem>
+                      )
+                    } else {
+                      return (
+                        <div key={option.value}>
+                          <SelectItem value={option.value} className="cursor-pointer">
+                            <div className="flex items-center justify-between w-full">
+                              <span>{option.label}</span>
+                              <ChevronRight className="h-4 w-4" />
+                            </div>
+                          </SelectItem>
+                          {showMoleculeSubmenu && (
+                            <div className="ml-4 border-l border-gray-200">
+                              {option.subOptions.map((subOption) => {
+                                const subValue = subOption.toLowerCase().replace(/\s+/g, "-")
+                                return (
+                                  <SelectItem
+                                    key={subOption}
+                                    value={subValue}
+                                    className="pl-4 cursor-pointer"
+                                    onSelect={() => handleMoleculeSubSelect(subOption)}
+                                  >
+                                    <div className="flex items-center justify-between w-full">
+                                      <span>{subOption}</span>
+                                      {object === subValue && <Check className="h-4 w-4" />}
+                                    </div>
+                                  </SelectItem>
+                                )
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    }
+                  })}
+                </SelectContent>
+              </Select>
+
+              <Select value={application} onValueChange={setApplication}>
+                <SelectTrigger className="h-11 flex-1 bg-white">
+                  <SelectValue placeholder="Application" />
+                </SelectTrigger>
+                <SelectContent>
+                  {applicationOptions.map((option) => (
+                    <SelectItem key={option} value={option.toLowerCase().replace(/\s+/g, "-")}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Button
+                className="h-11 bg-blue-500 hover:bg-blue-600 text-white px-5 text-sm font-medium"
+                onClick={handleApplyFilters}
               >
-                Materials
-              </button>
+                Apply Filters
+              </Button>
             </div>
           </div>
-        </div>
-
-        {/* Content Area */}
-        <div className="flex-1 bg-white px-4 pb-16">
-          <div className="max-w-4xl mx-auto">
-            {activeSection === "methods" ? (
-              /* Methods Section */
-              <div className="space-y-4 pt-6">
-                {/* Search Row */}
-                <div className="flex items-center gap-4">
-                  <input
-                    type="text"
-                    placeholder="Protein qualitative analysis"
-                    className="flex-1 h-12 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleSearch()
-                    }}
-                  />
-                  <Button 
-                    className="h-12 bg-blue-600 hover:bg-blue-700 px-8 min-w-[100px]" 
-                    onClick={handleSearch}
-                  >
-                    Search
-                  </Button>
-                </div>
-
-                {/* Filters Row */}
-                <div className="flex items-center gap-4">
-                  <Select value={object} onValueChange={handleObjectSelect}>
-                    <SelectTrigger className="h-12 flex-1">
-                      <SelectValue placeholder="Object">{getDisplayValue()}</SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {objectOptions.map((option) => {
-                        if (typeof option === "string") {
-                          const value = option.toLowerCase().replace(/\s+/g, "-")
-                          return (
-                            <SelectItem key={option} value={value}>
-                              <div className="flex items-center justify-between w-full">
-                                <span>{option}</span>
-                                {object === value && <Check className="h-4 w-4" />}
-                              </div>
-                            </SelectItem>
-                          )
-                        } else {
-                          return (
-                            <div key={option.value}>
-                              <SelectItem value={option.value} className="cursor-pointer">
-                                <div className="flex items-center justify-between w-full">
-                                  <span>{option.label}</span>
-                                  <ChevronRight className="h-4 w-4" />
-                                </div>
-                              </SelectItem>
-                              {showMoleculeSubmenu && (
-                                <div className="ml-4 border-l border-gray-200">
-                                  {option.subOptions.map((subOption) => {
-                                    const subValue = subOption.toLowerCase().replace(/\s+/g, "-")
-                                    return (
-                                      <SelectItem
-                                        key={subOption}
-                                        value={subValue}
-                                        className="pl-4 cursor-pointer"
-                                        onSelect={() => handleMoleculeSubSelect(subOption)}
-                                      >
-                                        <div className="flex items-center justify-between w-full">
-                                          <span>{subOption}</span>
-                                          {object === subValue && <Check className="h-4 w-4" />}
-                                        </div>
-                                      </SelectItem>
-                                    )
-                                  })}
-                                </div>
-                              )}
-                            </div>
-                          )
-                        }
-                      })}
-                    </SelectContent>
-                  </Select>
-
-                  <Select value={application} onValueChange={setApplication}>
-                    <SelectTrigger className="h-12 flex-1">
-                      <SelectValue placeholder="Application" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {applicationOptions.map((option) => (
-                        <SelectItem key={option} value={option.toLowerCase().replace(/\s+/g, "-")}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Button
-                    className="h-12 bg-blue-600 hover:bg-blue-700 text-white px-6"
-                    onClick={handleApplyFilters}
-                  >
-                    Apply Filters
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              /* Materials Section - placeholder for now */
-              <div className="pt-6">
-                <p className="text-gray-500">Materials catalog coming soon...</p>
-              </div>
-            )}
+        ) : (
+          /* Materials Section - placeholder */
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Materials Library</h1>
+            <p className="text-gray-500">Materials catalog coming soon...</p>
           </div>
-        </div>
+        )}
       </main>
 
       <Footer />
     </div>
+  )
+}
+
+export default function ScientificMethodManager() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col bg-white">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-gray-400">Loading...</div>
+        </div>
+      </div>
+    }>
+      <HomePageContent />
+    </Suspense>
   )
 }
