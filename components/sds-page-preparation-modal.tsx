@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { X } from "lucide-react"
+import { X, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils"
 
 interface SDSPagePreparationModalProps {
   isOpen: boolean
@@ -43,14 +44,20 @@ const proteinSizeOptions = [
   { value: ">200", label: ">200 kDa", gelPercentage: 5, crossLink: "37.5:1 (2.7% cross-linker)" },
 ]
 
-// Protocol steps
+// Protocol steps with options
 const protocolSteps = [
-  { id: 1, title: "Prepare resolving gel solution", description: "Mix acrylamide, buffer, water, and SDS according to calculated volumes" },
-  { id: 2, title: "Add APS and TEMED", description: "Add ammonium persulfate and TEMED to initiate polymerization" },
-  { id: 3, title: "Pour resolving gel", description: "Carefully pour the gel solution between glass plates" },
-  { id: 4, title: "Overlay with isopropanol", description: "Add isopropanol layer to ensure flat gel surface" },
-  { id: 5, title: "Prepare stacking gel", description: "Mix stacking gel components after resolving gel polymerizes" },
-  { id: 6, title: "Insert comb and allow polymerization", description: "Insert well comb and wait for complete polymerization" },
+  { id: 1, title: "Assemble the Gel Casting Apparatus", options: [] },
+  { id: 2, title: "Prepare the Resolving Gel (Lower Gel)", options: [] },
+  { 
+    id: 3, 
+    title: "Overlay with Alcohol", 
+    options: [
+      { id: "isopropanol", label: "Isopropanol" },
+      { id: "ethanol", label: "Ethanol" },
+    ] 
+  },
+  { id: 4, title: "Prepare the Stacking Gel (Upper Gel)", options: [] },
+  { id: 5, title: "Allow Gel Polymerization", options: [] },
 ]
 
 export function SDSPagePreparationModal({ isOpen, onClose }: SDSPagePreparationModalProps) {
@@ -60,6 +67,79 @@ export function SDSPagePreparationModal({ isOpen, onClose }: SDSPagePreparationM
   const [thickness, setThickness] = useState(1.0)
   const [proteinSize, setProteinSize] = useState("30-100")
   const [gelPercentage, setGelPercentage] = useState(12)
+  
+  // Protocol options state
+  const [selectedPills, setSelectedPills] = useState<Record<string, boolean>>({})
+  
+  const togglePill = (pillId: string) => {
+    setSelectedPills((prev) => ({
+      ...prev,
+      [pillId]: !prev[pillId],
+    }))
+  }
+
+  // Toggle pill component matching Western Blot style
+  const TogglePill = ({ id, label }: { id: string; label: string }) => {
+    const isSelected = selectedPills[id]
+
+    return (
+      <button
+        role="button"
+        aria-pressed={isSelected}
+        className={cn(
+          "flex items-center rounded-full px-2.5 py-0.5 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-black whitespace-nowrap",
+          isSelected ? "bg-black text-white" : "bg-[#F3F4F6] text-[#374151] hover:bg-[#E5E7EB] border border-[#D1D5DB]",
+        )}
+        onClick={() => togglePill(id)}
+      >
+        <span className="truncate max-w-[150px]">{label}</span>
+      </button>
+    )
+  }
+
+  const AddImplementationPill = ({ stepId }: { stepId: string }) => {
+    return (
+      <button
+        role="button"
+        aria-label={`Add implementation for ${stepId}`}
+        className="flex items-center justify-center rounded-full px-2.5 py-0.5 h-7 bg-[#F3F4F6] border border-[#D1D5DB] hover:bg-[#E5E7EB] transition-colors focus:outline-none focus:ring-2 focus:ring-black"
+        onClick={() => console.log(`Add implementation for ${stepId}`)}
+      >
+        <Plus className="h-3.5 w-3.5 text-[#6B7280]" />
+      </button>
+    )
+  }
+
+  // Protocol step component matching Western Blot style
+  const ProtocolStep = ({
+    number,
+    title,
+    options = [],
+  }: {
+    number: number
+    title: string
+    options?: Array<{ id: string; label: string }>
+  }) => {
+    return (
+      <div className="flex items-center flex-nowrap overflow-x-auto py-3 border-b border-gray-100 last:border-b-0">
+        <div className="font-medium text-base whitespace-nowrap mr-2 flex items-center gap-2">
+          <span>{number}.</span>
+          <span>{title}</span>
+        </div>
+
+        <div className="flex flex-nowrap gap-2 items-center">
+          {options.length > 0 && (
+            <>
+              {options.map((option) => (
+                <TogglePill key={option.id} id={option.id} label={option.label} />
+              ))}
+              <AddImplementationPill stepId={`step-${number}`} />
+            </>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   // Get available wells for current gel size
   const availableWells = wellOptionsBySize[gelSize] || wellOptionsBySize.mini
@@ -127,7 +207,7 @@ export function SDSPagePreparationModal({ isOpen, onClose }: SDSPagePreparationM
         <div className="px-6 py-6">
           {/* ── Configuration Header ──────────────────────────────── */}
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-8">
-            <h2 className="text-lg font-medium text-gray-900 mb-6">Gel Configuration</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-6">Configuration</h2>
             
             {/* Row 1: Gel size and wells */}
             <div className="grid grid-cols-2 gap-6 mb-6">
@@ -251,29 +331,23 @@ export function SDSPagePreparationModal({ isOpen, onClose }: SDSPagePreparationM
             </div>
           </div>
 
-          {/* ── Protocol Steps ─────────────────────────────────────── */}
-          <div className="mb-8">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">
-              Protocol Steps — SDS-PAGE Gel Preparation
-            </h2>
-            
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
-              {protocolSteps.map((step, index) => (
-                <div
-                  key={step.id}
-                  className={`flex items-start gap-4 px-4 py-4 ${
-                    index < protocolSteps.length - 1 ? "border-b border-gray-100" : ""
-                  }`}
-                >
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium text-gray-600">
-                    {step.id}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-gray-900">{step.title}</h3>
-                    <p className="text-sm text-gray-500 mt-0.5">{step.description}</p>
-                  </div>
-                </div>
-              ))}
+          {/* ── Protocol Plan ─────────────────────────────────────── */}
+          <div className="mb-8 bg-white border border-[#E5E7EB] rounded-lg">
+            <div className="px-6 pt-6 pb-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Protocol plan
+              </h2>
+              
+              <div className="space-y-0">
+                {protocolSteps.map((step) => (
+                  <ProtocolStep 
+                    key={step.id}
+                    number={step.id}
+                    title={step.title}
+                    options={step.options}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 
