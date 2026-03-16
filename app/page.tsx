@@ -51,7 +51,7 @@ const materialsCategories = [
   { id: "equipment", label: "Equipment", icon: Beaker },
   { id: "chemicals", label: "Chemicals", icon: FlaskConical },
   { id: "supplies", label: "Supplies", icon: Package },
-  { id: "objects", label: "Objects", icon: Box },
+  { id: "objects", label: "Biological Materials", icon: Box },
   { id: "software", label: "Software", icon: Monitor },
   { id: "preparations", label: "Preparations", icon: FileText },
   { id: "buffers-solutions", label: "Buffers and Solutions", icon: Droplets },
