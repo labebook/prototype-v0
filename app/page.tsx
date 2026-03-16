@@ -6,7 +6,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ChevronRight, Check } from "lucide-react"
+import { ChevronRight, Check, Beaker, FlaskConical, Package, Box, Monitor, FileText } from "lucide-react"
 
 // Object dropdown options with nested structure
 const objectOptions = [
@@ -44,6 +44,16 @@ const applicationOptions = [
   "Drying",
 ]
 
+// Materials categories for sidebar
+const materialsCategories = [
+  { id: "equipment", label: "Equipment", icon: Beaker },
+  { id: "chemicals", label: "Chemicals", icon: FlaskConical },
+  { id: "supplies", label: "Supplies", icon: Package },
+  { id: "objects", label: "Objects", icon: Box },
+  { id: "software", label: "Software", icon: Monitor },
+  { id: "preparations", label: "Preparations", icon: FileText },
+]
+
 function HomePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -53,6 +63,7 @@ function HomePageContent() {
   const [object, setObject] = useState("")
   const [application, setApplication] = useState("")
   const [showMoleculeSubmenu, setShowMoleculeSubmenu] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState("equipment")
 
   const handleSearch = () => {
     const params = new URLSearchParams()
@@ -96,12 +107,15 @@ function HomePageContent() {
       .join(" ")
   }
 
+  // Get current category info
+  const currentCategory = materialsCategories.find(c => c.id === selectedCategory)
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Header />
 
-      <main className="flex-1 flex flex-col items-center justify-center px-4">
-        {activeSection === "methods" ? (
+      {activeSection === "methods" ? (
+        <main className="flex-1 flex flex-col items-center justify-center px-4">
           <div className="w-full max-w-2xl">
             {/* Title */}
             <h1 className="text-3xl font-bold text-gray-900 text-center mb-4">
@@ -214,14 +228,69 @@ function HomePageContent() {
               </Button>
             </div>
           </div>
-        ) : (
-          /* Materials Section - placeholder */
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Materials Library</h1>
-            <p className="text-gray-500">Materials catalog coming soon...</p>
-          </div>
-        )}
-      </main>
+        </main>
+      ) : (
+        /* Materials Section with Sidebar */
+        <div className="flex-1 flex min-h-0">
+          {/* Left Sidebar - Materials Categories */}
+          <aside className="w-64 border-r border-gray-200 h-full flex flex-col bg-white">
+            <nav className="py-2 flex-1">
+              <ul className="space-y-1">
+                {materialsCategories.map((category) => {
+                  const Icon = category.icon
+                  const isSelected = selectedCategory === category.id
+                  
+                  return (
+                    <li key={category.id}>
+                      <button
+                        onClick={() => setSelectedCategory(category.id)}
+                        className={`flex items-center w-full px-4 py-2.5 text-sm text-left transition-colors ${
+                          isSelected
+                            ? "bg-blue-50 text-blue-700 font-medium"
+                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        }`}
+                      >
+                        <Icon className="mr-3 h-5 w-5" />
+                        {category.label}
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            </nav>
+          </aside>
+
+          {/* Main Content Area */}
+          <main className="flex-1 overflow-y-auto bg-white">
+            <div className="mx-auto max-w-[1200px] px-6 py-8">
+              {/* Page header */}
+              <div className="flex items-end justify-between mb-8 pb-6 border-b border-gray-200">
+                <div>
+                  <h1 className="text-[32px] font-semibold">{currentCategory?.label}</h1>
+                  <p className="text-gray-500 mt-1">
+                    Browse {currentCategory?.label.toLowerCase()} in the materials library
+                  </p>
+                </div>
+              </div>
+
+              {/* Content placeholder */}
+              <div className="py-24 text-center">
+                {currentCategory && (
+                  <>
+                    <currentCategory.icon className="h-10 w-10 text-gray-300 mx-auto mb-4" />
+                    <p className="text-lg font-medium text-gray-700 mb-1">
+                      No {currentCategory.label.toLowerCase()} yet
+                    </p>
+                    <p className="text-gray-500">
+                      {currentCategory.label} will appear here once added to the library.
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+          </main>
+        </div>
+      )}
 
       <Footer />
     </div>
