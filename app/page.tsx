@@ -399,13 +399,13 @@ function HomePageContent() {
           <div className="w-full max-w-2xl">
             {/* Title */}
             <h1 className="text-3xl font-bold text-gray-900 text-center mb-4">
-              Scientific Method Manager
+              Experimental Methods Library
             </h1>
 
             {/* Subtitle */}
             <p className="text-base text-gray-600 text-center mb-10 leading-relaxed">
-              Search, organize, and build pipelines<br />
-              with scientific methods from our comprehensive library.
+              Search methods, procedures, and protocols for building experimental<br />
+              pipelines.
             </p>
 
             {/* Search Row */}
