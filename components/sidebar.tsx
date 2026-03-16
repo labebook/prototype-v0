@@ -8,6 +8,14 @@ import {
     LayoutGrid,
     Library,
     Settings,
+    Beaker,
+    FlaskConical,
+    Package,
+    Box,
+    Monitor,
+    FileText,
+    Droplets,
+    ChevronDown,
 } from "lucide-react"
 import { useTeam } from "@/hooks/useTeam"
 import { EnhancedTeamSwitcher } from "@/components/enhanced-team-switcher"
@@ -42,6 +50,7 @@ const IconExperimentalModels = ({ className }: { className?: string }) => (
 export function Sidebar() {
   const pathname = usePathname()
   const [libraryExpanded, setLibraryExpanded] = useState(false)
+  const [materialsExpanded, setMaterialsExpanded] = useState(true) // Default expanded
   const [createTeamOpen, setCreateTeamOpen] = useState(false)
   const { currentTeam } = useTeam()
 
@@ -144,6 +153,121 @@ export function Sidebar() {
                 Experimental Models
               </Link>
             </li>
+
+          {/* Divider */}
+          <li className="my-3 border-t border-gray-200"></li>
+
+          {/* MATERIALS Section - Collapsible */}
+          <li className="px-4 py-2">
+            <button
+              onClick={() => setMaterialsExpanded(!materialsExpanded)}
+              className="flex items-center w-full text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-700 transition-colors"
+            >
+              <Package className="mr-3 h-5 w-5" />
+              Materials
+              <ChevronDown 
+                className={`ml-auto h-4 w-4 transition-transform duration-200 ${
+                  materialsExpanded ? "" : "-rotate-90"
+                }`} 
+              />
+            </button>
+          </li>
+
+          {materialsExpanded && (
+            <>
+              <li>
+                <Link
+                  href="/?section=materials&category=equipment"
+                  className={`flex items-center px-4 py-2.5 text-sm ${
+                    pathname === "/" && typeof window !== "undefined" && window.location.search.includes("category=equipment")
+                      ? "bg-blue-50 text-blue-700 font-medium"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  <Beaker className="mr-2 h-4 w-4" />
+                  Equipment
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/?section=materials&category=chemicals"
+                  className={`flex items-center px-4 py-2.5 text-sm ${
+                    pathname === "/" && typeof window !== "undefined" && window.location.search.includes("category=chemicals")
+                      ? "bg-blue-50 text-blue-700 font-medium"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  <FlaskConical className="mr-2 h-4 w-4" />
+                  Chemicals
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/?section=materials&category=supplies"
+                  className={`flex items-center px-4 py-2.5 text-sm ${
+                    pathname === "/" && typeof window !== "undefined" && window.location.search.includes("category=supplies")
+                      ? "bg-blue-50 text-blue-700 font-medium"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  <Package className="mr-2 h-4 w-4" />
+                  Supplies
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/?section=materials&category=objects"
+                  className={`flex items-center px-4 py-2.5 text-sm ${
+                    pathname === "/" && typeof window !== "undefined" && window.location.search.includes("category=objects")
+                      ? "bg-blue-50 text-blue-700 font-medium"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  <Box className="mr-2 h-4 w-4" />
+                  Biological Materials
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/?section=materials&category=software"
+                  className={`flex items-center px-4 py-2.5 text-sm ${
+                    pathname === "/" && typeof window !== "undefined" && window.location.search.includes("category=software")
+                      ? "bg-blue-50 text-blue-700 font-medium"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  <Monitor className="mr-2 h-4 w-4" />
+                  Software
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/?section=materials&category=preparations"
+                  className={`flex items-center px-4 py-2.5 text-sm ${
+                    pathname === "/" && typeof window !== "undefined" && window.location.search.includes("category=preparations")
+                      ? "bg-blue-50 text-blue-700 font-medium"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Preparations
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/?section=materials&category=buffers-solutions"
+                  className={`flex items-center px-4 py-2.5 text-sm ${
+                    pathname === "/" && typeof window !== "undefined" && window.location.search.includes("category=buffers-solutions")
+                      ? "bg-blue-50 text-blue-700 font-medium"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  <Droplets className="mr-2 h-4 w-4" />
+                  Buffers and Solutions
+                </Link>
+              </li>
+            </>
+          )}
         </ul>
       </nav>
 
