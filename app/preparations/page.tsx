@@ -1,13 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
 import { Layers, Plus } from "lucide-react"
 import { PipelineListView } from "@/components/pipeline-list-view"
+import { SDSPagePreparationModal } from "@/components/sds-page-preparation-modal"
 
 const samplePreparations = [
   {
@@ -28,7 +28,7 @@ const samplePreparations = [
 
 export default function PreparationsPage() {
   const [preparations] = useState(samplePreparations)
-  const router = useRouter()
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -71,7 +71,7 @@ export default function PreparationsPage() {
                 onBuffersClick={step => console.log("Buffers:", step)}
                 onCalculationsClick={step => console.log("Calculations:", step)}
                 onMaterialsClick={step => console.log("Materials:", step)}
-                onPlanClick={step => router.push(`/preparations/${step.id}`)}
+                onPlanClick={() => setIsModalOpen(true)}
               />
             )}
 
@@ -79,6 +79,12 @@ export default function PreparationsPage() {
         </main>
       </div>
       <Footer />
+
+      {/* SDS-PAGE Preparation Modal */}
+      <SDSPagePreparationModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   )
 }
