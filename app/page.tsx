@@ -72,39 +72,41 @@ const gelElectrophoresisItems = [
   { id: "power-supplies", label: "Power Supplies", count: 3 },
 ]
 
-// Product data for Electrophoresis Cells
+// Product data for Electrophoresis Cells with two display types
 const electrophoresisCellsProducts = [
   {
     id: "mini-protean-tetra",
     name: "Mini-PROTEAN Tetra Vertical Electrophoresis Cell",
+    description: "Vertical electrophoresis cell designed for SDS-PAGE protein separation with precast or hand-cast gels. Supports running up to 4 mini gels simultaneously.",
     manufacturer: "Bio-Rad",
     articleNumber: "1658004",
-    image: "/placeholder.svg?height=120&width=120",
+    image: "/placeholder.svg?height=100&width=100",
     brandLogo: "/placeholder.svg?height=24&width=60",
+    displayType: "detailed" as const,
   },
   {
     id: "xcell-surelock",
     name: "XCell SureLock Mini-Cell Electrophoresis System",
+    description: "Compact mini-cell system for protein and nucleic acid electrophoresis. Features SureLock lid for secure operation and buffer-tight seal.",
     manufacturer: "Thermo Fisher Scientific",
     articleNumber: "EI0001",
-    image: "/placeholder.svg?height=120&width=120",
+    image: "/placeholder.svg?height=100&width=100",
     brandLogo: "/placeholder.svg?height=24&width=60",
+    displayType: "detailed" as const,
   },
   {
     id: "novex-bolt",
     name: "Bolt Mini Gel Tank",
     manufacturer: "Invitrogen",
     articleNumber: "A25977",
-    image: "/placeholder.svg?height=120&width=120",
-    brandLogo: "/placeholder.svg?height=24&width=60",
+    displayType: "compact" as const,
   },
   {
     id: "criterion-cell",
     name: "Criterion Vertical Electrophoresis Cell",
     manufacturer: "Bio-Rad",
     articleNumber: "1656001",
-    image: "/placeholder.svg?height=120&width=120",
-    brandLogo: "/placeholder.svg?height=24&width=60",
+    displayType: "compact" as const,
   },
 ]
 
@@ -201,98 +203,84 @@ function HomePageContent() {
     if (currentPath.includes("electrophoresis-cells")) {
       return (
         <div>
-          {/* View toggle and breadcrumb */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <button 
-                onClick={() => setCurrentPath([])}
-                className="hover:text-gray-700"
-              >
-                Equipment
-              </button>
-              <ChevronRight className="h-4 w-4" />
-              <button 
-                onClick={() => setCurrentPath(["gel-electrophoresis"])}
-                className="hover:text-gray-700"
-              >
-                Gel Electrophoresis Equipment
-              </button>
-              <ChevronRight className="h-4 w-4" />
-              <span className="text-gray-900 font-medium">Electrophoresis Cells</span>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-2 rounded ${viewMode === "grid" ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-600"}`}
-              >
-                <Grid className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-2 rounded ${viewMode === "list" ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-600"}`}
-              >
-                <List className="h-4 w-4" />
-              </button>
-            </div>
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
+            <button 
+              onClick={() => setCurrentPath([])}
+              className="hover:text-gray-700"
+            >
+              Equipment
+            </button>
+            <ChevronRight className="h-4 w-4" />
+            <button 
+              onClick={() => setCurrentPath(["gel-electrophoresis"])}
+              className="hover:text-gray-700"
+            >
+              Gel Electrophoresis Equipment
+            </button>
+            <ChevronRight className="h-4 w-4" />
+            <span className="text-gray-900 font-medium">Electrophoresis Cells</span>
           </div>
 
-          {/* Products */}
-          {viewMode === "grid" ? (
-            // Grid view - Detailed cards
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {electrophoresisCellsProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="border border-gray-200 rounded-lg bg-white p-4 hover:shadow-md transition-shadow cursor-pointer"
-                >
-                  {/* Product Image */}
-                  <div className="aspect-square bg-gray-50 rounded-lg mb-4 flex items-center justify-center">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="max-h-full max-w-full object-contain"
-                    />
+          {/* Products - Vertical List with Two Row Types */}
+          <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+            {electrophoresisCellsProducts.map((product, index) => (
+              <div
+                key={product.id}
+                className={`hover:bg-gray-50 transition-colors cursor-pointer ${
+                  index < electrophoresisCellsProducts.length - 1 ? "border-b border-gray-200" : ""
+                }`}
+              >
+                {product.displayType === "detailed" ? (
+                  // Detailed product row - with image, description, and logo
+                  <div className="flex items-start gap-5 p-5">
+                    {/* Product Image */}
+                    <div className="w-24 h-24 bg-gray-50 rounded-lg flex-shrink-0 flex items-center justify-center border border-gray-100">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    </div>
+                    
+                    {/* Product Info */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-semibold text-gray-900 mb-1">
+                        {product.name}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                        {product.description}
+                      </p>
+                      <div className="flex items-center gap-1 text-sm text-gray-500">
+                        <span>{product.manufacturer}</span>
+                        <span className="text-gray-300">·</span>
+                        <span>Article: {product.articleNumber}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Brand Logo */}
+                    <div className="flex-shrink-0 w-16 flex items-center justify-center">
+                      <img
+                        src={product.brandLogo}
+                        alt={`${product.manufacturer} logo`}
+                        className="h-6 object-contain opacity-70"
+                      />
+                    </div>
                   </div>
-                  
-                  {/* Product Info */}
-                  <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
-                    {product.name}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-1">{product.manufacturer}</p>
-                  <p className="text-xs text-gray-500 mb-3">Article: {product.articleNumber}</p>
-                  
-                  {/* Brand Logo */}
-                  <div className="pt-3 border-t border-gray-100">
-                    <img
-                      src={product.brandLogo}
-                      alt={`${product.manufacturer} logo`}
-                      className="h-5 object-contain opacity-60"
-                    />
+                ) : (
+                  // Compact product row - text only
+                  <div className="flex items-center px-5 py-3">
+                    <span className="text-sm font-medium text-gray-900">{product.name}</span>
+                    <span className="text-gray-300 mx-2">·</span>
+                    <span className="text-sm text-gray-500">Article: {product.articleNumber}</span>
+                    <span className="text-gray-300 mx-2">·</span>
+                    <span className="text-sm text-gray-500">{product.manufacturer}</span>
+                    <ChevronRight className="h-4 w-4 text-gray-400 ml-auto" />
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            // List view - Compact cards
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
-              {electrophoresisCellsProducts.map((product, index) => (
-                <div
-                  key={product.id}
-                  className={`flex items-center px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer ${
-                    index < electrophoresisCellsProducts.length - 1 ? "border-b border-gray-100" : ""
-                  }`}
-                >
-                  <div className="flex-1">
-                    <h3 className="text-sm font-medium text-gray-900">{product.name}</h3>
-                    <p className="text-sm text-gray-500">{product.manufacturer}</p>
-                    <p className="text-xs text-gray-400">Article: {product.articleNumber}</p>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-gray-400" />
-                </div>
-              ))}
-            </div>
-          )}
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )
     }
