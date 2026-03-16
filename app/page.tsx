@@ -54,16 +54,16 @@ const materialsCategories = [
   { id: "preparations", label: "Preparations", icon: FileText },
 ]
 
-// Equipment subcategories
+// Equipment subcategories with item counts
 const equipmentItems = [
-  { id: "gel-electrophoresis", label: "Gel Electrophoresis Equipment" },
-  { id: "basic-lab", label: "Basic Lab Equipment" },
-  { id: "micropipettes", label: "Micropipettes" },
-  { id: "microcentrifuge", label: "Benchtop Microcentrifuge" },
-  { id: "spectrophotometer", label: "UV-Vis Spectrophotometer" },
-  { id: "cooling-rack", label: "Cooling Rack PCR" },
-  { id: "laboratory-marker", label: "Laboratory Marker" },
-  { id: "vortex-mixer", label: "Vortex Mixer" },
+  { id: "gel-electrophoresis", label: "Gel Electrophoresis Equipment", count: 3 },
+  { id: "basic-lab", label: "Basic Lab Equipment", count: 3 },
+  { id: "micropipettes", label: "Micropipettes", count: 3 },
+  { id: "microcentrifuge", label: "Benchtop Microcentrifuge", count: 3 },
+  { id: "spectrophotometer", label: "UV-Vis Spectrophotometer", count: 3 },
+  { id: "cooling-rack", label: "Cooling Rack PCR", count: 3 },
+  { id: "laboratory-marker", label: "Laboratory Marker", count: 3 },
+  { id: "vortex-mixer", label: "Vortex Mixer", count: 3 },
 ]
 
 function HomePageContent() {
@@ -287,17 +287,28 @@ function HomePageContent() {
 
               {/* Content */}
               {selectedCategory === "equipment" ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="border-t border-gray-200">
+                  {/* Header row */}
+                  <div className="flex items-center px-4 py-3 text-xs font-medium text-blue-600 uppercase tracking-wide">
+                    <span className="flex-1">Name</span>
+                    <span className="w-24 text-right pr-8">Methods</span>
+                  </div>
+                  
+                  {/* List items */}
                   {equipmentItems.map((item) => (
                     <button
                       key={item.id}
-                      className="flex flex-col items-center p-6 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-colors text-center group"
+                      className="flex items-center w-full px-4 py-3 border-t border-gray-100 hover:bg-gray-50 transition-colors text-left group"
                       onClick={() => console.log(`Navigate to ${item.id}`)}
                     >
-                      <Folder className="h-12 w-12 text-amber-400 mb-3 group-hover:text-amber-500 transition-colors" />
-                      <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 leading-tight">
+                      <Folder className="h-5 w-5 text-amber-400 mr-3 flex-shrink-0" />
+                      <span className="flex-1 text-sm font-medium text-gray-900">
                         {item.label}
                       </span>
+                      <span className="text-sm text-gray-500 mr-2">
+                        {item.count}
+                      </span>
+                      <ChevronRight className="h-4 w-4 text-gray-400" />
                     </button>
                   ))}
                 </div>
