@@ -571,17 +571,20 @@ function HomePageContent() {
                 renderEquipmentContent()
               ) : (
                 <div className="py-24 text-center">
-                  {currentCategory && (
-                    <>
-                      <currentCategory.icon className="h-10 w-10 text-gray-300 mx-auto mb-4" />
-                      <p className="text-lg font-medium text-gray-700 mb-1">
-                        No {currentCategory.label.toLowerCase()} yet
-                      </p>
-                      <p className="text-gray-500">
-                        {currentCategory.label} will appear here once added to the library.
-                      </p>
-                    </>
-                  )}
+                  {currentCategory && (() => {
+                    const CategoryIcon = currentCategory.icon
+                    return (
+                      <>
+                        <CategoryIcon className="h-10 w-10 text-gray-300 mx-auto mb-4" />
+                        <p className="text-lg font-medium text-gray-700 mb-1">
+                          No {currentCategory.label.toLowerCase()} yet
+                        </p>
+                        <p className="text-gray-500">
+                          {currentCategory.label} will appear here once added to the library.
+                        </p>
+                      </>
+                    )
+                  })()}
                 </div>
               )}
             </div>
