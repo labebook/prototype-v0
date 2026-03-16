@@ -6,7 +6,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ChevronRight, Check, Beaker, FlaskConical, Package, Box, Monitor, FileText, Folder } from "lucide-react"
+import { ChevronRight, Check, Beaker, FlaskConical, Package, Box, Monitor, FileText, Folder, ChevronLeft, Grid, List } from "lucide-react"
 
 // Object dropdown options with nested structure
 const objectOptions = [
@@ -56,7 +56,7 @@ const materialsCategories = [
 
 // Equipment subcategories with item counts
 const equipmentItems = [
-  { id: "gel-electrophoresis", label: "Gel Electrophoresis Equipment", count: 3 },
+  { id: "gel-electrophoresis", label: "Gel Electrophoresis Equipment", count: 2 },
   { id: "basic-lab", label: "Basic Lab Equipment", count: 3 },
   { id: "micropipettes", label: "Micropipettes", count: 3 },
   { id: "microcentrifuge", label: "Benchtop Microcentrifuge", count: 3 },
@@ -64,6 +64,48 @@ const equipmentItems = [
   { id: "cooling-rack", label: "Cooling Rack PCR", count: 3 },
   { id: "laboratory-marker", label: "Laboratory Marker", count: 3 },
   { id: "vortex-mixer", label: "Vortex Mixer", count: 3 },
+]
+
+// Gel Electrophoresis Equipment subfolders
+const gelElectrophoresisItems = [
+  { id: "electrophoresis-cells", label: "Electrophoresis Cells", count: 4 },
+  { id: "power-supplies", label: "Power Supplies", count: 3 },
+]
+
+// Product data for Electrophoresis Cells
+const electrophoresisCellsProducts = [
+  {
+    id: "mini-protean-tetra",
+    name: "Mini-PROTEAN Tetra Vertical Electrophoresis Cell",
+    manufacturer: "Bio-Rad",
+    articleNumber: "1658004",
+    image: "/placeholder.svg?height=120&width=120",
+    brandLogo: "/placeholder.svg?height=24&width=60",
+  },
+  {
+    id: "xcell-surelock",
+    name: "XCell SureLock Mini-Cell Electrophoresis System",
+    manufacturer: "Thermo Fisher Scientific",
+    articleNumber: "EI0001",
+    image: "/placeholder.svg?height=120&width=120",
+    brandLogo: "/placeholder.svg?height=24&width=60",
+  },
+  {
+    id: "novex-bolt",
+    name: "Bolt Mini Gel Tank",
+    manufacturer: "Invitrogen",
+    articleNumber: "A25977",
+    image: "/placeholder.svg?height=120&width=120",
+    brandLogo: "/placeholder.svg?height=24&width=60",
+  },
+  {
+    id: "criterion-cell",
+    name: "Criterion Vertical Electrophoresis Cell",
+    manufacturer: "Bio-Rad",
+    articleNumber: "1656001",
+    image: "/placeholder.svg?height=120&width=120",
+    brandLogo: "/placeholder.svg?height=24&width=60",
+  },
 ]
 
 function HomePageContent() {
@@ -76,6 +118,10 @@ function HomePageContent() {
   const [application, setApplication] = useState("")
   const [showMoleculeSubmenu, setShowMoleculeSubmenu] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState("equipment")
+  
+  // Navigation state for drilling into folders
+  const [currentPath, setCurrentPath] = useState<string[]>([])
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
 
   const handleSearch = () => {
     const params = new URLSearchParams()
@@ -119,8 +165,243 @@ function HomePageContent() {
       .join(" ")
   }
 
+  // Navigate into a folder
+  const navigateInto = (folderId: string) => {
+    setCurrentPath([...currentPath, folderId])
+  }
+
+  // Navigate back
+  const navigateBack = () => {
+    setCurrentPath(currentPath.slice(0, -1))
+  }
+
   // Get current category info
   const currentCategory = materialsCategories.find(c => c.id === selectedCategory)
+
+  // Get breadcrumb labels
+  const getBreadcrumbLabels = () => {
+    const labels: string[] = [currentCategory?.label || ""]
+    
+    if (currentPath.includes("gel-electrophoresis")) {
+      labels.push("Gel Electrophoresis Equipment")
+    }
+    if (currentPath.includes("electrophoresis-cells")) {
+      labels.push("Electrophoresis Cells")
+    }
+    if (currentPath.includes("power-supplies")) {
+      labels.push("Power Supplies")
+    }
+    
+    return labels
+  }
+
+  // Determine what content to show based on current path
+  const renderEquipmentContent = () => {
+    // Inside Electrophoresis Cells - show products
+    if (currentPath.includes("electrophoresis-cells")) {
+      return (
+        <div>
+          {/* View toggle and breadcrumb */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <button 
+                onClick={() => setCurrentPath([])}
+                className="hover:text-gray-700"
+              >
+                Equipment
+              </button>
+              <ChevronRight className="h-4 w-4" />
+              <button 
+                onClick={() => setCurrentPath(["gel-electrophoresis"])}
+                className="hover:text-gray-700"
+              >
+                Gel Electrophoresis Equipment
+              </button>
+              <ChevronRight className="h-4 w-4" />
+              <span className="text-gray-900 font-medium">Electrophoresis Cells</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`p-2 rounded ${viewMode === "grid" ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-600"}`}
+              >
+                <Grid className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-2 rounded ${viewMode === "list" ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-600"}`}
+              >
+                <List className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Products */}
+          {viewMode === "grid" ? (
+            // Grid view - Detailed cards
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {electrophoresisCellsProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="border border-gray-200 rounded-lg bg-white p-4 hover:shadow-md transition-shadow cursor-pointer"
+                >
+                  {/* Product Image */}
+                  <div className="aspect-square bg-gray-50 rounded-lg mb-4 flex items-center justify-center">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  </div>
+                  
+                  {/* Product Info */}
+                  <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
+                    {product.name}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-1">{product.manufacturer}</p>
+                  <p className="text-xs text-gray-500 mb-3">Article: {product.articleNumber}</p>
+                  
+                  {/* Brand Logo */}
+                  <div className="pt-3 border-t border-gray-100">
+                    <img
+                      src={product.brandLogo}
+                      alt={`${product.manufacturer} logo`}
+                      className="h-5 object-contain opacity-60"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            // List view - Compact cards
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              {electrophoresisCellsProducts.map((product, index) => (
+                <div
+                  key={product.id}
+                  className={`flex items-center px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer ${
+                    index < electrophoresisCellsProducts.length - 1 ? "border-b border-gray-100" : ""
+                  }`}
+                >
+                  <div className="flex-1">
+                    <h3 className="text-sm font-medium text-gray-900">{product.name}</h3>
+                    <p className="text-sm text-gray-500">{product.manufacturer}</p>
+                    <p className="text-xs text-gray-400">Article: {product.articleNumber}</p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-gray-400" />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    // Inside Gel Electrophoresis Equipment - show subfolders
+    if (currentPath.includes("gel-electrophoresis")) {
+      return (
+        <div>
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
+            <button 
+              onClick={() => setCurrentPath([])}
+              className="hover:text-gray-700"
+            >
+              Equipment
+            </button>
+            <ChevronRight className="h-4 w-4" />
+            <span className="text-gray-900 font-medium">Gel Electrophoresis Equipment</span>
+          </div>
+
+          <div className="border-t border-gray-200">
+            {/* Header row */}
+            <div className="flex items-center px-4 py-3 text-xs font-medium text-blue-600 uppercase tracking-wide">
+              <span className="flex-1">Name</span>
+              <span className="w-24 text-right pr-8">Items</span>
+            </div>
+            
+            {/* Folder items */}
+            {gelElectrophoresisItems.map((item) => (
+              <button
+                key={item.id}
+                className="flex items-center w-full px-4 py-3 border-t border-gray-100 hover:bg-gray-50 transition-colors text-left group"
+                onClick={() => navigateInto(item.id)}
+              >
+                <Folder className="h-5 w-5 text-amber-400 mr-3 flex-shrink-0" />
+                <span className="flex-1 text-sm font-medium text-gray-900">
+                  {item.label}
+                </span>
+                <span className="text-sm text-gray-500 mr-2">
+                  {item.count}
+                </span>
+                <ChevronRight className="h-4 w-4 text-gray-400" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    // Root Equipment level - show all equipment items
+    return (
+      <div className="border-t border-gray-200">
+        {/* Header row */}
+        <div className="flex items-center px-4 py-3 text-xs font-medium text-blue-600 uppercase tracking-wide">
+          <span className="flex-1">Name</span>
+          <span className="w-24 text-right pr-8">Methods</span>
+        </div>
+        
+        {/* List items */}
+        {equipmentItems.map((item) => (
+          <button
+            key={item.id}
+            className="flex items-center w-full px-4 py-3 border-t border-gray-100 hover:bg-gray-50 transition-colors text-left group"
+            onClick={() => {
+              if (item.id === "gel-electrophoresis") {
+                navigateInto(item.id)
+              }
+            }}
+          >
+            <Folder className="h-5 w-5 text-amber-400 mr-3 flex-shrink-0" />
+            <span className="flex-1 text-sm font-medium text-gray-900">
+              {item.label}
+            </span>
+            <span className="text-sm text-gray-500 mr-2">
+              {item.count}
+            </span>
+            <ChevronRight className="h-4 w-4 text-gray-400" />
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  // Get current page title based on path
+  const getCurrentTitle = () => {
+    if (currentPath.includes("electrophoresis-cells")) {
+      return "Electrophoresis Cells"
+    }
+    if (currentPath.includes("power-supplies")) {
+      return "Power Supplies"
+    }
+    if (currentPath.includes("gel-electrophoresis")) {
+      return "Gel Electrophoresis Equipment"
+    }
+    return currentCategory?.label || ""
+  }
+
+  const getCurrentDescription = () => {
+    if (currentPath.includes("electrophoresis-cells")) {
+      return "Browse electrophoresis cells and tanks for gel electrophoresis"
+    }
+    if (currentPath.includes("power-supplies")) {
+      return "Browse power supplies for electrophoresis systems"
+    }
+    if (currentPath.includes("gel-electrophoresis")) {
+      return "Browse gel electrophoresis equipment and accessories"
+    }
+    return `Browse ${currentCategory?.label.toLowerCase()} in the materials library`
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -255,7 +536,10 @@ function HomePageContent() {
                   return (
                     <li key={category.id}>
                       <button
-                        onClick={() => setSelectedCategory(category.id)}
+                        onClick={() => {
+                          setSelectedCategory(category.id)
+                          setCurrentPath([])
+                        }}
                         className={`flex items-center w-full px-4 py-2.5 text-sm text-left transition-colors ${
                           isSelected
                             ? "bg-blue-50 text-blue-700 font-medium"
@@ -275,43 +559,29 @@ function HomePageContent() {
           {/* Main Content Area */}
           <main className="flex-1 overflow-y-auto bg-white">
             <div className="mx-auto max-w-[1200px] px-6 py-8">
-              {/* Page header */}
+              {/* Page header with back button */}
               <div className="flex items-end justify-between mb-8 pb-6 border-b border-gray-200">
-                <div>
-                  <h1 className="text-[32px] font-semibold">{currentCategory?.label}</h1>
-                  <p className="text-gray-500 mt-1">
-                    Browse {currentCategory?.label.toLowerCase()} in the materials library
-                  </p>
+                <div className="flex items-center gap-4">
+                  {currentPath.length > 0 && (
+                    <button
+                      onClick={navigateBack}
+                      className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <ChevronLeft className="h-5 w-5 text-gray-600" />
+                    </button>
+                  )}
+                  <div>
+                    <h1 className="text-[32px] font-semibold">{getCurrentTitle()}</h1>
+                    <p className="text-gray-500 mt-1">
+                      {getCurrentDescription()}
+                    </p>
+                  </div>
                 </div>
               </div>
 
               {/* Content */}
               {selectedCategory === "equipment" ? (
-                <div className="border-t border-gray-200">
-                  {/* Header row */}
-                  <div className="flex items-center px-4 py-3 text-xs font-medium text-blue-600 uppercase tracking-wide">
-                    <span className="flex-1">Name</span>
-                    <span className="w-24 text-right pr-8">Methods</span>
-                  </div>
-                  
-                  {/* List items */}
-                  {equipmentItems.map((item) => (
-                    <button
-                      key={item.id}
-                      className="flex items-center w-full px-4 py-3 border-t border-gray-100 hover:bg-gray-50 transition-colors text-left group"
-                      onClick={() => console.log(`Navigate to ${item.id}`)}
-                    >
-                      <Folder className="h-5 w-5 text-amber-400 mr-3 flex-shrink-0" />
-                      <span className="flex-1 text-sm font-medium text-gray-900">
-                        {item.label}
-                      </span>
-                      <span className="text-sm text-gray-500 mr-2">
-                        {item.count}
-                      </span>
-                      <ChevronRight className="h-4 w-4 text-gray-400" />
-                    </button>
-                  ))}
-                </div>
+                renderEquipmentContent()
               ) : (
                 <div className="py-24 text-center">
                   {currentCategory && (
