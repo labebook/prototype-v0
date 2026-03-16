@@ -30,12 +30,7 @@ const IconOperationalProcedures = ({ className }: { className?: string }) => (
   </svg>
 )
 
-const IconPreparations = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.25">
-    <rect x="2" y="2" width="12" height="12" rx="1" />
-    <path d="M8 4.5L11.5 10.5H4.5L8 4.5Z" />
-  </svg>
-)
+
 
 const IconExperimentalModels = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.25">
@@ -135,19 +130,7 @@ export function Sidebar() {
                 Operational Procedures
               </Link>
             </li>
-            <li>
-              <Link
-                href="/preparations"
-                className={`flex items-center px-4 py-2.5 text-sm ${
-                  isActive("/preparations") || pathname.startsWith("/preparations/")
-                    ? "bg-blue-50 text-blue-700 font-medium"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                }`}
-              >
-                <IconPreparations className="mr-2 h-4 w-4" />
-                Preparations
-              </Link>
-            </li>
+
             <li>
               <Link
                 href="/experimental-models"
