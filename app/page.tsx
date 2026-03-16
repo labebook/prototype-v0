@@ -1,96 +1,129 @@
 "use client"
 
 import { useState } from "react"
-import { Search } from "@/components/search-home"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { cn } from "@/lib/utils"
-import { 
-  Beaker, 
-  FlaskConical, 
-  Package, 
-  Microscope, 
-  Monitor, 
-  FileText,
-  ChevronRight
-} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useRouter } from "next/navigation"
+import { ChevronRight, Check } from "lucide-react"
 
-// Materials catalog categories
-const materialCategories = [
+// Object dropdown options with nested structure
+const objectOptions = [
+  "Cell",
+  "Organelle",
+  "Cell culture",
+  "Tissue",
+  "Organ",
+  "Virus",
+  "Prokaryote",
+  "Plant",
+  "Animal",
+  "Human biospecimen",
   {
-    id: "equipment",
-    name: "Equipment",
-    description: "Laboratory instruments and equipment",
-    icon: Microscope,
-    itemCount: 156,
+    label: "Molecule",
+    value: "molecule",
+    subOptions: ["DNA", "RNA", "Small Molecule", "Peptide", "Protein"],
   },
-  {
-    id: "chemicals",
-    name: "Chemicals",
-    description: "Reagents, solvents, and chemical compounds",
-    icon: FlaskConical,
-    itemCount: 892,
-  },
-  {
-    id: "supplies",
-    name: "Supplies",
-    description: "Consumables and laboratory supplies",
-    icon: Package,
-    itemCount: 423,
-  },
-  {
-    id: "objects",
-    name: "Objects",
-    description: "Biological objects and specimens",
-    icon: Beaker,
-    itemCount: 234,
-  },
-  {
-    id: "software",
-    name: "Software",
-    description: "Analysis and laboratory software tools",
-    icon: Monitor,
-    itemCount: 87,
-  },
-  {
-    id: "formulations",
-    name: "Formulations",
-    description: "Buffer recipes and standard formulations",
-    icon: FileText,
-    itemCount: 312,
-  },
+  "Protist",
+  "Fungi",
+  "Genetic Material",
+  "Other",
+]
+
+// Application dropdown options
+const applicationOptions = [
+  "Analysis",
+  "Structural Analysis",
+  "Determination of Impurities",
+  "Small Molecule Identification",
+  "Semi-Quantitative Analysis",
+  "Quantitative Analysis",
+  "Qualitative Analysis",
+  "Isolation and Purification",
+  "Drying",
 ]
 
 export default function ScientificMethodManager() {
+  const router = useRouter()
   const [activeSection, setActiveSection] = useState<"methods" | "materials">("methods")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [object, setObject] = useState("")
+  const [application, setApplication] = useState("")
+  const [showMoleculeSubmenu, setShowMoleculeSubmenu] = useState(false)
+
+  const handleSearch = () => {
+    const searchParams = new URLSearchParams()
+    if (searchQuery) searchParams.append("query", searchQuery)
+    if (object) searchParams.append("object", object)
+    if (application) searchParams.append("application", application)
+    router.push(`/plyowsearchresults?${searchParams.toString()}`)
+  }
+
+  const handleApplyFilters = () => {
+    const searchParams = new URLSearchParams()
+    if (object) searchParams.append("object", object)
+    if (application) searchParams.append("application", application)
+    router.push(`/plyowsearchresults?${searchParams.toString()}`)
+  }
+
+  const handleObjectSelect = (value: string) => {
+    if (value === "molecule") {
+      setShowMoleculeSubmenu(true)
+      return
+    }
+    setObject(value)
+    setShowMoleculeSubmenu(false)
+  }
+
+  const handleMoleculeSubSelect = (value: string) => {
+    setObject(value.toLowerCase().replace(/\s+/g, "-"))
+    setShowMoleculeSubmenu(false)
+  }
+
+  const getDisplayValue = () => {
+    if (!object) return "Object"
+    const moleculeOption = objectOptions.find((opt) => typeof opt === "object" && opt.value === "molecule")
+    if (moleculeOption && typeof moleculeOption === "object") {
+      const subOption = moleculeOption.subOptions.find((sub) => sub.toLowerCase().replace(/\s+/g, "-") === object)
+      if (subOption) return subOption
+    }
+    return object
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ")
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
 
       <main className="flex-1 flex flex-col">
-        {/* Section Tabs */}
-        <div className="w-full border-b border-gray-200 bg-white">
-          <div className="max-w-5xl mx-auto px-4">
-            <div className="flex gap-8">
+        {/* Section Tabs - Pill style matching the image */}
+        <div className="w-full bg-white pt-8 pb-6">
+          <div className="max-w-4xl mx-auto px-4">
+            <div className="flex">
+              {/* METHODS Tab */}
               <button
                 onClick={() => setActiveSection("methods")}
                 className={cn(
-                  "py-4 px-2 text-base font-medium border-b-2 transition-colors",
+                  "relative px-16 py-3 text-base font-semibold uppercase tracking-wide rounded-t-lg transition-colors",
                   activeSection === "methods"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    ? "bg-[#F5F0E6] text-gray-800 border-l-4 border-l-[#C9A94E]"
+                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                 )}
               >
                 Methods
               </button>
+              {/* MATERIALS Tab */}
               <button
                 onClick={() => setActiveSection("materials")}
                 className={cn(
-                  "py-4 px-2 text-base font-medium border-b-2 transition-colors",
+                  "relative px-16 py-3 text-base font-semibold uppercase tracking-wide rounded-t-lg transition-colors",
                   activeSection === "materials"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    ? "bg-[#F5F0E6] text-gray-800 border-l-4 border-l-[#C9A94E]"
+                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                 )}
               >
                 Materials
@@ -100,66 +133,113 @@ export default function ScientificMethodManager() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4 py-16">
-          {activeSection === "methods" ? (
-            /* Methods Section - Keep existing search/filter UI */
-            <>
-              <section className="text-center mb-12">
-                <h1 className="text-3xl font-semibold mb-4">Experimental Methods Library</h1>
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  Search methods, procedures, and protocols for building experimental pipelines.
-                </p>
-              </section>
-
-              <section className="w-full max-w-3xl">
-                <Search />
-              </section>
-            </>
-          ) : (
-            /* Materials Section - Catalog style */
-            <>
-              <section className="text-center mb-12">
-                <h1 className="text-3xl font-semibold mb-4">Materials Catalog</h1>
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  Browse equipment, chemicals, supplies, and other materials for your experiments.
-                </p>
-              </section>
-
-              <section className="w-full max-w-4xl">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {materialCategories.map((category) => {
-                    const IconComponent = category.icon
-                    return (
-                      <button
-                        key={category.id}
-                        className="group flex flex-col p-6 bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all text-left"
-                        onClick={() => {
-                          // Navigate to materials category (placeholder)
-                          console.log(`Navigate to materials/${category.id}`)
-                        }}
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
-                            <IconComponent className="h-6 w-6 text-blue-600" />
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
-                        </div>
-                        <h3 className="text-lg font-medium text-gray-900 mb-1">
-                          {category.name}
-                        </h3>
-                        <p className="text-sm text-gray-500 mb-3">
-                          {category.description}
-                        </p>
-                        <span className="text-xs text-gray-400">
-                          {category.itemCount} items
-                        </span>
-                      </button>
-                    )
-                  })}
+        <div className="flex-1 bg-white px-4 pb-16">
+          <div className="max-w-4xl mx-auto">
+            {activeSection === "methods" ? (
+              /* Methods Section */
+              <div className="space-y-4 pt-6">
+                {/* Search Row */}
+                <div className="flex items-center gap-4">
+                  <input
+                    type="text"
+                    placeholder="Protein qualitative analysis"
+                    className="flex-1 h-12 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSearch()
+                    }}
+                  />
+                  <Button 
+                    className="h-12 bg-blue-600 hover:bg-blue-700 px-8 min-w-[100px]" 
+                    onClick={handleSearch}
+                  >
+                    Search
+                  </Button>
                 </div>
-              </section>
-            </>
-          )}
+
+                {/* Filters Row */}
+                <div className="flex items-center gap-4">
+                  <Select value={object} onValueChange={handleObjectSelect}>
+                    <SelectTrigger className="h-12 flex-1">
+                      <SelectValue placeholder="Object">{getDisplayValue()}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {objectOptions.map((option) => {
+                        if (typeof option === "string") {
+                          const value = option.toLowerCase().replace(/\s+/g, "-")
+                          return (
+                            <SelectItem key={option} value={value}>
+                              <div className="flex items-center justify-between w-full">
+                                <span>{option}</span>
+                                {object === value && <Check className="h-4 w-4" />}
+                              </div>
+                            </SelectItem>
+                          )
+                        } else {
+                          return (
+                            <div key={option.value}>
+                              <SelectItem value={option.value} className="cursor-pointer">
+                                <div className="flex items-center justify-between w-full">
+                                  <span>{option.label}</span>
+                                  <ChevronRight className="h-4 w-4" />
+                                </div>
+                              </SelectItem>
+                              {showMoleculeSubmenu && (
+                                <div className="ml-4 border-l border-gray-200">
+                                  {option.subOptions.map((subOption) => {
+                                    const subValue = subOption.toLowerCase().replace(/\s+/g, "-")
+                                    return (
+                                      <SelectItem
+                                        key={subOption}
+                                        value={subValue}
+                                        className="pl-4 cursor-pointer"
+                                        onSelect={() => handleMoleculeSubSelect(subOption)}
+                                      >
+                                        <div className="flex items-center justify-between w-full">
+                                          <span>{subOption}</span>
+                                          {object === subValue && <Check className="h-4 w-4" />}
+                                        </div>
+                                      </SelectItem>
+                                    )
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        }
+                      })}
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={application} onValueChange={setApplication}>
+                    <SelectTrigger className="h-12 flex-1">
+                      <SelectValue placeholder="Application" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {applicationOptions.map((option) => (
+                        <SelectItem key={option} value={option.toLowerCase().replace(/\s+/g, "-")}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Button
+                    className="h-12 bg-blue-600 hover:bg-blue-700 text-white px-6"
+                    onClick={handleApplyFilters}
+                  >
+                    Apply Filters
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              /* Materials Section - placeholder for now */
+              <div className="pt-6">
+                <p className="text-gray-500">Materials catalog coming soon...</p>
+              </div>
+            )}
+          </div>
         </div>
       </main>
 
