@@ -2,33 +2,8 @@ import type { ReactNode } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { SdsPageSidebar } from "@/components/sds-page-sidebar"
-import { SdsPageTabs } from "@/components/sds-page-tabs"
 import { SdsPageBreadcrumb } from "@/components/sds-page-breadcrumb"
-
-// This is a client component wrapper to handle the conditional rendering
-// of tabs based on the current path
-function SdsPageContent({ children }: { children: ReactNode }) {
-  "use client"
-
-  const pathname = typeof window !== "undefined" ? window.location.pathname : ""
-  const isTheoryPath =
-    pathname === "/methods/sds-page/theory" ||
-    pathname === "/methods/sds-page/main" ||
-    pathname === "/methods/sds-page/basic-principle" ||
-    pathname === "/methods/sds-page/variations" ||
-    pathname === "/methods/sds-page/troubleshooting" ||
-    pathname === "/methods/sds-page/results-analysis"
-
-  return (
-    <div className="flex-1">
-      {/* Only show tabs for Theory-related paths */}
-      {isTheoryPath && <SdsPageTabs />}
-
-      {/* Content Panel - consistent padding regardless of tabs */}
-      <div className="py-8">{children}</div>
-    </div>
-  )
-}
+import { SdsPageContent } from "@/components/sds-page-content"
 
 export default function SdsPageLayout({ children }: { children: ReactNode }) {
   return (
