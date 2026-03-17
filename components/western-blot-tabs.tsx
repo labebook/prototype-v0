@@ -10,6 +10,7 @@ export function WesternBlotTabs() {
     { name: "Overview", path: "/methods/western-blot/theory" },
     { name: "Method Principles", path: "/methods/western-blot/theory/principles" },
     { name: "Troubleshooting", path: "/methods/western-blot/theory/troubleshooting" },
+    { name: "Data Analysis", path: "/methods/western-blot/theory/data-analysis" },
   ]
 
   return (

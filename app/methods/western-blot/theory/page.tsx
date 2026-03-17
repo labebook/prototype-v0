@@ -1,151 +1,73 @@
-"use client"
-
-import { useState } from "react"
-import { ChevronUp } from "lucide-react"
-
-// Collapsible section component
-function CollapsibleSection({ 
-  title, 
-  children, 
-  defaultExpanded = true 
-}: { 
-  title: string
-  children: React.ReactNode
-  defaultExpanded?: boolean 
-}) {
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded)
-  
-  return (
-    <div className="border-t border-gray-200 py-4">
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 w-full text-left font-semibold text-gray-900 hover:text-gray-700 transition-colors"
-      >
-        <ChevronUp 
-          className={`h-4 w-4 transition-transform duration-200 ${
-            isExpanded ? "" : "rotate-180"
-          }`}
-        />
-        {title}
-      </button>
-      {isExpanded && (
-        <div className="mt-4 pl-6">
-          {children}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// Tag component
-function Tag({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700 border border-gray-200">
-      {children}
-    </span>
-  )
-}
-
 export default function WesternBlotTheoryPage() {
   return (
     <>
-      {/* Main Illustration */}
-      <div className="mb-8">
-        <div className="w-full max-w-2xl mx-auto">
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <img
-              src="/images/western-blot-transfer.png"
-              alt="Western Blot transfer process showing protein bands and transfer sandwich assembly"
-              className="w-full h-auto object-contain"
-            />
+      {/* Main Illustration - Western Blot Transfer Process */}
+      <div className="w-full">
+        <div className="bg-[#E8F4F8] rounded-lg p-8">
+          <div className="flex items-start justify-center gap-16">
+            {/* Protein bands section */}
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 italic">Protein bands</h3>
+              <div className="relative">
+                {/* Gel diagram */}
+                <div className="w-32 h-48 bg-white border border-gray-300 rounded relative">
+                  {/* Marker labels */}
+                  <div className="absolute -left-8 top-8 text-sm text-gray-600">60</div>
+                  <div className="absolute -left-8 top-16 text-sm text-gray-600">46</div>
+                  
+                  {/* Dashed lines representing protein bands */}
+                  <div className="absolute top-8 left-2 right-2 border-t-2 border-dashed border-gray-400"></div>
+                  <div className="absolute top-16 left-2 right-2 border-t-2 border-dashed border-gray-400"></div>
+                </div>
+                
+                {/* Arrow pointing down */}
+                <div className="flex justify-center mt-2">
+                  <svg width="24" height="40" viewBox="0 0 24 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 0L12 36M12 36L6 30M12 36L18 30" stroke="#0891B2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Transfer sandwich section */}
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 italic">Transfer sandwich</h3>
+              <div className="relative">
+                {/* Stacked layers representing transfer sandwich */}
+                <div className="space-y-1">
+                  {/* Top layer - filter paper */}
+                  <div className="w-48 h-6 bg-white border border-gray-300 rounded transform rotate-[-5deg] translate-x-2"></div>
+                  
+                  {/* Membrane with colored bands */}
+                  <div className="w-48 h-8 bg-white border border-gray-300 rounded transform rotate-[-5deg] translate-x-1 relative">
+                    <div className="absolute top-2 left-4 flex gap-1">
+                      <div className="w-2 h-3 bg-cyan-400"></div>
+                      <div className="w-2 h-3 bg-cyan-300"></div>
+                      <div className="w-2 h-3 bg-red-400"></div>
+                      <div className="w-2 h-3 bg-cyan-400"></div>
+                    </div>
+                  </div>
+                  
+                  {/* Gel layer */}
+                  <div className="w-48 h-6 bg-yellow-100 border border-yellow-300 rounded transform rotate-[-5deg]"></div>
+                  
+                  {/* Bottom filter paper */}
+                  <div className="w-48 h-6 bg-yellow-50 border border-gray-300 rounded transform rotate-[-5deg] -translate-x-1"></div>
+                  
+                  {/* Base layer */}
+                  <div className="w-48 h-6 bg-white border border-gray-300 rounded transform rotate-[-5deg] -translate-x-2"></div>
+                </div>
+                
+                {/* Arrow pointing down */}
+                <div className="flex justify-center mt-4">
+                  <svg width="24" height="40" viewBox="0 0 24 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 0L12 36M12 36L6 30M12 36L18 30" stroke="#0891B2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Structured Content Sections */}
-      <div className="space-y-0">
-        {/* Introduction */}
-        <CollapsibleSection title="Introduction" defaultExpanded={true}>
-          <p className="text-gray-700 leading-relaxed">
-            Western blot, also known as immunoblotting, is a widely used analytical technique in biochemistry, 
-            molecular biology, and immunology for detecting specific proteins in a sample. The technique combines 
-            gel electrophoresis for protein separation with antibody-based detection for identification of target 
-            proteins. Western blotting is essential for protein identification, quantification, and analysis of 
-            protein expression levels. It is widely used in research, diagnostics, and quality control to confirm 
-            the presence of specific proteins, assess protein modifications, and validate experimental results.
-          </p>
-        </CollapsibleSection>
-
-        {/* Object and Application */}
-        <CollapsibleSection title="Object and application" defaultExpanded={true}>
-          <ul className="space-y-2 text-gray-700">
-            <li className="flex items-start gap-2">
-              <span className="text-gray-400 mt-1">•</span>
-              <span>Detection of proteins</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-gray-400 mt-1">•</span>
-              <span>Protein expression analysis</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-gray-400 mt-1">•</span>
-              <span>Protein modification analysis</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-gray-400 mt-1">•</span>
-              <span>Antibody validation</span>
-            </li>
-          </ul>
-        </CollapsibleSection>
-
-        {/* Method-specific Equipment and Materials */}
-        <CollapsibleSection title="Method-specific equipment and materials" defaultExpanded={true}>
-          <ul className="space-y-2 text-gray-700">
-            <li className="flex items-start gap-2">
-              <span className="text-gray-400 mt-1">•</span>
-              <span>Transblot system</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-gray-400 mt-1">•</span>
-              <span>Imaging system</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-gray-400 mt-1">•</span>
-              <span>Transfer membranes</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-gray-400 mt-1">•</span>
-              <span>Transfer buffer</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-gray-400 mt-1">•</span>
-              <span>Blocking solution</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-gray-400 mt-1">•</span>
-              <span>Antibodies</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-gray-400 mt-1">•</span>
-              <span>Detection substrate</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-gray-400 mt-1">•</span>
-              <span>Transfer sandwich components</span>
-            </li>
-          </ul>
-        </CollapsibleSection>
-
-        {/* Tags */}
-        <CollapsibleSection title="Tags" defaultExpanded={true}>
-          <div className="flex flex-wrap gap-2">
-            <Tag>Protein analysis</Tag>
-            <Tag>Immunodetection</Tag>
-            <Tag>Western blot</Tag>
-            <Tag>Membrane transfer</Tag>
-            <Tag>Antibody-based detection</Tag>
-          </div>
-        </CollapsibleSection>
       </div>
     </>
   )
