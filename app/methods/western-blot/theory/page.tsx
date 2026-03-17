@@ -1,54 +1,151 @@
+"use client"
+
+import { useState } from "react"
+import { ChevronUp } from "lucide-react"
+
+// Collapsible section component
+function CollapsibleSection({ 
+  title, 
+  children, 
+  defaultExpanded = true 
+}: { 
+  title: string
+  children: React.ReactNode
+  defaultExpanded?: boolean 
+}) {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded)
+  
+  return (
+    <div className="border-t border-gray-200 py-4">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center gap-2 w-full text-left font-semibold text-gray-900 hover:text-gray-700 transition-colors"
+      >
+        <ChevronUp 
+          className={`h-4 w-4 transition-transform duration-200 ${
+            isExpanded ? "" : "rotate-180"
+          }`}
+        />
+        {title}
+      </button>
+      {isExpanded && (
+        <div className="mt-4 pl-6">
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Tag component
+function Tag({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700 border border-gray-200">
+      {children}
+    </span>
+  )
+}
+
 export default function WesternBlotTheoryPage() {
   return (
     <>
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold">Western Blot (Immunoblotting)</h2>
-      </div>
-
-      <p className="mb-6 text-base">
-        Western blot is a widely used analytical technique in biochemistry, molecular biology, and immunology for
-        detecting specific proteins in a sample through gel electrophoresis and antibody-based detection.
-      </p>
-
-      {/* Diagram Section */}
-      <div className="flex flex-wrap mb-8">
-        <div className="w-2/3 pr-4">
-          <div className="w-full h-[300px] overflow-hidden rounded-lg">
+      {/* Main Illustration */}
+      <div className="mb-8">
+        <div className="w-full max-w-2xl mx-auto">
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
             <img
               src="/images/western-blot-transfer.png"
               alt="Western Blot transfer process showing protein bands and transfer sandwich assembly"
-              className="w-full h-full object-contain bg-gray-50"
+              className="w-full h-auto object-contain"
             />
-          </div>
-        </div>
-        <div className="w-1/3">
-          <div className="bg-gray-200 h-[140px] mb-4 flex items-center justify-center">
-            <span className="text-gray-500">Panel 1</span>
-          </div>
-          <div className="bg-gray-200 h-[140px] flex items-center justify-center">
-            <span className="text-gray-500">Panel 2</span>
           </div>
         </div>
       </div>
 
-      {/* Content Section */}
-      <div className="py-4">
-        <p>
-          Western blot, also known as immunoblotting, is a technique used to detect and analyze specific proteins in a
-          complex mixture. The process begins with protein separation using SDS-PAGE (Sodium Dodecyl Sulfate
-          Polyacrylamide Gel Electrophoresis), where proteins are separated based on their molecular weight.
-        </p>
-        <p className="mt-4">
-          After electrophoresis, the separated proteins are transferred from the gel to a membrane (typically
-          nitrocellulose or PVDF). The membrane is then blocked to prevent non-specific antibody binding, followed by
-          incubation with a primary antibody specific to the target protein. A secondary antibody conjugated to a
-          detection enzyme or fluorophore is then applied, allowing visualization of the target protein.
-        </p>
-        <p className="mt-4">
-          Western blotting is essential for protein identification, quantification, and analysis of protein expression
-          levels. It is widely used in research, diagnostics, and quality control to confirm the presence of specific
-          proteins, assess protein modifications, and validate experimental results.
-        </p>
+      {/* Structured Content Sections */}
+      <div className="space-y-0">
+        {/* Introduction */}
+        <CollapsibleSection title="Introduction" defaultExpanded={true}>
+          <p className="text-gray-700 leading-relaxed">
+            Western blot, also known as immunoblotting, is a widely used analytical technique in biochemistry, 
+            molecular biology, and immunology for detecting specific proteins in a sample. The technique combines 
+            gel electrophoresis for protein separation with antibody-based detection for identification of target 
+            proteins. Western blotting is essential for protein identification, quantification, and analysis of 
+            protein expression levels. It is widely used in research, diagnostics, and quality control to confirm 
+            the presence of specific proteins, assess protein modifications, and validate experimental results.
+          </p>
+        </CollapsibleSection>
+
+        {/* Object and Application */}
+        <CollapsibleSection title="Object and application" defaultExpanded={true}>
+          <ul className="space-y-2 text-gray-700">
+            <li className="flex items-start gap-2">
+              <span className="text-gray-400 mt-1">•</span>
+              <span>Detection of proteins</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-gray-400 mt-1">•</span>
+              <span>Protein expression analysis</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-gray-400 mt-1">•</span>
+              <span>Protein modification analysis</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-gray-400 mt-1">•</span>
+              <span>Antibody validation</span>
+            </li>
+          </ul>
+        </CollapsibleSection>
+
+        {/* Method-specific Equipment and Materials */}
+        <CollapsibleSection title="Method-specific equipment and materials" defaultExpanded={true}>
+          <ul className="space-y-2 text-gray-700">
+            <li className="flex items-start gap-2">
+              <span className="text-gray-400 mt-1">•</span>
+              <span>Transblot system</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-gray-400 mt-1">•</span>
+              <span>Imaging system</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-gray-400 mt-1">•</span>
+              <span>Transfer membranes</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-gray-400 mt-1">•</span>
+              <span>Transfer buffer</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-gray-400 mt-1">•</span>
+              <span>Blocking solution</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-gray-400 mt-1">•</span>
+              <span>Antibodies</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-gray-400 mt-1">•</span>
+              <span>Detection substrate</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-gray-400 mt-1">•</span>
+              <span>Transfer sandwich components</span>
+            </li>
+          </ul>
+        </CollapsibleSection>
+
+        {/* Tags */}
+        <CollapsibleSection title="Tags" defaultExpanded={true}>
+          <div className="flex flex-wrap gap-2">
+            <Tag>Protein analysis</Tag>
+            <Tag>Immunodetection</Tag>
+            <Tag>Western blot</Tag>
+            <Tag>Membrane transfer</Tag>
+            <Tag>Antibody-based detection</Tag>
+          </div>
+        </CollapsibleSection>
       </div>
     </>
   )
