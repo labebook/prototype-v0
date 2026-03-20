@@ -8,7 +8,7 @@ import {
     LayoutGrid,
     Library,
     Settings,
-    Beaker,
+    Microscope,
     FlaskConical,
     Package,
     Box,
@@ -195,7 +195,7 @@ export function Sidebar() {
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
                 >
-                  <Beaker className="mr-2.5 h-4 w-4 shrink-0" />
+                  <Microscope className="mr-2.5 h-4 w-4 shrink-0" />
                   Equipment
                 </Link>
               </li>

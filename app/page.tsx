@@ -6,7 +6,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ChevronRight, Check, Beaker, FlaskConical, Package, Box, Monitor, FileText, Folder, ChevronLeft, Plus, Droplets } from "lucide-react"
+import { ChevronRight, Check, Microscope, FlaskConical, Package, Box, Monitor, FileText, Folder, ChevronLeft, Plus, Droplets } from "lucide-react"
 import { PipelineListView } from "@/components/pipeline-list-view"
 import { SDSPagePreparationModal } from "@/components/sds-page-preparation-modal"
 
@@ -48,7 +48,7 @@ const applicationOptions = [
 
 // Materials categories for sidebar
 const materialsCategories = [
-  { id: "equipment", label: "Equipment", icon: Beaker },
+  { id: "equipment", label: "Equipment", icon: Microscope },
   { id: "chemicals", label: "Chemicals", icon: FlaskConical },
   { id: "supplies", label: "Supplies", icon: Package },
   { id: "objects", label: "Biological Materials", icon: Box },
@@ -358,8 +358,8 @@ function HomePageContent() {
       <div className="border-t border-gray-200">
         {/* Header row */}
         <div className="flex items-center px-4 py-3 text-xs font-medium text-blue-600 uppercase tracking-wide">
-          <span className="flex-1">Name</span>
-          <span className="w-24 text-right pr-8">Methods</span>
+          <span className="flex-1">Category</span>
+          <span className="w-24 text-right pr-8">Items</span>
         </div>
         
         {/* List items */}
