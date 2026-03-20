@@ -239,7 +239,22 @@ export default function ProjectDetailPage() {
       <div className="min-h-screen flex flex-col">
         <Header />
         <div className="flex-1 flex flex-col">
-          <NewPipelineEditor onClose={() => setShowPipelineEditor(false)} />
+          <NewPipelineEditor
+            context="create"
+            breadcrumb={
+              <div className="flex items-center gap-1.5 text-sm text-gray-500 px-6 pt-4 pb-2">
+                <Link href="/projects" className="hover:text-gray-900 transition-colors">Projects</Link>
+                <ChevronRight className="h-3.5 w-3.5 text-gray-300" />
+                <Link href={`/projects/${projectId}`} className="hover:text-gray-900 transition-colors">
+                  {project?.name ?? projectId}
+                </Link>
+                <ChevronRight className="h-3.5 w-3.5 text-gray-300" />
+                <span className="text-gray-900">New pipeline</span>
+              </div>
+            }
+            onClose={() => setShowPipelineEditor(false)}
+            onSave={() => setShowPipelineEditor(false)}
+          />
         </div>
         <Footer />
       </div>

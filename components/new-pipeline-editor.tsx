@@ -18,10 +18,31 @@ interface NewPipelineEditorProps {
   viewMode?: "visual" | "list"
   onViewModeChange?: (mode: "visual" | "list") => void
   onClose?: () => void
+  // controlled name
+  pipelineName?: string
+  onPipelineNameChange?: (name: string) => void
+  // breadcrumb rendered above the toolbar
+  breadcrumb?: React.ReactNode
+  // controls action buttons
+  context?: "create" | "edit"
+  onSave?: () => void
+  onCancel?: () => void
 }
 
-export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onViewModeChange, onClose }: NewPipelineEditorProps = {}) {
-  const [pipelineName, setPipelineName] = useState("New Pipeline")
+export function NewPipelineEditor({
+  hideHeader,
+  viewMode: externalViewMode,
+  onViewModeChange,
+  onClose,
+  pipelineName: controlledPipelineName,
+  onPipelineNameChange,
+  breadcrumb,
+  context = "create",
+  onSave,
+  onCancel,
+}: NewPipelineEditorProps = {}) {
+  const [internalPipelineName, setInternalPipelineName] = useState("New Pipeline")
+  const pipelineName = controlledPipelineName !== undefined ? controlledPipelineName : internalPipelineName
   const [isEditingName, setIsEditingName] = useState(false)
   const [showPropertiesPanel, setShowPropertiesPanel] = useState(false)
   const [internalViewMode, setInternalViewMode] = useState<"visual" | "list">("visual")
@@ -148,7 +169,11 @@ export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onVi
   }
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPipelineName(e.target.value)
+    if (controlledPipelineName !== undefined) {
+      onPipelineNameChange?.(e.target.value)
+    } else {
+      setInternalPipelineName(e.target.value)
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -237,11 +262,14 @@ export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onVi
 
   return (
     <div className="flex-1 flex flex-col">
-      {/* Header */}
+      {/* Breadcrumb — rendered above toolbar when provided */}
+      {breadcrumb}
+
+      {/* Toolbar */}
       {!hideHeader && <div className="border-b border-gray-200">
-        <div className="w-full flex justify-between items-center px-6 h-16">
+        <div className="w-full flex justify-between items-center px-6 h-14">
           <div className="flex items-center gap-3">
-            {onClose && (
+            {onClose && context === "create" && (
               <button
                 onClick={onClose}
                 className="text-gray-400 hover:text-gray-700 transition-colors"
@@ -257,56 +285,69 @@ export function NewPipelineEditor({ hideHeader, viewMode: externalViewMode, onVi
                 onBlur={handleNameSave}
                 onKeyDown={handleKeyDown}
                 autoFocus
-                className="text-2xl font-bold border-none shadow-none focus-visible:ring-0 p-0 h-auto"
+                className="text-lg font-semibold border-gray-300 h-8 py-0 w-64"
               />
             ) : (
-              <h1 className="text-2xl font-bold flex items-center">
-                {pipelineName}
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-lg font-semibold">{pipelineName}</h1>
                 <button
                   onClick={handleNameEdit}
-                  className="ml-2 text-gray-500 hover:text-gray-700"
+                  className="text-gray-400 hover:text-gray-700 transition-colors"
                   aria-label="Edit pipeline name"
                 >
-                  <Pencil className="h-5 w-5" />
+                  <Pencil className="h-3.5 w-3.5" />
                 </button>
-              </h1>
+              </div>
             )}
-          </div>
 
-          <div className="flex items-center space-x-3">
             {/* View toggle */}
-            <div className="flex items-center border border-gray-200 rounded-md overflow-hidden mr-2">
+            <div className="flex items-center border border-gray-200 rounded-md overflow-hidden">
               <button
                 className={cn(
-                  "px-3 py-1.5 flex items-center",
-                  viewMode === "visual" ? "bg-gray-100 text-gray-900" : "bg-white text-gray-600",
+                  "px-3 py-1.5 flex items-center text-sm transition-colors",
+                  viewMode === "visual" ? "bg-gray-100 text-gray-900" : "bg-white text-gray-600 hover:bg-gray-50",
                 )}
                 onClick={() => setViewMode("visual")}
               >
                 <LayoutGrid className="h-4 w-4 mr-1" />
-                <span className="text-sm">Visual</span>
+                Visual
               </button>
               <button
                 className={cn(
-                  "px-3 py-1.5 flex items-center",
-                  viewMode === "list" ? "bg-gray-100 text-gray-900" : "bg-white text-gray-600",
+                  "px-3 py-1.5 flex items-center text-sm transition-colors",
+                  viewMode === "list" ? "bg-gray-100 text-gray-900" : "bg-white text-gray-600 hover:bg-gray-50",
                 )}
                 onClick={() => setViewMode("list")}
               >
                 <List className="h-4 w-4 mr-1" />
-                <span className="text-sm">List</span>
+                List
               </button>
             </div>
+          </div>
 
-            <Button variant="outline" size="sm" className="h-9">
-              <Save className="mr-2 h-4 w-4" /> Save
-            </Button>
-            <Button variant="outline" size="sm" className="h-9">
-              <Share2 className="mr-2 h-4 w-4" /> Share
-            </Button>
-            <Button size="sm" className="h-9 bg-black hover:bg-gray-800">
-              <Play className="mr-2 h-4 w-4" /> Run Pipeline
-            </Button>
+          <div className="flex items-center space-x-2">
+            {context === "edit" ? (
+              <>
+                <Button variant="outline" size="sm" className="h-9" onClick={onCancel}>
+                  <X className="mr-2 h-4 w-4" /> Cancel
+                </Button>
+                <Button size="sm" className="h-9 bg-green-600 hover:bg-green-700" onClick={onSave}>
+                  <Save className="mr-2 h-4 w-4" /> Save Changes
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" className="h-9" onClick={onSave}>
+                  <Save className="mr-2 h-4 w-4" /> Save
+                </Button>
+                <Button variant="outline" size="sm" className="h-9">
+                  <Share2 className="mr-2 h-4 w-4" /> Share
+                </Button>
+                <Button size="sm" className="h-9 bg-black hover:bg-gray-800">
+                  <Play className="mr-2 h-4 w-4" /> Run Pipeline
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>}

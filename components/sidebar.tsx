@@ -49,7 +49,7 @@ const IconExperimentalModels = ({ className }: { className?: string }) => (
 
 export function Sidebar() {
   const pathname = usePathname()
-  const [libraryExpanded, setLibraryExpanded] = useState(false)
+  const [libraryExpanded, setLibraryExpanded] = useState(true)
   const [materialsExpanded, setMaterialsExpanded] = useState(true) // Default expanded
   const [createTeamOpen, setCreateTeamOpen] = useState(false)
   const { currentTeam } = useTeam()
@@ -92,83 +92,94 @@ export function Sidebar() {
           {/* Divider */}
           <li className="my-3 border-t border-gray-200"></li>
 
-            <li className="px-4 py-2">
-                <div className="flex items-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    <Library className="mr-3 h-5 w-5" />
-                    Library
-                </div>
-            </li>
+          {/* LIBRARY Section - Collapsible */}
+          <li className="px-4 py-1.5">
+            <button
+              onClick={() => setLibraryExpanded(!libraryExpanded)}
+              className="flex items-center w-full text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors"
+            >
+              <Library className="mr-3 h-4 w-4" />
+              Library
+              <ChevronDown
+                className={`ml-auto h-3.5 w-3.5 transition-transform duration-200 ${
+                  libraryExpanded ? "" : "-rotate-90"
+                }`}
+              />
+            </button>
+          </li>
 
-          {/* Library Section */}
-            <li>
+          {libraryExpanded && (
+            <>
+              <li>
                 <Link
-                    href="/pipelines"
-                    className={`flex items-center px-4 py-2.5 text-sm ${
-                        isActive("/pipelines") || pathname.startsWith("/pipeline/") || pathname.startsWith("/pipelines/")
-                            ? "bg-blue-50 text-blue-700 font-medium"
-                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    }`}
+                  href="/pipelines"
+                  className={`flex items-center pl-8 pr-4 py-2 text-sm ${
+                    isActive("/pipelines") || pathname.startsWith("/pipeline/") || pathname.startsWith("/pipelines/")
+                      ? "bg-blue-50 text-blue-700 font-medium"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
                 >
-                    <LayoutGrid className="mr-3 h-5 w-5" />
-                    Pipelines
+                  <LayoutGrid className="mr-2.5 h-4 w-4 shrink-0" />
+                  Pipelines
                 </Link>
-            </li>
-            <li>
-              <Link
-                href="/methods"
-                className={`flex items-center px-4 py-2.5 text-sm ${
-                  isActive("/methods") || pathname.startsWith("/methods/")
-                    ? "bg-blue-50 text-blue-700 font-medium"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                }`}
-              >
-                <IconMethods className="mr-2 h-4 w-4" />
-                Methods
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/custom-modules"
-                className={`flex items-center px-4 py-2.5 text-sm ${
-                  isActive("/custom-modules") || pathname.startsWith("/custom-modules/")
-                    ? "bg-blue-50 text-blue-700 font-medium"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                }`}
-              >
-                <IconOperationalProcedures className="mr-2 h-4 w-4" />
-                Operational Procedures
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                href="/experimental-models"
-                className={`flex items-center px-4 py-2.5 text-sm ${
-                  isActive("/experimental-models") || pathname.startsWith("/experimental-models/")
-                    ? "bg-blue-50 text-blue-700 font-medium"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                }`}
-              >
-                <IconExperimentalModels className="mr-2 h-4 w-4" />
-                Experimental Models
-              </Link>
-            </li>
+              </li>
+              <li>
+                <Link
+                  href="/methods"
+                  className={`flex items-center pl-8 pr-4 py-2 text-sm ${
+                    isActive("/methods") || pathname.startsWith("/methods/")
+                      ? "bg-blue-50 text-blue-700 font-medium"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  <IconMethods className="mr-2.5 h-4 w-4 shrink-0" />
+                  Methods
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/custom-modules"
+                  className={`flex items-center pl-8 pr-4 py-2 text-sm ${
+                    isActive("/custom-modules") || pathname.startsWith("/custom-modules/")
+                      ? "bg-blue-50 text-blue-700 font-medium"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  <IconOperationalProcedures className="mr-2.5 h-4 w-4 shrink-0" />
+                  Operational Procedures
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/experimental-models"
+                  className={`flex items-center pl-8 pr-4 py-2 text-sm ${
+                    isActive("/experimental-models") || pathname.startsWith("/experimental-models/")
+                      ? "bg-blue-50 text-blue-700 font-medium"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  <IconExperimentalModels className="mr-2.5 h-4 w-4 shrink-0" />
+                  Experimental Models
+                </Link>
+              </li>
+            </>
+          )}
 
           {/* Divider */}
           <li className="my-3 border-t border-gray-200"></li>
 
           {/* MATERIALS Section - Collapsible */}
-          <li className="px-4 py-2">
+          <li className="px-4 py-1.5">
             <button
               onClick={() => setMaterialsExpanded(!materialsExpanded)}
-              className="flex items-center w-full text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-700 transition-colors"
+              className="flex items-center w-full text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors"
             >
-              <Package className="mr-3 h-5 w-5" />
+              <Package className="mr-3 h-4 w-4" />
               Materials
-              <ChevronDown 
-                className={`ml-auto h-4 w-4 transition-transform duration-200 ${
+              <ChevronDown
+                className={`ml-auto h-3.5 w-3.5 transition-transform duration-200 ${
                   materialsExpanded ? "" : "-rotate-90"
-                }`} 
+                }`}
               />
             </button>
           </li>
@@ -178,91 +189,91 @@ export function Sidebar() {
               <li>
                 <Link
                   href="/?section=materials&category=equipment"
-                  className={`flex items-center px-4 py-2.5 text-sm ${
+                  className={`flex items-center pl-8 pr-4 py-2 text-sm ${
                     pathname === "/" && typeof window !== "undefined" && window.location.search.includes("category=equipment")
                       ? "bg-blue-50 text-blue-700 font-medium"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
                 >
-                  <Beaker className="mr-2 h-4 w-4" />
+                  <Beaker className="mr-2.5 h-4 w-4 shrink-0" />
                   Equipment
                 </Link>
               </li>
               <li>
                 <Link
                   href="/?section=materials&category=chemicals"
-                  className={`flex items-center px-4 py-2.5 text-sm ${
+                  className={`flex items-center pl-8 pr-4 py-2 text-sm ${
                     pathname === "/" && typeof window !== "undefined" && window.location.search.includes("category=chemicals")
                       ? "bg-blue-50 text-blue-700 font-medium"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
                 >
-                  <FlaskConical className="mr-2 h-4 w-4" />
+                  <FlaskConical className="mr-2.5 h-4 w-4 shrink-0" />
                   Chemicals
                 </Link>
               </li>
               <li>
                 <Link
                   href="/?section=materials&category=supplies"
-                  className={`flex items-center px-4 py-2.5 text-sm ${
+                  className={`flex items-center pl-8 pr-4 py-2 text-sm ${
                     pathname === "/" && typeof window !== "undefined" && window.location.search.includes("category=supplies")
                       ? "bg-blue-50 text-blue-700 font-medium"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
                 >
-                  <Package className="mr-2 h-4 w-4" />
+                  <Package className="mr-2.5 h-4 w-4 shrink-0" />
                   Supplies
                 </Link>
               </li>
               <li>
                 <Link
                   href="/?section=materials&category=objects"
-                  className={`flex items-center px-4 py-2.5 text-sm ${
+                  className={`flex items-center pl-8 pr-4 py-2 text-sm ${
                     pathname === "/" && typeof window !== "undefined" && window.location.search.includes("category=objects")
                       ? "bg-blue-50 text-blue-700 font-medium"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
                 >
-                  <Box className="mr-2 h-4 w-4" />
+                  <Box className="mr-2.5 h-4 w-4 shrink-0" />
                   Biological Materials
                 </Link>
               </li>
               <li>
                 <Link
                   href="/?section=materials&category=software"
-                  className={`flex items-center px-4 py-2.5 text-sm ${
+                  className={`flex items-center pl-8 pr-4 py-2 text-sm ${
                     pathname === "/" && typeof window !== "undefined" && window.location.search.includes("category=software")
                       ? "bg-blue-50 text-blue-700 font-medium"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
                 >
-                  <Monitor className="mr-2 h-4 w-4" />
+                  <Monitor className="mr-2.5 h-4 w-4 shrink-0" />
                   Software
                 </Link>
               </li>
               <li>
                 <Link
                   href="/?section=materials&category=preparations"
-                  className={`flex items-center px-4 py-2.5 text-sm ${
+                  className={`flex items-center pl-8 pr-4 py-2 text-sm ${
                     pathname === "/" && typeof window !== "undefined" && window.location.search.includes("category=preparations")
                       ? "bg-blue-50 text-blue-700 font-medium"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
                 >
-                  <FileText className="mr-2 h-4 w-4" />
+                  <FileText className="mr-2.5 h-4 w-4 shrink-0" />
                   Preparations
                 </Link>
               </li>
               <li>
                 <Link
                   href="/?section=materials&category=buffers-solutions"
-                  className={`flex items-center px-4 py-2.5 text-sm ${
+                  className={`flex items-center pl-8 pr-4 py-2 text-sm ${
                     pathname === "/" && typeof window !== "undefined" && window.location.search.includes("category=buffers-solutions")
                       ? "bg-blue-50 text-blue-700 font-medium"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
                 >
-                  <Droplets className="mr-2 h-4 w-4" />
+                  <Droplets className="mr-2.5 h-4 w-4 shrink-0" />
                   Buffers and Solutions
                 </Link>
               </li>
