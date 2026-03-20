@@ -269,13 +269,13 @@ const ParameterEditor = ({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-96 max-w-[90vw]">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center">
+      <div className="bg-white rounded-xl shadow-2xl p-6 w-96 max-w-[90vw]">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">{parameter.name}</h3>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
+          <h3 className="text-xl font-semibold text-gray-900">{parameter.name}</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         <div className="space-y-4">
@@ -352,14 +352,14 @@ const ParameterSummaryTable = ({
   )
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-[800px] max-w-[90vw] max-h-[80vh] overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center">
+      <div className="bg-white rounded-xl shadow-2xl w-[800px] max-w-[90vw] max-h-[80vh] overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Protocol Parameters Summary</h3>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
+            <h3 className="text-xl font-semibold text-gray-900">Protocol Parameters Summary</h3>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+              <X className="h-5 w-5" />
+            </button>
           </div>
         </div>
 
@@ -1839,13 +1839,13 @@ export default function WesternBlotExampleProtocolPage() {
 
       {/* Save Protocol Modal */}
       {showSaveModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-semibold">Save Protocol</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Save Protocol</h2>
               <button
                 onClick={() => setShowSaveModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>

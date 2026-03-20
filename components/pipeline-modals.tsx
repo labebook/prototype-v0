@@ -27,11 +27,11 @@ export function Modal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[80vh] flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold">{title}</h2>
+          <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -394,13 +394,13 @@ const ParameterEditor = ({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
-      <div className="bg-white rounded-lg p-6 w-96 max-w-[90vw]">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center">
+      <div className="bg-white rounded-xl shadow-2xl p-6 w-96 max-w-[90vw]">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">{parameter.name}</h3>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
+          <h3 className="text-xl font-semibold text-gray-900">{parameter.name}</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         <div className="space-y-4">
@@ -557,14 +557,14 @@ export function WesternBlotParametersModal({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="bg-white rounded-lg w-[800px] max-w-[90vw] max-h-[80vh] overflow-hidden shadow-xl">
-          <div className="p-6 border-b border-gray-200">
+      <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center">
+        <div className="bg-white rounded-xl w-[800px] max-w-[90vw] max-h-[80vh] overflow-hidden shadow-2xl">
+          <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Protocol Parameters Summary</h3>
-              <Button variant="ghost" size="sm" onClick={onClose}>
-                <X className="h-4 w-4" />
-              </Button>
+              <h3 className="text-xl font-semibold text-gray-900">Protocol Parameters Summary</h3>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+                <X className="h-5 w-5" />
+              </button>
             </div>
           </div>
 
@@ -876,11 +876,11 @@ export function WesternBlotMaterialsModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg w-[1040px] max-w-[90vw] max-h-[85vh] overflow-hidden shadow-xl flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center">
+      <div className="bg-white rounded-xl w-[1040px] max-w-[90vw] max-h-[85vh] overflow-hidden shadow-2xl flex flex-col">
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
-          <h2 className="text-xl font-semibold">Western Blot — Materials</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Western Blot — Materials</h2>
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" onClick={handleReset}>
               Reset

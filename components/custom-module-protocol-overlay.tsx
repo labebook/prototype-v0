@@ -256,14 +256,14 @@ export function CustomModuleProtocolOverlay({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose()
         }
       }}
     >
-      <div className="bg-white rounded-lg w-[1000px] max-w-[90vw] max-h-[85vh] flex flex-col shadow-2xl">
+      <div className="bg-white rounded-xl w-[1000px] max-w-[90vw] max-h-[85vh] flex flex-col shadow-2xl">
         <div className="p-6 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-start justify-between">
             <div className="flex-1">
