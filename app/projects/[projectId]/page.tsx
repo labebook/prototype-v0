@@ -529,9 +529,7 @@ export default function ProjectDetailPage() {
                         isCompleted ? "opacity-50 bg-gray-50" : "hover:bg-gray-50"
                       }`}
                     >
-                      <LayoutGrid className={`h-5 w-5 shrink-0 ${
-                        isCompleted ? "text-gray-400" : isPlanning ? "text-blue-500" : "text-green-500"
-                      }`} />
+                      <LayoutGrid className="h-5 w-5 shrink-0 text-blue-500" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className={`text-sm font-medium ${isCompleted ? "text-gray-500" : "text-gray-900"}`}>
@@ -547,21 +545,17 @@ export default function ProjectDetailPage() {
                             <Badge className="bg-gray-200 text-gray-500 border-0 text-xs">Run</Badge>
                           )}
                         </div>
-                        <p className={`text-xs mt-0.5 truncate ${isCompleted ? "text-gray-400" : "text-gray-400"}`}>
+                        <p className="text-xs mt-0.5 truncate text-gray-400">
                           {pipeline.description.goal}
                         </p>
                       </div>
                       <div className="w-20 text-right">
-                        <span className={`text-xs ${isCompleted ? "text-gray-400" : "text-gray-400"}`}>
-                          {isCompleted ? "Run" : "Pipeline"}
-                        </span>
+                        <span className="text-xs text-gray-400">Pipeline</span>
                       </div>
                       <div className="w-32 text-right">
-                        <span className={`text-sm ${isCompleted ? "text-gray-400" : "text-gray-400"}`}>
-                          {formatDate(pipeline.lastModified)}
-                        </span>
+                        <span className="text-sm text-gray-400">{formatDate(pipeline.lastModified)}</span>
                       </div>
-                      <ChevronRight className={`h-4 w-4 shrink-0 ${isCompleted ? "text-gray-300" : "text-gray-300"}`} />
+                      <ChevronRight className="h-4 w-4 shrink-0 text-gray-300" />
                     </Link>
                   )
                 })}
@@ -615,9 +609,7 @@ export default function ProjectDetailPage() {
                           isCompleted ? "opacity-50 bg-gray-50" : "hover:bg-gray-50"
                         }`}
                       >
-                        <LayoutGrid className={`h-5 w-5 shrink-0 ${
-                          isCompleted ? "text-gray-400" : isPlanning ? "text-blue-500" : "text-green-500"
-                        }`} />
+                        <LayoutGrid className="h-5 w-5 shrink-0 text-blue-500" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className={`text-sm font-medium ${isCompleted ? "text-gray-500" : "text-gray-900"}`}>
@@ -633,21 +625,17 @@ export default function ProjectDetailPage() {
                               <Badge className="bg-gray-200 text-gray-500 border-0 text-xs">Run</Badge>
                             )}
                           </div>
-                          <p className={`text-xs mt-0.5 truncate ${isCompleted ? "text-gray-400" : "text-gray-400"}`}>
+                          <p className="text-xs mt-0.5 truncate text-gray-400">
                             {pipeline.description.goal}
                           </p>
                         </div>
                         <div className="w-20 text-right">
-                          <span className={`text-xs ${isCompleted ? "text-gray-400" : "text-gray-400"}`}>
-                            {isCompleted ? "Run" : "Pipeline"}
-                          </span>
+                          <span className="text-xs text-gray-400">Pipeline</span>
                         </div>
                         <div className="w-32 text-right">
-                          <span className={`text-sm ${isCompleted ? "text-gray-400" : "text-gray-400"}`}>
-                            {formatDate(pipeline.lastModified)}
-                          </span>
+                          <span className="text-sm text-gray-400">{formatDate(pipeline.lastModified)}</span>
                         </div>
-                        <ChevronRight className={`h-4 w-4 shrink-0 ${isCompleted ? "text-gray-300" : "text-gray-300"}`} />
+                        <ChevronRight className="h-4 w-4 shrink-0 text-gray-300" />
                       </Link>
                     )
                   })
