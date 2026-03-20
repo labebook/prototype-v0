@@ -294,7 +294,7 @@ export default function ProjectPipelineDetailPage() {
   }
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: "steps", label: `Steps (${pipelineSteps.length})` },
+    { id: "steps", label: `Steps (${pipelineSteps.filter(s => !s.isSubStep).length})` },
     { id: "attachments", label: `Attachments (${pipeline.attachments || 0})` },
     { id: "activity", label: "Activity" },
   ]
@@ -438,7 +438,7 @@ export default function ProjectPipelineDetailPage() {
               <div>
                 <div className="flex items-center justify-between pb-4 border-b border-gray-200 mb-0" suppressHydrationWarning>
                   <span className="text-sm text-gray-500">
-                    {completedModules.size} of {pipelineSteps.length} completed
+                    {completedModules.size} of {pipelineSteps.filter(s => !s.isSubStep).length} completed
                   </span>
                 </div>
                 <PipelineListView

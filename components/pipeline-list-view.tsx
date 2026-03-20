@@ -3,7 +3,7 @@ import React, { useState, useRef } from "react"
 import {
   Grid3X3, FlaskConical, Package, Filter, Play, CheckCircle, XCircle,
   Circle, Loader2, GripVertical, ChevronDown, ChevronUp, FileImage, FileIcon, Pencil,
-  LogIn, LogOut,
+  LogIn, LogOut, AlertCircle,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -125,8 +125,15 @@ export function PipelineListView({
   const showDateSelected = !hideColumns.includes('dateSelected')
   const showAuthor      = !hideColumns.includes('author')
 
-  // Internal accordion state
-  const [expandedId, setExpandedId] = useState<string | null>(null)
+  // Internal accordion state — pre-open any step that has prerequisites
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
+    const ids = new Set<string>()
+    const parentIds = new Set(steps.filter(s => s.isSubStep && s.parentStepId).map(s => s.parentStepId!))
+    for (const s of steps) {
+      if (!s.isSubStep && parentIds.has(s.id)) ids.add(s.id)
+    }
+    return ids
+  })
 
   const draggedIdRef = useRef<string | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
@@ -203,6 +210,15 @@ export function PipelineListView({
   }
   const handleDragEnd = () => { draggedIdRef.current = null; setDragOverId(null) }
 
+  // Build prerequisite map: parentStepId → sub-steps[]
+  const prereqMap: Record<string, typeof steps[0][]> = {}
+  for (const s of steps) {
+    if (s.isSubStep && s.parentStepId) {
+      ;(prereqMap[s.parentStepId] ??= []).push(s)
+    }
+  }
+  const mainSteps = steps.filter(s => !s.isSubStep)
+
   // Total colspan for the accordion row
   const totalCols =
     (showStepConnector ? 1 : 0) +
@@ -246,19 +262,25 @@ export function PipelineListView({
           </tr>
         </thead>
         <tbody>
-          {steps.map((originalStep, index) => {
+          {mainSteps.map((originalStep, index) => {
             const step        = getStepWithMockData(originalStep, index)
             const isCompleted = completedModules?.has(step.id) || step.executionStatus === 'completed'
             const stepIoData  = moduleDataMap?.[step.id]
             const hasIo       = Boolean(stepIoData?.inputData || stepIoData?.outputData)
             const fileCount   = (stepIoData?.inputData.files.length ?? 0) + (stepIoData?.outputData.files.length ?? 0)
-            const isExpanded  = expandedId === step.id
-            const prevStep    = index > 0 ? steps[index - 1] : null
+            const isExpanded  = expandedIds.has(step.id)
+            const prereqs     = prereqMap[step.id] ?? []
+            const hasPrereqs  = prereqs.length > 0
+            const prevStep    = index > 0 ? mainSteps[index - 1] : null
             const prevCompleted = !prevStep || completedModules?.has(prevStep.id) || prevStep.executionStatus === 'completed'
 
             const toggleExpand = (e: React.MouseEvent) => {
               e.stopPropagation()
-              setExpandedId(isExpanded ? null : step.id)
+              setExpandedIds(prev => {
+                const next = new Set(prev)
+                isExpanded ? next.delete(step.id) : next.add(step.id)
+                return next
+              })
             }
 
             return (
@@ -291,7 +313,7 @@ export function PipelineListView({
                           )}>
                             {step.step}
                           </div>
-                          {index < steps.length - 1 && (
+                          {index < mainSteps.length - 1 && (
                             <div className="w-0.5 bg-gray-200 flex-1 mt-1" />
                           )}
                         </div>
@@ -318,6 +340,18 @@ export function PipelineListView({
                         <div className="text-[10px] text-gray-400 mb-0.5">{step.method}</div>
                         <div className={cn("text-sm font-medium", step.isSubStep ? "text-gray-700" : "text-gray-900")}>{step.name}</div>
                         <div className="text-xs text-gray-400 mt-0.5">{step.objective || step.description || ""}</div>
+                        {hasPrereqs && (
+                          <button
+                            onClick={toggleExpand}
+                            className="mt-1.5 inline-flex items-center gap-1 text-[10px] bg-amber-50 text-amber-600 border border-amber-200 rounded px-1.5 py-0.5 hover:bg-amber-100 transition-colors"
+                          >
+                            <AlertCircle className="h-2.5 w-2.5" />
+                            {prereqs.length} prerequisite{prereqs.length > 1 ? "s" : ""}
+                            {isExpanded
+                              ? <ChevronUp   className="h-2.5 w-2.5 ml-0.5" />
+                              : <ChevronDown className="h-2.5 w-2.5 ml-0.5" />}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </td>
@@ -532,31 +566,139 @@ export function PipelineListView({
                   )}
                 </tr>
 
-                {/* ── Accordion I/O row ─────────────────────────────────── */}
-                {isExpanded && hasIo && (
-                  <tr key={`${step.id}-io`} className="bg-blue-50 border-b border-blue-100">
+                {/* ── Accordion row (prereqs + I/O) ─────────────────── */}
+                {isExpanded && (hasIo || hasPrereqs) && (
+                  <tr key={`${step.id}-detail`} className="bg-blue-50 border-b border-blue-100">
                     <td colSpan={totalCols} className="px-6 py-4">
-                      <div className="grid grid-cols-2 gap-6 divide-x divide-gray-200">
-                        {/* Input */}
-                        <div className="pr-6">
-                          <IoSection label="Input" data={stepIoData!.inputData} />
+
+                      {/* ── Before you start ──────────────────────────── */}
+                      {hasPrereqs && (
+                        <div className={cn(hasIo && "mb-5")}>
+                          <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <AlertCircle className="h-3 w-3" />
+                            Before you start
+                          </p>
+                          <div className="rounded-md border border-amber-200 bg-white divide-y divide-amber-100">
+                            {prereqs.map((pre, preIdx) => {
+                              const preStep    = getStepWithMockData(pre, preIdx)
+                              const preDone    = completedModules?.has(pre.id)
+                              const preIoData  = moduleDataMap?.[pre.id]
+                              const hasPreInput  = preIoData?.inputData  && (preIoData.inputData.text?.trim()  || preIoData.inputData.files?.length)
+                              const hasPreOutput = preIoData?.outputData && (preIoData.outputData.text?.trim() || preIoData.outputData.files?.length)
+                              return (
+                                <div key={pre.id} className="px-3 py-2.5 flex items-center gap-3">
+                                  {/* Step number bubble */}
+                                  <div className="h-6 w-6 rounded-full border-2 border-amber-300 flex items-center justify-center text-[10px] font-semibold text-amber-600 bg-amber-50 shrink-0">
+                                    {pre.step}
+                                  </div>
+                                  {/* Name / method / objective */}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-[10px] text-gray-400">{pre.method}</div>
+                                    <div className="text-sm font-medium text-gray-800">{pre.name}</div>
+                                    {pre.objective && (
+                                      <div className="text-xs text-gray-500 mt-0.5">{pre.objective}</div>
+                                    )}
+                                  </div>
+                                  {/* Action buttons — same set as main row */}
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    {/* Plan */}
+                                    <button
+                                      className="w-7 h-7 rounded-md flex items-center justify-center text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
+                                      onClick={e => { e.stopPropagation(); onPlanClick?.(preStep) }}
+                                      title="Configure module filters"
+                                    >
+                                      <Filter className="h-3.5 w-3.5" />
+                                    </button>
+                                    {/* Parameters */}
+                                    {showParameters && (
+                                      <button
+                                        className={cn("w-7 h-7 rounded-md flex items-center justify-center transition-colors cursor-pointer", getParametersButtonColor(preStep))}
+                                        onClick={e => { e.stopPropagation(); onParametersClick?.(preStep) }}
+                                        title="Configure parameters"
+                                      >
+                                        <Grid3X3 className="h-3.5 w-3.5" />
+                                      </button>
+                                    )}
+                                    {/* Protocol ID */}
+                                    {showProtocol && (
+                                      <div className="text-xs text-gray-600 w-16 truncate">{preStep.protocolId || "—"}</div>
+                                    )}
+                                    {/* Materials */}
+                                    <button
+                                      className="w-7 h-7 rounded-md flex items-center justify-center text-gray-600 bg-gray-100 hover:bg-gray-200 cursor-pointer transition-colors"
+                                      onClick={e => { e.stopPropagation(); onMaterialsClick?.(preStep) }}
+                                      title="View materials"
+                                    >
+                                      <Package className="h-3.5 w-3.5" />
+                                    </button>
+                                    {/* Buffer Recipes */}
+                                    <button
+                                      className="w-7 h-7 rounded-md flex items-center justify-center text-gray-600 bg-gray-100 hover:bg-gray-200 cursor-pointer transition-colors"
+                                      onClick={e => { e.stopPropagation(); onBuffersClick?.(preStep) }}
+                                      title="View buffer recipes"
+                                    >
+                                      <FlaskConical className="h-3.5 w-3.5" />
+                                    </button>
+                                    {/* Created */}
+                                    {showCreatedColumn && (
+                                      <div className="text-xs w-24 shrink-0">
+                                        <div className="text-gray-700 truncate">{preStep.author || "—"}</div>
+                                        <div className="text-gray-400">{preStep.dateSelected || "—"}</div>
+                                      </div>
+                                    )}
+                                    {/* Input */}
+                                    {onInputClick && (
+                                      <Button size="sm" variant="outline" className="h-6 text-xs px-2"
+                                        onClick={e => { e.stopPropagation(); onInputClick(preStep) }}>
+                                        <LogIn className="h-3 w-3 mr-1" />
+                                        {hasPreInput ? "Edit" : "Start"}
+                                      </Button>
+                                    )}
+                                    {/* Output */}
+                                    {onOutputClick && (
+                                      <Button size="sm" variant="outline" className="h-6 text-xs px-2"
+                                        onClick={e => { e.stopPropagation(); onOutputClick(preStep) }}>
+                                        <LogOut className="h-3 w-3 mr-1" />
+                                        {hasPreOutput ? "Edit" : "Complete"}
+                                      </Button>
+                                    )}
+                                  </div>
+                                  {/* Done / Required badge */}
+                                  {preDone
+                                    ? <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+                                    : <span className="text-[10px] font-medium text-amber-600 shrink-0">Required</span>
+                                  }
+                                </div>
+                              )
+                            })}
+                          </div>
                         </div>
-                        {/* Output */}
-                        <div className="pl-6">
-                          <IoSection label="Output" data={stepIoData!.outputData} />
-                          {(stepIoData!.outputData.text.trim() || stepIoData!.outputData.files.length > 0) && onEditOutput && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="mt-3 h-7 text-xs"
-                              onClick={(e) => { e.stopPropagation(); onEditOutput(step.id) }}
-                            >
-                              <Pencil className="h-3 w-3 mr-1.5" />
-                              Edit Output
-                            </Button>
-                          )}
+                      )}
+
+                      {/* ── I/O section ───────────────────────────────── */}
+                      {hasIo && (
+                        <div className="grid grid-cols-2 gap-6 divide-x divide-gray-200">
+                          {/* Input */}
+                          <div className="pr-6">
+                            <IoSection label="Input" data={stepIoData!.inputData} />
+                          </div>
+                          {/* Output */}
+                          <div className="pl-6">
+                            <IoSection label="Output" data={stepIoData!.outputData} />
+                            {(stepIoData!.outputData.text.trim() || stepIoData!.outputData.files.length > 0) && onEditOutput && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="mt-3 h-7 text-xs"
+                                onClick={(e) => { e.stopPropagation(); onEditOutput(step.id) }}
+                              >
+                                <Pencil className="h-3 w-3 mr-1.5" />
+                                Edit Output
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </td>
                   </tr>
                 )}
