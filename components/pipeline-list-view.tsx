@@ -566,139 +566,213 @@ export function PipelineListView({
                   )}
                 </tr>
 
-                {/* ── Accordion row (prereqs + I/O) ─────────────────── */}
-                {isExpanded && (hasIo || hasPrereqs) && (
-                  <tr key={`${step.id}-detail`} className="bg-blue-50 border-b border-blue-100">
-                    <td colSpan={totalCols} className="px-6 py-4">
+                {/* ── "Before you start" section header ─────────── */}
+                {isExpanded && hasPrereqs && (
+                  <tr key={`${step.id}-prereq-header`} className="bg-amber-50 border-b border-amber-100">
+                    <td colSpan={totalCols} className="px-4 py-1.5">
+                      <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
+                        <AlertCircle className="h-3 w-3" />
+                        Before you start
+                      </p>
+                    </td>
+                  </tr>
+                )}
 
-                      {/* ── Before you start ──────────────────────────── */}
-                      {hasPrereqs && (
-                        <div className={cn(hasIo && "mb-5")}>
-                          <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                            <AlertCircle className="h-3 w-3" />
-                            Before you start
-                          </p>
-                          <div className="rounded-md border border-amber-200 bg-white divide-y divide-amber-100">
-                            {prereqs.map((pre, preIdx) => {
-                              const preStep    = getStepWithMockData(pre, preIdx)
-                              const preDone    = completedModules?.has(pre.id)
-                              const preIoData  = moduleDataMap?.[pre.id]
-                              const hasPreInput  = preIoData?.inputData  && (preIoData.inputData.text?.trim()  || preIoData.inputData.files?.length)
-                              const hasPreOutput = preIoData?.outputData && (preIoData.outputData.text?.trim() || preIoData.outputData.files?.length)
-                              return (
-                                <div key={pre.id} className="px-3 py-2.5 flex items-center gap-3">
-                                  {/* Step number bubble */}
-                                  <div className="h-6 w-6 rounded-full border-2 border-amber-300 flex items-center justify-center text-[10px] font-semibold text-amber-600 bg-amber-50 shrink-0">
-                                    {pre.step}
-                                  </div>
-                                  {/* Name / method / objective */}
-                                  <div className="flex-1 min-w-0">
-                                    <div className="text-[10px] text-gray-400">{pre.method}</div>
-                                    <div className="text-sm font-medium text-gray-800">{pre.name}</div>
-                                    {pre.objective && (
-                                      <div className="text-xs text-gray-500 mt-0.5">{pre.objective}</div>
-                                    )}
-                                  </div>
-                                  {/* Action buttons — same set as main row */}
-                                  <div className="flex items-center gap-1.5 shrink-0">
-                                    {/* Plan */}
-                                    <button
-                                      className="w-7 h-7 rounded-md flex items-center justify-center text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
-                                      onClick={e => { e.stopPropagation(); onPlanClick?.(preStep) }}
-                                      title="Configure module filters"
-                                    >
-                                      <Filter className="h-3.5 w-3.5" />
-                                    </button>
-                                    {/* Parameters */}
-                                    {showParameters && (
-                                      <button
-                                        className={cn("w-7 h-7 rounded-md flex items-center justify-center transition-colors cursor-pointer", getParametersButtonColor(preStep))}
-                                        onClick={e => { e.stopPropagation(); onParametersClick?.(preStep) }}
-                                        title="Configure parameters"
-                                      >
-                                        <Grid3X3 className="h-3.5 w-3.5" />
-                                      </button>
-                                    )}
-                                    {/* Protocol ID */}
-                                    {showProtocol && (
-                                      <div className="text-xs text-gray-600 w-16 truncate">{preStep.protocolId || "—"}</div>
-                                    )}
-                                    {/* Materials */}
-                                    <button
-                                      className="w-7 h-7 rounded-md flex items-center justify-center text-gray-600 bg-gray-100 hover:bg-gray-200 cursor-pointer transition-colors"
-                                      onClick={e => { e.stopPropagation(); onMaterialsClick?.(preStep) }}
-                                      title="View materials"
-                                    >
-                                      <Package className="h-3.5 w-3.5" />
-                                    </button>
-                                    {/* Buffer Recipes */}
-                                    <button
-                                      className="w-7 h-7 rounded-md flex items-center justify-center text-gray-600 bg-gray-100 hover:bg-gray-200 cursor-pointer transition-colors"
-                                      onClick={e => { e.stopPropagation(); onBuffersClick?.(preStep) }}
-                                      title="View buffer recipes"
-                                    >
-                                      <FlaskConical className="h-3.5 w-3.5" />
-                                    </button>
-                                    {/* Created */}
-                                    {showCreatedColumn && (
-                                      <div className="text-xs w-24 shrink-0">
-                                        <div className="text-gray-700 truncate">{preStep.author || "—"}</div>
-                                        <div className="text-gray-400">{preStep.dateSelected || "—"}</div>
-                                      </div>
-                                    )}
-                                    {/* Input */}
-                                    {onInputClick && (
-                                      <Button size="sm" variant="outline" className="h-6 text-xs px-2"
-                                        onClick={e => { e.stopPropagation(); onInputClick(preStep) }}>
-                                        <LogIn className="h-3 w-3 mr-1" />
-                                        {hasPreInput ? "Edit" : "Start"}
-                                      </Button>
-                                    )}
-                                    {/* Output */}
-                                    {onOutputClick && (
-                                      <Button size="sm" variant="outline" className="h-6 text-xs px-2"
-                                        onClick={e => { e.stopPropagation(); onOutputClick(preStep) }}>
-                                        <LogOut className="h-3 w-3 mr-1" />
-                                        {hasPreOutput ? "Edit" : "Complete"}
-                                      </Button>
-                                    )}
-                                  </div>
-                                  {/* Done / Required badge */}
-                                  {preDone
-                                    ? <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
-                                    : <span className="text-[10px] font-medium text-amber-600 shrink-0">Required</span>
-                                  }
-                                </div>
-                              )
-                            })}
+                {/* ── Prereq rows — same columns as the main row ────── */}
+                {isExpanded && hasPrereqs && prereqs.map((pre, preIdx) => {
+                  const preStep   = getStepWithMockData(pre, preIdx)
+                  const preDone   = completedModules?.has(pre.id)
+                  const preIoData = moduleDataMap?.[pre.id]
+                  return (
+                    <tr key={`${step.id}-prereq-${pre.id}`} className="bg-amber-50 border-b border-amber-100">
+                      {/* Step connector — amber bubble, no vertical line */}
+                      {showStepConnector && (
+                        <td className="py-0 px-2 w-10 align-top" style={{ height: "1px" }}>
+                          <div className="flex flex-col items-center pt-4">
+                            <div className="h-6 w-6 rounded-full border-2 border-amber-300 bg-amber-50 flex items-center justify-center text-[10px] font-semibold text-amber-600 shrink-0 z-10">
+                              {pre.step}
+                            </div>
+                          </div>
+                        </td>
+                      )}
+                      {/* Drag handle placeholder */}
+                      {onReorder && <td className="py-3 px-2" />}
+                      {/* Name column */}
+                      <td className="py-3 px-4 align-top">
+                        <div className="flex items-start gap-3">
+                          {showMethodIcon && <FlaskConical className="shrink-0 h-4 w-4 text-emerald-500 mt-0.5" />}
+                          <div className="min-w-0">
+                            <div className="text-[10px] text-gray-400 mb-0.5">{pre.method}</div>
+                            <div className="text-sm font-medium text-gray-800">{pre.name}</div>
+                            {pre.objective && <div className="text-xs text-gray-500 mt-0.5">{pre.objective}</div>}
                           </div>
                         </div>
+                      </td>
+                      {/* Plan */}
+                      <td className="py-3 px-4 text-center align-top">
+                        <div className="flex items-center justify-center">
+                          <button
+                            className="w-8 h-8 rounded-md flex items-center justify-center text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
+                            onClick={e => { e.stopPropagation(); onPlanClick?.(preStep) }}
+                            title="Configure module filters"
+                          >
+                            <Filter className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                      {/* Parameters */}
+                      {showParameters && (
+                        <td className="py-3 px-4 text-center align-top">
+                          <button
+                            className={cn("w-8 h-8 rounded-md flex items-center justify-center transition-colors cursor-pointer", getParametersButtonColor(preStep))}
+                            onClick={e => { e.stopPropagation(); onParametersClick?.(preStep) }}
+                            title="Configure parameters"
+                          >
+                            <Grid3X3 className="h-4 w-4" />
+                          </button>
+                        </td>
                       )}
-
-                      {/* ── I/O section ───────────────────────────────── */}
-                      {hasIo && (
-                        <div className="grid grid-cols-2 gap-6 divide-x divide-gray-200">
-                          {/* Input */}
-                          <div className="pr-6">
-                            <IoSection label="Input" data={stepIoData!.inputData} />
-                          </div>
-                          {/* Output */}
-                          <div className="pl-6">
-                            <IoSection label="Output" data={stepIoData!.outputData} />
-                            {(stepIoData!.outputData.text.trim() || stepIoData!.outputData.files.length > 0) && onEditOutput && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="mt-3 h-7 text-xs"
-                                onClick={(e) => { e.stopPropagation(); onEditOutput(step.id) }}
-                              >
-                                <Pencil className="h-3 w-3 mr-1.5" />
-                                Edit Output
+                      {/* Protocol ID */}
+                      {showProtocol && (
+                        <td className="py-3 px-4 align-top">
+                          <div className="text-sm text-gray-600">{preStep.protocolId || "—"}</div>
+                        </td>
+                      )}
+                      {/* Materials */}
+                      <td className="py-3 px-4 text-center align-top">
+                        <button
+                          className="w-8 h-8 rounded-md flex items-center justify-center text-gray-600 bg-gray-100 hover:bg-gray-200 cursor-pointer transition-colors"
+                          onClick={e => { e.stopPropagation(); onMaterialsClick?.(preStep) }}
+                          title="View materials"
+                        >
+                          <Package className="h-4 w-4" />
+                        </button>
+                      </td>
+                      {/* Buffer Recipes */}
+                      <td className="py-3 px-4 text-center align-top">
+                        <button
+                          className="w-8 h-8 rounded-md flex items-center justify-center text-gray-600 bg-gray-100 hover:bg-gray-200 cursor-pointer transition-colors"
+                          onClick={e => { e.stopPropagation(); onBuffersClick?.(preStep) }}
+                          title="View buffer recipes"
+                        >
+                          <FlaskConical className="h-4 w-4" />
+                        </button>
+                      </td>
+                      {/* Created */}
+                      {showCreatedColumn && (
+                        <td className="py-3 px-4 align-top">
+                          <div className="text-sm text-gray-900">{preStep.author || "—"}</div>
+                          <div className="text-xs text-gray-400 mt-0.5">{preStep.dateSelected || "—"}</div>
+                        </td>
+                      )}
+                      {!showCreatedColumn && showDateSelected && (
+                        <td className="py-3 px-4 align-top">
+                          <div className="text-sm text-gray-600">{preStep.dateSelected || "—"}</div>
+                        </td>
+                      )}
+                      {!showCreatedColumn && showAuthor && (
+                        <td className="py-3 px-4 align-top">
+                          <div className="text-sm text-gray-600">{preStep.author || "—"}</div>
+                        </td>
+                      )}
+                      {/* Status */}
+                      {showStatus && (
+                        <td className="py-3 px-4 align-top">
+                          {preDone
+                            ? <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 rounded-full px-2.5 py-1 border border-green-200"><CheckCircle className="h-3.5 w-3.5" /> Done</span>
+                            : <span className="text-[10px] font-medium text-amber-600">Required</span>
+                          }
+                        </td>
+                      )}
+                      {/* Action placeholder */}
+                      {showAction && <td className="py-3 px-4 text-center" />}
+                      {/* Input */}
+                      {onInputClick && (() => {
+                        const inputData = preIoData?.inputData
+                        const hasInput  = inputData && (inputData.text?.trim() || inputData.files?.length)
+                        return (
+                          <td className="py-3 px-4 align-top">
+                            {hasInput ? (
+                              <div className="flex flex-col gap-1">
+                                {(preIoData?.inputUser || preIoData?.startedAt) && (
+                                  <p className="text-[10px] text-gray-400">
+                                    {preIoData.inputUser && <span className="font-medium text-gray-500">{preIoData.inputUser}</span>}
+                                    {preIoData.inputUser && preIoData.startedAt && " · "}
+                                    {preIoData.startedAt}
+                                  </p>
+                                )}
+                                {inputData.text?.trim() && <p className="text-xs text-gray-700 line-clamp-2 leading-relaxed">{inputData.text}</p>}
+                                {inputData.files?.length > 0 && <p className="text-xs text-gray-400">📎 {inputData.files.length} file{inputData.files.length !== 1 ? 's' : ''}</p>}
+                                <button className="mt-0.5 inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 transition-colors"
+                                  onClick={e => { e.stopPropagation(); onInputClick(preStep) }}>
+                                  <Pencil className="h-3 w-3" /> Edit
+                                </button>
+                              </div>
+                            ) : (
+                              <Button size="sm" variant="outline" className="h-7 text-xs"
+                                onClick={e => { e.stopPropagation(); onInputClick(preStep) }}>
+                                <LogIn className="h-3.5 w-3.5 mr-1" /> Start
                               </Button>
                             )}
-                          </div>
+                          </td>
+                        )
+                      })()}
+                      {/* Output */}
+                      {onOutputClick && (() => {
+                        const outputData = preIoData?.outputData
+                        const hasOutput  = outputData && (outputData.text?.trim() || outputData.files?.length)
+                        return (
+                          <td className="py-3 px-4 align-top">
+                            {hasOutput ? (
+                              <div className="flex flex-col gap-1">
+                                {(preIoData?.outputUser || preIoData?.completedAt) && (
+                                  <p className="text-[10px] text-gray-400">
+                                    {preIoData.outputUser && <span className="font-medium text-gray-500">{preIoData.outputUser}</span>}
+                                    {preIoData.outputUser && preIoData.completedAt && " · "}
+                                    {preIoData.completedAt}
+                                  </p>
+                                )}
+                                {outputData.text?.trim() && <p className="text-xs text-gray-700 line-clamp-2 leading-relaxed">{outputData.text}</p>}
+                                {outputData.files?.length > 0 && <p className="text-xs text-gray-400">📎 {outputData.files.length} file{outputData.files.length !== 1 ? 's' : ''}</p>}
+                                <button className="mt-0.5 inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 transition-colors"
+                                  onClick={e => { e.stopPropagation(); onOutputClick(preStep) }}>
+                                  <Pencil className="h-3 w-3" /> Edit
+                                </button>
+                              </div>
+                            ) : (
+                              <Button size="sm" variant="outline" className="h-7 text-xs"
+                                onClick={e => { e.stopPropagation(); onOutputClick(preStep) }}>
+                                <LogOut className="h-3.5 w-3.5 mr-1" /> Complete
+                              </Button>
+                            )}
+                          </td>
+                        )
+                      })()}
+                      {/* Edit method placeholder */}
+                      {onEditMethod && <td className="py-3 px-2 align-top" />}
+                    </tr>
+                  )
+                })}
+
+                {/* ── I/O accordion row (unchanged) ─────────────────── */}
+                {isExpanded && hasIo && (
+                  <tr key={`${step.id}-io`} className="bg-blue-50 border-b border-blue-100">
+                    <td colSpan={totalCols} className="px-6 py-4">
+                      <div className="grid grid-cols-2 gap-6 divide-x divide-gray-200">
+                        <div className="pr-6">
+                          <IoSection label="Input" data={stepIoData!.inputData} />
                         </div>
-                      )}
+                        <div className="pl-6">
+                          <IoSection label="Output" data={stepIoData!.outputData} />
+                          {(stepIoData!.outputData.text.trim() || stepIoData!.outputData.files.length > 0) && onEditOutput && (
+                            <Button variant="outline" size="sm" className="mt-3 h-7 text-xs"
+                              onClick={(e) => { e.stopPropagation(); onEditOutput(step.id) }}>
+                              <Pencil className="h-3 w-3 mr-1.5" />
+                              Edit Output
+                            </Button>
+                          )}
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 )}
