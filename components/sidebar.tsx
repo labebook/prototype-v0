@@ -50,7 +50,7 @@ const IconExperimentalModels = ({ className }: { className?: string }) => (
 export function Sidebar() {
   const pathname = usePathname()
   const [libraryExpanded, setLibraryExpanded] = useState(true)
-  const [materialsExpanded, setMaterialsExpanded] = useState(true) // Default expanded
+  const [materialsExpanded, setMaterialsExpanded] = useState(false)
   const [createTeamOpen, setCreateTeamOpen] = useState(false)
   const { currentTeam } = useTeam()
 
